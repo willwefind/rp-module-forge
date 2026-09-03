@@ -12,24 +12,28 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - [x] Eight Ancient China system names mapped to generic core capabilities
 - [x] Traveler Forum promoted to first-class subsystem
 - [x] Dual engineering + traveler-lore maintainer log convention
-- [ ] Align current TypeScript IDs and manifest shape with V0.1 contracts
+- [x] Align current TypeScript IDs and primary Web manifest shape with V0.1 contracts
+- [x] Add Identity Playbook layer so generic capabilities adapt to different scales of agency without changing permission
 - [ ] Implement full export set from normalized config
 
 ## V0.2 — Ancient China playable foundation
 
 - identity profiles: emperor, heir, regent/powerful minister, general, local official, scholar, merchant, commoner, servant
+- nine default Identity Playbooks spanning imperial governance through household livelihood and low-permission survival
 - resident / on-demand / disabled capability modes
-- all eight core systems available through the Web builder
+- all eight core systems available through the Web builder with identity-scale facets
+- visible always-on permission and evidence foundations
 - expert-lens selection and disagreement rendering
 - Traveler Forum thread / reply / curated-note fixtures
 - curated-only and manual forum retrieval
 - current-session patch with typed facts / claims
 - one-line, compact, full, and manifest exports
-- four-identity crisis validation scenario
+- five-identity crisis validation scenarios including commoner and servant usefulness, not only non-escalation
 
 ## V0.3 — Forge usability
 
 - explanation for every recommendation (“why this module?”)
+- playbook selection when a world pack offers multiple valid playbooks for one identity
 - conflict and incompatibility warnings
 - manifest import / export
 - local presets without account or backend

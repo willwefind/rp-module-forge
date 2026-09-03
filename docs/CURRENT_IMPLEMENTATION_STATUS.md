@@ -14,6 +14,12 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - GitHub Pages deployment workflow for the primary Web App;
 - `packages/pack-ancient-china` canonical V0.1 presentation for all eight capabilities;
 - nine Ancient China identity definitions with explicit permission profiles and canonical capability/expert recommendations;
+- Identity Playbook Core contracts and deterministic resolution/fallback helpers;
+- nine Ancient China default Identity Playbooks spanning imperial governance, military/local administration, scholarship, commerce, household livelihood, and low-permission survival;
+- identity-scale capability facets that can change labels, descriptions, questions, and examples while preserving the same stable Core capability ID;
+- playbook-aware Web App recommendations and capability presentation;
+- playbook-aware one-line and compact prompt output, with explicit statement that playbooks do not grant authority;
+- visible Web App explanation that birth-version `status` now lives in the always-on permission foundation and `intelligence` in the always-on evidence/non-omniscience foundation;
 - canonical compact prompt, one-line output, and manifest serializers;
 - deterministic canonical normalizer for schema/world-pack/version/identity checks, permission-profile derivation, duplicate resolution, stable capability/expert ordering, disabled-forum normalization, and runtime-invariant enforcement;
 - Core permission-gate primitive returning `permitted`, `denied`, or `needs-context` from explicit profile scopes or accepted session overrides; capability selection itself never grants authority;
@@ -32,6 +38,8 @@ This file exists to keep the public repository honest while V0.1 specifications 
 ## Specified but not yet fully implemented
 
 - permission-gate integration into the full event pipeline and machine-readable per-capability permission requirements;
+- cross-identity usefulness fixtures that execute the same crisis through emperor, local official, merchant, commoner, and servant perspectives;
+- explicit playbook selection when a pack offers more than one valid playbook for one identity;
 - recommended-default resolution and richer incompatibility/redundancy diagnostics beyond the current deterministic canonical normalizer;
 - structured fact / claim / inference / hypothesis / unknown data flow in the Web App;
 - structured session-patch editors for facts and claims;
@@ -47,13 +55,17 @@ This file exists to keep the public repository honest while V0.1 specifications 
 
 ## Current migration boundary
 
-The primary Web App now emits the V0.1 canonical configuration. The Ancient China pack now separates stable Core capability IDs from world-pack display names and carries explicit identity permission profiles.
+The primary Web App now emits the V0.1 canonical configuration. The Ancient China pack separates stable Core capability IDs from world-pack display names and carries explicit identity permission profiles.
+
+The first product-level correction for the emperor-first birth prototype is now implemented through Identity Playbooks. A playbook recomposes the same Core capabilities around the selected identity's scale of agency. For example, `readiness-logistics` may appear as military readiness for a general, 商路盘 for a merchant, 活路图 for a commoner, or 活路与储备图 for a servant. These are facets of one Core capability, not separate engines.
+
+Playbooks are intentionally not persisted in `CanonicalForgeConfig` yet. The manifest remains stable capability IDs + modes. V0.1 treats playbooks as world-pack assembly/presentation defaults; a future persisted playbook reference requires an explicit runtime portability need.
 
 Before any Web App export, the current config is normalized against the loaded world pack. A stale or privileged `permissionProfile` string is not trusted: the normalizer derives the profile from the selected canonical identity. Unsupported schema/world-pack/version/identity inputs and weakened runtime invariants fail closed.
 
 The Core permission gate is deliberately evidence-based rather than semantic guesswork. A capability may request an `access`, `request`, `command`, `allocate`, `publish`, `conceal`, or `observe` step, but it cannot grant that permission. Permission requires an exact declared profile scope or an explicit accepted session-context override. The full runtime event pipeline still needs to call this gate for every permission-sensitive capability action.
 
-The Traveler Forum now has a real repository-backed data layer. Raw threads are display/lore material and are not automatically injected. Runtime retrieval consumes only curated notes that pass review and applicability filters.
+The Traveler Forum has a real repository-backed data layer. Raw threads are display/lore material and are not automatically injected. Runtime retrieval consumes only curated notes that pass review and applicability filters.
 
 The birth-version compatibility layer remains intentionally narrow:
 
@@ -62,14 +74,16 @@ The birth-version compatibility layer remains intentionally narrow:
 - `fiscal` → `ledger-evidence-crosscheck`;
 - `logistics` → `readiness-logistics`;
 - `motives` splits into `claim-action-consistency` + `multiplex-relationship-graph`;
-- `intelligence`, `survival`, and `status` are absorbed into V0.1 evidence/runtime or identity-permission semantics rather than preserved as selectable core capabilities;
-- `resources` requires manual review because V0.1 currently has no lossless single capability equivalent.
+- `intelligence` is absorbed into V0.1 evidence/non-omniscience semantics;
+- `status` is absorbed into the always-on identity/permission foundation;
+- `survival` is currently re-expressed as playbook-level composition across permission, relationships, readiness, red-team, and curated knowledge rather than restored as one guessed Core ID;
+- `resources` is currently re-expressed through playbook composition across ledger, readiness, relationships, and scenario context; the old one-to-one migration remains manual-review because no single current Core capability is lossless.
 
 New canonical identities such as `local-official`, `merchant`, and `scholar` are not backported into the birth-version format. New manifests should use canonical IDs directly.
 
 ## Validation in repository
 
-The clean normalization / permission-gate feature commit is `f7c78ccf151cdda32be6360b1db27fa2513fa770`. Its tree is identical to commit `080363385d2d37f7468c677e869566cf26ca76cb`, which GitHub Actions run `33780443544` validated before history cleanup:
+The latest playbook test checkpoint is GitHub Actions run `33782635311` on commit `474be6ae24cb73f92874947bf68ce2c7a28c4825`:
 
 - `pnpm install --frozen-lockfile` — passed;
 - `pnpm typecheck` — passed;
@@ -88,6 +102,10 @@ The committed tests now cover:
 - capability selection not granting access authority;
 - exact profile-scope authorization, made-up scope denial, and blank-override rejection;
 - explicit accepted session-context permission without mutating the base identity profile;
+- playbook-less pack fallback;
+- deterministic single-playbook resolution;
+- ambiguous implicit playbook fail-closed fallback;
+- capability facets preserving their stable Core capability ID and identity permission profile;
 - curated-note eligibility by world, identity, capability, situation, review status, and reliability;
 - exclusion of superseded/deprecated notes;
 - explicit applicability exclusions;

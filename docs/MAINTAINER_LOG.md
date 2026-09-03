@@ -172,6 +172,31 @@ Date: 2026-09-04
 - **References:** `f7c78ccf151cdda32be6360b1db27fa2513fa770`; CI run `33780443544`.
 - **Follow-up:** require every permission-sensitive capability action in the runtime event pipeline to call the gate; add machine-readable permission requirements to capability contracts; implement structured evidence states and session facts/claims so accepted context grants can be audited rather than carried as free text.
 
+## 【第116次维护记录】不是每个老乡都坐在龙椅上。
+
+Date: 2026-09-04
+
+> Dawn 忽然盯着【考成台】【御前反对席】看了半天，问了一个把维护组集体问沉默的问题：这些东西对我们现有的默认身份真的友好吗？  
+> 大家回头翻出生版，发现最早的奴婢明明拿的是“低权限生存、礼法身份、人心博弈、情报拼图”，普通人拿的是“低权限生存、资源经营、礼法身份、情报拼图”。  
+> M1 把这些旧模块拆回更正确的 Core 语义没有错：礼法进了权限层，情报进了证据层；错的是拆完以后，我们忘了把低权限角色真正需要的使用体验重新组装回来。  
+> 于是维护组新增“身份处境方案 / Identity Playbook”：同一套 Core，不同身份可以有不同默认组合、牌匾、问题和例子。普通人终于拿回家计、迁徙和避险；奴婢终于拿回差事、主家关系、储备和活路。  
+>  
+> 【Sol 批注：Core ID 中立，不等于所有老乡都得举着“御前”牌匾上班。】
+
+### Engineering record
+
+- **Category:** architecture correction / feature / pack-content
+- **Scope:** Core playbook contracts and resolver, Ancient China pack presentation, Prompt Builder, Web App, regression tests, playbook specification and audit
+- **Problem:** the generic Core capability IDs were successfully separated from identity permissions, but the Ancient China capability catalog and presentation still inherited an emperor-first product bias. High-authority identities had a coherent toolset while commoner and servant recommendations under-expressed household livelihood, task/blame tracking, resources, routes, exposure, and survival-oriented planning.
+- **Decision:** add a pack-owned Identity Playbook layer. A playbook supplies capability/expert defaults and identity-scale capability facets (labels, descriptions, questions, examples) while preserving the same Core IDs and permission profile. Birth-version `status` remains an always-on permission foundation and `intelligence` an always-on evidence foundation; `survival` and `resources` are first re-expressed as playbook-level compositions rather than prematurely restored as guessed one-to-one Core capabilities.
+- **Behavior change:** the Web App now resolves one default playbook per Ancient China identity and changes capability defaults/presentation accordingly. Commoner defaults now emphasize household readiness, ledgers, relationships, risk and forum knowledge; servant defaults now emphasize claim/action observation, household relationships, readiness, task/blame tracking, risk and curated low-permission knowledge. One-line and compact prompts use the same playbook facets.
+- **Compatibility:** additive. `CanonicalForgeConfig` is unchanged and does not persist playbook IDs in V0.1; old packs without playbooks fall back to base capability presentation and existing identity recommendations.
+- **Schema impact:** no canonical manifest schema-version bump. Adds optional world-pack playbook metadata plus Core playbook/facet types and resolution helpers.
+- **Privacy/security impact:** playbooks contain no permission fields and cannot authorize access or action. Ambiguous implicit playbook resolution fails closed to base presentation. The existing permission gate and non-omniscience invariants remain authoritative.
+- **Validation:** feature commit `a06baa7f1b8bfc86952097dc7d1f371ffa5b6d90` is built from the playbook code tree validated before history cleanup by GitHub Actions run `33782635311`: frozen install, workspace typecheck, Core tests, and full build passed. New tests cover playbook-less fallback, deterministic single-playbook resolution, ambiguous fail-closed fallback, and stable Core IDs / unchanged permission profiles under capability facets.
+- **References:** `a06baa7f1b8bfc86952097dc7d1f371ffa5b6d90`; `docs/IDENTITY_PLAYBOOK_SPEC_V0.md`; `docs/IDENTITY_PLAYBOOK_AUDIT_V0.md`; CI run `33782635311`.
+- **Follow-up:** run real cross-identity usefulness fixtures for the same crisis across emperor, local official, merchant, commoner and servant; only add new Core capability IDs if those composition tests reveal a stable missing operation.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
