@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"require('node:fs').rmSync('.test-dist',{recursive:true,force:true})\" && tsc -p tsconfig.test.json && node --test tests/legacyMigration.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

@@ -1,3 +1,3 @@
-export * from "./types";
-export * from "./legacyMigration";
-export * from "./promptBuilder";
+export * from "./types.js";
+export * from "./legacyMigration.js";
+export * from "./promptBuilder.js";
