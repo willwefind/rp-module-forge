@@ -98,6 +98,30 @@ Date: 2026-09-03
 - **Validation:** strict TypeScript type-check passed locally; emperor and servant migration fixtures were executed locally; the servant fixture did not acquire `ledger-evidence-crosscheck`, and both runtime invariants remained intact. Repository-level automated migration tests and CI are still pending.
 - **Follow-up:** add the committed test harness; migrate Ancient China pack content, Prompt Builder, and Web App onto canonical IDs/config; implement full permission profiles and deterministic validation/normalization.
 
+## 【第113次维护记录】户籍册归户籍册，匾额归匾额。
+
+Date: 2026-09-03
+
+> 新户籍终于不再拿门口牌匾当身份证。  
+> 【鱼鳞算盘】还是那个一眼就认得出的名字，但账房里真正登记的是 `ledger-evidence-crosscheck`；换个世界、换块匾，底下那条能力契约也不会跟着改姓。  
+> 皇帝、地方官、商贾、士人、奴婢各自领了明确权限档案；同一把工具到了不同人手里，能查什么、能问谁、能做到哪一步，不再靠一句称号暗中猜。  
+>  
+> 【Sol 批注：从今天起，谁再拿 UI 文案当数据库主键，我先请他去档案房抄一百遍 Core ID。】
+
+### Engineering record
+
+- **Category:** feature / refactor / validation
+- **Scope:** canonical Core pack contracts, Ancient China pack, Prompt Builder, Web App, migration tests, GitHub Actions CI
+- **Problem:** the birth-version UI and pack still treated role labels and provisional modules as the primary assembly model even after the V0.1 Core Contract had been specified. There was also no committed executable regression harness protecting legacy migration behavior.
+- **Decision:** add canonical world-pack/identity/capability presentation types; implement all eight Ancient China capability presentations and nine explicit identity permission profiles; keep the birth-version pack only as a compatibility export; add canonical prompt/manifest output; migrate the primary Web App to `CanonicalForgeConfig`; add an executable no-dependency migration test harness and CI.
+- **Behavior change:** the Web App now assembles identity permission refs, capability activation modes (`resident` / `on-demand` / `disabled`), expert weights, Traveler Forum policy, token mode, evidence-state visibility, and canonical manifest output. Ancient China labels are presentation data over stable Core IDs rather than persisted capability identities.
+- **Compatibility:** additive migration path. Birth-version `ForgeConfig`, `WorldPack`, Ancient China legacy export, and legacy prompt functions remain available temporarily; the primary Web App no longer emits the birth-version manifest.
+- **Schema impact:** canonical pack types now include explicit identity definitions, permission profiles, capability presentations, and expert recommendations. New manifests use canonical world-pack refs, identity permission-profile refs, stable capability IDs, activation modes, and runtime/forum config.
+- **Privacy/security impact:** low-permission identities receive explicit access/command/allocation boundaries; canonical runtime invariants remain `omniscience = false` and `hostFinalDecision = true`; legacy migration fails closed on unknown world packs or identities.
+- **Validation:** GitHub Actions run `33775446092` succeeded on Node.js 20 for commit `7a8a251466cc7efe1fbeda4e056fa8862a51ca9b`; frozen install, workspace typecheck, migration tests, and full build all passed.
+- **References:** commits `ed3c860b9903847bc4072668627bf94b79f38b97`, `32ae8e21ebbb3a888b1a2f0a9e41b8c047f237d3`, `7a8a251466cc7efe1fbeda4e056fa8862a51ca9b`; CI run `33775446092`.
+- **Follow-up:** implement deterministic canonical validation/normalization and runtime permission checks; add structured facts/claims editing and evidence-state flow; make token modes materially change prompt detail; implement Traveler Forum data/retrieval; remove birth-version compatibility exports only after the migration window is explicitly closed.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
