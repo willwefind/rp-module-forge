@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "node -e \"require('node:fs').rmSync('.test-dist',{recursive:true,force:true})\" && tsc -p tsconfig.test.json && node --test tests/legacyMigration.test.mjs tests/travelerForum.test.mjs tests/canonicalNormalization.test.mjs tests/permissionGate.test.mjs"
+    "test": "node -e \"require('node:fs').rmSync('.test-dist',{recursive:true,force:true})\" && tsc -p tsconfig.test.json && node --test tests/legacyMigration.test.mjs tests/travelerForum.test.mjs tests/canonicalNormalization.test.mjs tests/permissionGate.test.mjs tests/identityPlaybooks.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

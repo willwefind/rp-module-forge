@@ -4,6 +4,8 @@ import {
   generateCanonicalManifest,
   generateCanonicalOneLiner,
   normalizeCanonicalConfig,
+  resolveCapabilityFacet,
+  resolveIdentityPlaybook,
   retrieveCuratedForumNotes,
   type CanonicalForgeConfig,
   type CapabilityMode,
@@ -13,7 +15,8 @@ import {
   type ForumReliability,
   type TokenMode
 } from "@rpmf/core";
-import { ancientChinaForumData, ancientChinaPackV01 } from "@rpmf/pack-ancient-china";
+import { ancientChinaForumData } from "@rpmf/pack-ancient-china";
+import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
 
 const pack = ancientChinaPackV01;
 const forumData = ancientChinaForumData;
@@ -24,15 +27,17 @@ app.innerHTML = `
     <section class="hero">
       <div class="muted">Public V0.1 · ${pack.label}</div>
       <h1>RP Module Forge</h1>
-      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份先决定权限边界，再选择通用能力、专家认知镜头与 Runtime 行为；古代名称只是 world pack 的呈现，不再充当数据身份证。</p>
+      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份先决定权限边界，身份处境方案再把同一批 Core 能力翻译成这个人真正用得上的问题尺度；能力永远不能反过来给身份加权。</p>
     </section>
 
     <div class="grid">
       <section class="card">
-        <h2>1. 宿主身份与权限</h2>
+        <h2>1. 宿主身份、处境与权限</h2>
         <select id="identity"></select>
         <p id="identitySummary" class="muted"></p>
+        <div id="playbookPreview" class="invariant-note"></div>
         <div id="permissionPreview" class="invariant-note"></div>
+        <p class="muted">底层律例始终存在：旧出生版的“礼法身份”已经进入不可关闭的身份权限层；“情报拼图”已经进入不可关闭的证据状态与不全知规则。</p>
       </section>
 
       <section class="card">
@@ -54,7 +59,7 @@ app.innerHTML = `
 
       <section class="card span-2">
         <h2>3. 能力系统</h2>
-        <p class="muted">同一个 Core capability 可以在不同 world pack 中换名字；这里显示的是 Ancient China presentation。</p>
+        <p class="muted">底层仍是同一批稳定 Core capability；当前身份的 Playbook 可以改变默认组合、标签、问题和例子，但不能改变能力身份或权限。</p>
         <div id="capabilities" class="settings-list"></div>
       </section>
 
@@ -123,12 +128,12 @@ app.innerHTML = `
       <section class="card span-2">
         <h2>8. Canonical 校验</h2>
         <div id="normalizationStatus" class="invariant-note"></div>
-        <p class="muted">所有导出会先经过 Core normalizer：校验 world pack / identity / runtime 不变量，纠正 permission profile，去重并固定 capability / expert 顺序。能力选择本身不能扩张身份权限。</p>
+        <p class="muted">所有导出会先经过 Core normalizer：校验 world pack / identity / runtime 不变量，纠正 permission profile，去重并固定 capability / expert 顺序。Playbook 只影响装配与呈现，不写进权限来源。</p>
       </section>
     </div>
 
     <div class="actions">
-      <button class="primary" id="auto">按身份恢复推荐</button>
+      <button class="primary" id="auto">按处境方案恢复推荐</button>
       <button id="oneLine">一句话版</button>
       <button id="compact">简版 Prompt</button>
       <button id="manifest">Canonical Manifest</button>
@@ -143,6 +148,7 @@ app.innerHTML = `
 
 const identitySelect = document.querySelector<HTMLSelectElement>("#identity")!;
 const identitySummary = document.querySelector<HTMLParagraphElement>("#identitySummary")!;
+const playbookPreview = document.querySelector<HTMLDivElement>("#playbookPreview")!;
 const permissionPreview = document.querySelector<HTMLDivElement>("#permissionPreview")!;
 const capabilitiesEl = document.querySelector<HTMLDivElement>("#capabilities")!;
 const expertsEl = document.querySelector<HTMLDivElement>("#experts")!;
@@ -168,10 +174,11 @@ for (const identity of pack.identities) {
 for (const capability of pack.capabilities) {
   const row = document.createElement("div");
   row.className = "setting-row";
+  row.dataset.capabilityRow = capability.id;
 
   const copy = document.createElement("div");
   copy.className = "setting-copy";
-  copy.innerHTML = `<strong>${capability.label}</strong><code>${capability.id}</code><div class="muted">${capability.description}</div>`;
+  copy.innerHTML = `<strong data-capability-label>${capability.label}</strong><code>${capability.id}</code><div class="muted" data-capability-description>${capability.description}</div><div class="muted" data-capability-lineage></div>`;
 
   const select = document.createElement("select");
   select.dataset.capability = capability.id;
@@ -219,23 +226,53 @@ function selectedIdentity() {
   return pack.identities.find((item) => item.id === identitySelect.value)!;
 }
 
+function selectedPlaybook() {
+  return resolveIdentityPlaybook(pack, identitySelect.value)?.playbook ?? null;
+}
+
 function enabledCapabilityIds(): CoreCapabilityId[] {
   return capabilitySelects()
     .filter((select) => select.value !== "disabled")
     .map((select) => select.dataset.capability as CoreCapabilityId);
 }
 
+function renderCapabilityPresentation() {
+  const identity = selectedIdentity();
+  const playbook = selectedPlaybook();
+
+  playbookPreview.textContent = playbook
+    ? `身份处境方案｜${playbook.label}：${playbook.summary}`
+    : "当前 world pack 未提供专用身份处境方案；使用基础 capability presentation。";
+
+  for (const capability of pack.capabilities) {
+    const row = capabilitiesEl.querySelector<HTMLDivElement>(`[data-capability-row="${capability.id}"]`)!;
+    const label = row.querySelector<HTMLElement>("[data-capability-label]")!;
+    const description = row.querySelector<HTMLElement>("[data-capability-description]")!;
+    const lineage = row.querySelector<HTMLElement>("[data-capability-lineage]")!;
+    const facet = resolveCapabilityFacet(pack, identity.id, capability.id);
+
+    label.textContent = facet?.label ?? capability.label;
+    description.textContent = facet?.description ?? capability.description;
+    lineage.textContent = facet
+      ? `同源系统：${capability.label} · ${capability.id}｜处境问题：${facet.questions.slice(0, 2).join(" / ")}`
+      : `Core：${capability.id}`;
+  }
+}
+
 function applyRecommendations() {
   const identity = selectedIdentity();
+  const playbook = selectedPlaybook();
+  const capabilityDefaults = playbook?.capabilityDefaults ?? identity.recommendedCapabilities;
+  const expertDefaults = playbook?.expertDefaults ?? identity.recommendedExperts;
 
   for (const select of capabilitySelects()) select.value = "disabled";
-  for (const recommendation of identity.recommendedCapabilities) {
+  for (const recommendation of capabilityDefaults) {
     const select = capabilitySelects().find((item) => item.dataset.capability === recommendation.id);
     if (select) select.value = recommendation.mode;
   }
 
   for (const select of expertSelects()) select.value = "off";
-  for (const recommendation of identity.recommendedExperts) {
+  for (const recommendation of expertDefaults) {
     const select = expertSelects().find((item) => item.dataset.expert === recommendation.id);
     if (select) select.value = recommendation.weight;
   }
@@ -249,7 +286,9 @@ function applyRecommendations() {
   const command = identity.permissionProfile.command.length
     ? identity.permissionProfile.command.join("；")
     : "无普通命令权";
-  permissionPreview.textContent = `权限门依据｜access：${access}｜command：${command}｜能力启用不会扩张这些边界。`;
+  permissionPreview.textContent = `权限门依据｜access：${access}｜command：${command}｜Playbook 与能力启用都不会扩张这些边界。`;
+
+  renderCapabilityPresentation();
 }
 
 function config(): CanonicalForgeConfig {
@@ -303,7 +342,7 @@ function normalizedConfig(): CanonicalForgeConfig | null {
 
   normalizationStatus.textContent = result.warnings.length
     ? `✓ 可规范化；${result.warnings.length} 条 warning｜${result.warnings.map((item) => item.message).join("｜")}`
-    : "✓ Canonical config 已通过校验；world pack、identity、permission profile 与 runtime 不变量一致。";
+    : "✓ Canonical config 已通过校验；world pack、identity、permission profile 与 runtime 不变量一致。身份 Playbook 不作为权限来源。";
   return result.config;
 }
 
@@ -360,18 +399,22 @@ function renderForum() {
   });
 
   forumCurated.innerHTML = retrieved.length
-    ? retrieved.map((note) => `
-        <article class="curated-note">
-          <div class="forum-meta">
-            <span class="badge">${note.reliability}</span>
-            <span class="badge">approved-for-runtime</span>
-            <span>${note.capability}</span>
-          </div>
-          <p>${note.lesson}</p>
-          ${note.conflictWith.length ? `<div class="conflict-note">⚖ 与 ${note.conflictWith.join("、")} 存在已知冲突；Runtime 必须保留分歧。</div>` : ""}
-          <div class="forum-origin">${note.reasonRetrieved}</div>
-        </article>
-      `).join("")
+    ? retrieved.map((note) => {
+        const facet = resolveCapabilityFacet(pack, identity.id, note.capability);
+        const definition = pack.capabilities.find((item) => item.id === note.capability);
+        return `
+          <article class="curated-note">
+            <div class="forum-meta">
+              <span class="badge">${note.reliability}</span>
+              <span class="badge">approved-for-runtime</span>
+              <span>${facet?.label ?? definition?.label ?? note.capability}</span>
+            </div>
+            <p>${note.lesson}</p>
+            ${note.conflictWith.length ? `<div class="conflict-note">⚖ 与 ${note.conflictWith.join("、")} 存在已知冲突；Runtime 必须保留分歧。</div>` : ""}
+            <div class="forum-origin">${note.reasonRetrieved}</div>
+          </article>
+        `;
+      }).join("")
     : `<div class="forum-empty">当前身份、已启用能力与最低可靠度组合下，没有可自动检索的遗言库条目。可以切换能力或降低可靠度查看候选。</div>`;
 }
 

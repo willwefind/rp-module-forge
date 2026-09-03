@@ -100,12 +100,40 @@ export type IdentityDefinition = {
   permissionProfile: PermissionProfile;
   recommendedCapabilities: CapabilitySelection[];
   recommendedExperts: ExpertSelection[];
+  /**
+   * Optional world-pack presentation preset. This never changes permission.
+   * Older packs may omit it during the V0.1 migration window.
+   */
+  defaultPlaybook?: string;
 };
 
 export type CapabilityPresentation = {
   id: CoreCapabilityId;
   label: string;
   description: string;
+};
+
+export type CapabilityFacet = {
+  capability: CoreCapabilityId;
+  /** User-facing label for this playbook/identity scale. */
+  label: string;
+  /** Identity-scale purpose. Must not imply authority the permission profile lacks. */
+  description: string;
+  /** Questions this facet should naturally ask before proposing action. */
+  questions: string[];
+  /** Small setting-facing examples; examples are not runtime facts. */
+  examples: string[];
+};
+
+export type IdentityPlaybookDefinition = {
+  id: string;
+  label: string;
+  summary: string;
+  /** One playbook may support several identities, though V0.1 seeds one default per identity. */
+  identities: string[];
+  capabilityDefaults: CapabilitySelection[];
+  expertDefaults: ExpertSelection[];
+  facets: CapabilityFacet[];
 };
 
 export type ExpertDefinition = {
@@ -122,6 +150,8 @@ export type CanonicalWorldPack = {
   identities: IdentityDefinition[];
   capabilities: CapabilityPresentation[];
   experts: ExpertDefinition[];
+  /** Pack-owned identity-scale assembly/presentation presets. */
+  playbooks?: IdentityPlaybookDefinition[];
 };
 
 /**
