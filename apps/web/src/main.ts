@@ -3,6 +3,7 @@ import {
   generateCanonicalCompactPrompt,
   generateCanonicalManifest,
   generateCanonicalOneLiner,
+  normalizeCanonicalConfig,
   retrieveCuratedForumNotes,
   type CanonicalForgeConfig,
   type CapabilityMode,
@@ -31,6 +32,7 @@ app.innerHTML = `
         <h2>1. 宿主身份与权限</h2>
         <select id="identity"></select>
         <p id="identitySummary" class="muted"></p>
+        <div id="permissionPreview" class="invariant-note"></div>
       </section>
 
       <section class="card">
@@ -117,6 +119,12 @@ app.innerHTML = `
         <textarea id="sessionPatch" placeholder="例如：本局采用虚构王朝；宿主已知北疆战事；某项制度与常见历史默认不同……"></textarea>
         <p class="muted">这里暂存自由说明。结构化 facts / claims 编辑器会在后续 M1/M2 继续补齐。</p>
       </section>
+
+      <section class="card span-2">
+        <h2>8. Canonical 校验</h2>
+        <div id="normalizationStatus" class="invariant-note"></div>
+        <p class="muted">所有导出会先经过 Core normalizer：校验 world pack / identity / runtime 不变量，纠正 permission profile，去重并固定 capability / expert 顺序。能力选择本身不能扩张身份权限。</p>
+      </section>
     </div>
 
     <div class="actions">
@@ -135,6 +143,7 @@ app.innerHTML = `
 
 const identitySelect = document.querySelector<HTMLSelectElement>("#identity")!;
 const identitySummary = document.querySelector<HTMLParagraphElement>("#identitySummary")!;
+const permissionPreview = document.querySelector<HTMLDivElement>("#permissionPreview")!;
 const capabilitiesEl = document.querySelector<HTMLDivElement>("#capabilities")!;
 const expertsEl = document.querySelector<HTMLDivElement>("#experts")!;
 const tokenMode = document.querySelector<HTMLSelectElement>("#tokenMode")!;
@@ -146,6 +155,7 @@ const showThreadLinks = document.querySelector<HTMLInputElement>("#showThreadLin
 const forumThreads = document.querySelector<HTMLDivElement>("#forumThreads")!;
 const forumCurated = document.querySelector<HTMLDivElement>("#forumCurated")!;
 const sessionPatch = document.querySelector<HTMLTextAreaElement>("#sessionPatch")!;
+const normalizationStatus = document.querySelector<HTMLDivElement>("#normalizationStatus")!;
 const output = document.querySelector<HTMLDivElement>("#output")!;
 
 for (const identity of pack.identities) {
@@ -232,6 +242,14 @@ function applyRecommendations() {
 
   const risks = identity.permissionProfile.risks.join("、") || "按当前情境判断";
   identitySummary.textContent = `${identity.summary}｜权限档案：${identity.permissionProfile.id}｜主要风险：${risks}`;
+
+  const access = identity.permissionProfile.access.length
+    ? identity.permissionProfile.access.join("；")
+    : "无普通访问权限";
+  const command = identity.permissionProfile.command.length
+    ? identity.permissionProfile.command.join("；")
+    : "无普通命令权";
+  permissionPreview.textContent = `权限门依据｜access：${access}｜command：${command}｜能力启用不会扩张这些边界。`;
 }
 
 function config(): CanonicalForgeConfig {
@@ -274,6 +292,19 @@ function config(): CanonicalForgeConfig {
       notes: sessionPatch.value.trim()
     }
   };
+}
+
+function normalizedConfig(): CanonicalForgeConfig | null {
+  const result = normalizeCanonicalConfig(config(), pack);
+  if (!result.config) {
+    normalizationStatus.textContent = `✕ Canonical 校验失败｜${result.errors.map((item) => `${item.path}: ${item.message}`).join("｜")}`;
+    return null;
+  }
+
+  normalizationStatus.textContent = result.warnings.length
+    ? `✓ 可规范化；${result.warnings.length} 条 warning｜${result.warnings.map((item) => item.message).join("｜")}`
+    : "✓ Canonical config 已通过校验；world pack、identity、permission profile 与 runtime 不变量一致。";
+  return result.config;
 }
 
 const postTypeLabels: Record<string, string> = {
@@ -345,7 +376,10 @@ function renderForum() {
 }
 
 function renderCompact() {
-  output.textContent = generateCanonicalCompactPrompt(config(), pack);
+  const normalized = normalizedConfig();
+  output.textContent = normalized
+    ? generateCanonicalCompactPrompt(normalized, pack)
+    : "当前装配未通过 Canonical 校验，已停止导出。";
 }
 
 function refreshForumAndPrompt() {
@@ -361,18 +395,28 @@ document.querySelector("#auto")!.addEventListener("click", () => {
   applyRecommendations();
   refreshForumAndPrompt();
 });
-for (const select of capabilitySelects()) select.addEventListener("change", renderForum);
-forumEnabled.addEventListener("change", renderForum);
-forumReliability.addEventListener("change", renderForum);
-forumPolicy.addEventListener("change", renderForum);
-showThreadLinks.addEventListener("change", renderForum);
+for (const select of capabilitySelects()) select.addEventListener("change", refreshForumAndPrompt);
+for (const select of expertSelects()) select.addEventListener("change", renderCompact);
+tokenMode.addEventListener("change", renderCompact);
+showEvidenceState.addEventListener("change", renderCompact);
+forumEnabled.addEventListener("change", refreshForumAndPrompt);
+forumReliability.addEventListener("change", refreshForumAndPrompt);
+forumPolicy.addEventListener("change", renderCompact);
+showThreadLinks.addEventListener("change", renderCompact);
+sessionPatch.addEventListener("input", renderCompact);
 
 document.querySelector("#oneLine")!.addEventListener("click", () => {
-  output.textContent = generateCanonicalOneLiner(config(), pack);
+  const normalized = normalizedConfig();
+  output.textContent = normalized
+    ? generateCanonicalOneLiner(normalized, pack)
+    : "当前装配未通过 Canonical 校验，已停止导出。";
 });
 document.querySelector("#compact")!.addEventListener("click", renderCompact);
 document.querySelector("#manifest")!.addEventListener("click", () => {
-  output.textContent = generateCanonicalManifest(config());
+  const normalized = normalizedConfig();
+  output.textContent = normalized
+    ? generateCanonicalManifest(normalized)
+    : "当前装配未通过 Canonical 校验，已停止导出。";
 });
 
 applyRecommendations();
