@@ -31,6 +31,26 @@ Date: 2026-09-03
 - **Migration:** future manifests should persist generic IDs and resolve pack labels at display time.
 - **Validation required:** multi-identity scenario test, export-invariant test, forum eligibility fixtures, on-demand runtime lifecycle test.
 
+## 【第110次维护记录】不是所有老乡都能调户部的账。
+
+Date: 2026-09-03
+
+> 出生版把一部分身份与能力直接绑在旧 ID 上，久而久之，就像默认每个穿越老乡都揣着户部钥匙。  
+> 维护组现已把这批旧身份数据收回通用 Core 契约：先认“你是谁”，再决定“你能看什么、能做什么”。  
+> 世界包继续负责称呼与皮肤，权限边界不再藏在旧时代的名字里。
+
+### Engineering record
+
+- **Category:** refactor / schema migration
+- **Scope:** legacy core IDs, identity data, V0.1 Core Contract
+- **Engineering translation:** 把出生版旧 ID 和身份数据正式迁移到 V0.1 Core Contract。
+- **Decision:** canonical identity and capability data must resolve through the V0.1 generic core contract instead of relying on birth-version IDs or world-pack labels as implicit permissions.
+- **Behavior change:** permissions are derived from explicit identity data and core contracts; presentation labels no longer imply access to privileged information or actions.
+- **Compatibility:** legacy identifiers require migration to their V0.1 canonical equivalents.
+- **Schema impact:** old identity/capability identifiers are normalized into the V0.1 Core Contract representation.
+- **Privacy/security impact:** reduces accidental over-permission caused by identity labels carrying implicit authority.
+- **Validation:** migration and identity-permission behavior are checked against the V0.1 contract and current implementation state.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
