@@ -1,0 +1,19 @@
+{
+  "name": "@rpmf/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rpmf/core": "workspace:*",
+    "@rpmf/pack-ancient-china": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
