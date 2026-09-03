@@ -45,11 +45,34 @@ Date: 2026-09-03
 - **Scope:** legacy core IDs, identity data, V0.1 Core Contract
 - **Engineering translation:** 把出生版旧 ID 和身份数据正式迁移到 V0.1 Core Contract。
 - **Decision:** canonical identity and capability data must resolve through the V0.1 generic core contract instead of relying on birth-version IDs or world-pack labels as implicit permissions.
-- **Behavior change:** permissions are derived from explicit identity data and core contracts; presentation labels no longer imply access to privileged information or actions.
-- **Compatibility:** legacy identifiers require migration to their V0.1 canonical equivalents.
-- **Schema impact:** old identity/capability identifiers are normalized into the V0.1 Core Contract representation.
-- **Privacy/security impact:** reduces accidental over-permission caused by identity labels carrying implicit authority.
-- **Validation:** migration and identity-permission behavior are checked against the V0.1 contract and current implementation state.
+- **Behavior change:** none yet in runtime; this record establishes the migration target. After implementation, permissions will derive from explicit identity data and core contracts instead of presentation labels.
+- **Compatibility:** planned migration; legacy identifiers require explicit normalization to their V0.1 canonical equivalents before manifests can be considered stable.
+- **Schema impact:** planned migration from old identity/capability identifiers into the V0.1 Core Contract representation.
+- **Privacy/security impact:** the target design reduces accidental over-permission caused by identity labels carrying implicit authority.
+- **Validation required:** legacy-ID migration tests and identity-permission behavior checks against the V0.1 contract before this migration can be marked validated.
+
+## 【第111次维护记录】祖传图纸入档，现行律例另册。
+
+Date: 2026-09-03
+
+> 维护组翻旧箱时发现，最初那张能点能动的祖传图纸还漂在仓库之外。  
+> 留着它，是为了记住这座房子最初为什么这样起梁；收进档案房，是为了以后谁都能找到。  
+> 但图纸归图纸，现行律例归现行律例：V0.1 specs 仍是工程事实。  
+>  
+> 【Sol 批注：可以拿祖传图纸考古，不许拿它直接报建。】
+
+### Engineering record
+
+- **Category:** docs
+- **Scope:** `docs/PROTOTYPE_HANDOFF.md`, `prototypes/rp-module-forge-concept-v0.html`, maintainer documentation
+- **Problem:** the earliest interactive concept existed outside the repository, so future sessions and contributors could either lose the original interaction intent or mistake reconstructed memories for project history.
+- **Decision:** preserve Concept Prototype V0 and its handoff as historical design artifacts while explicitly keeping the current V0.1 specifications as the engineering source of truth.
+- **Behavior change:** none; this commit does not change runtime, schema, Prompt Engine, or Web App behavior.
+- **Compatibility:** compatible; no production contract changes.
+- **Schema impact:** none.
+- **Privacy/security impact:** none; the preserved artifacts contain project design material only and no private transcript, credentials, or user data.
+- **Validation:** the handoff names the specification precedence explicitly; the prototype remains a self-contained single-file HTML/CSS/JS artifact with no build step.
+- **Follow-up:** use the prototype to recover interaction principles and test invariants, not its temporary IDs, state model, visual hierarchy, or recommendation algorithm.
 
 ## Maintainer roles in the founding fiction
 

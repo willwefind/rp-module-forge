@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RP Module Forge · Ancient China Concept V0</title>
+  <style>
+    :root{
+      --bg:#0d0c0a;
+      --panel:#16130f;
+      --panel-2:#1d1812;
+      --line:#3a3024;
+      --text:#f2eadc;
+      --muted:#a99d8b;
+      --accent:#d7b46a;
+      --accent-2:#8ea58f;
+      --danger:#b96655;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(215,180,106,.08), transparent 30%),
+        radial-gradient(circle at 85% 0%, rgba(142,165,143,.07), transparent 28%),
+        var(--bg);
+      font-family:
+        "Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+      line-height:1.6;
+    }
+    button,input,select{font:inherit}
+    .shell{max-width:1440px;margin:0 auto;padding:28px}
+    .hero{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));
+      border-radius:28px;
+      padding:30px 32px;
+      box-shadow:var(--shadow);
+      margin-bottom:22px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:after{
+      content:"第109届维护组";
+      position:absolute;
+      right:28px; top:22px;
+      color:rgba(215,180,106,.16);
+      font-size:42px;
+      font-weight:700;
+      letter-spacing:.08em;
+      pointer-events:none;
+    }
+    .eyebrow{color:var(--accent);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+    h1{font-size:36px;line-height:1.1;margin:8px 0 10px}
+    .sub{max-width:920px;color:var(--muted);margin:0}
+    .notice{
+      margin-top:18px;
+      border-left:3px solid var(--accent);
+      padding:11px 14px;
+      background:rgba(215,180,106,.06);
+      color:#d9cfbf;
+      border-radius:8px;
+    }
+    .grid{display:grid;grid-template-columns:1.05fr 1.05fr .9fr;gap:18px}
+    .stack{display:flex;flex-direction:column;gap:18px}
+    .panel{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,var(--panel),#12100d);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    .panel h2{font-size:16px;margin:0 0 12px}
+    .panel p.help{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+    .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .choice{
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:12px;
+      text-align:left;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .choice:hover{border-color:#6f5b40;transform:translateY(-1px)}
+    .choice.active{
+      border-color:var(--accent);
+      background:rgba(215,180,106,.1);
+      box-shadow:0 0 0 1px rgba(215,180,106,.15) inset;
+    }
+    .choice small{display:block;color:var(--muted);margin-top:4px}
+    .systems{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .system-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+      background:#15110d;
+      cursor:pointer;
+      min-height:112px;
+      transition:.15s ease;
+    }
+    .system-card.active{border-color:var(--accent-2);background:rgba(142,165,143,.08)}
+    .system-card .name{font-weight:700}
+    .system-card .tag{font-size:11px;color:var(--accent-2);margin-left:6px}
+    .system-card .desc{font-size:12px;color:var(--muted);margin-top:5px}
+    .system-card .why{
+      font-size:11px;color:#d7cab8;margin-top:8px;display:none
+    }
+    .system-card.recommended .why{display:block}
+    .experts{display:flex;flex-wrap:wrap;gap:8px}
+    .expert{
+      border:1px solid var(--line);
+      background:#16120e;
+      color:#e9decb;
+      padding:8px 11px;
+      border-radius:999px;
+      cursor:pointer;
+    }
+    .expert.active{border-color:var(--accent);background:rgba(215,180,106,.08)}
+    .summary{
+      white-space:pre-wrap;
+      background:#0e0c0a;
+      border:1px solid #2a241d;
+      border-radius:12px;
+      padding:14px;
+      font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+      font-size:12px;
+      color:#ddd2c1;
+      min-height:210px;
+    }
+    .forum{
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .post{
+      background:#100e0b;
+      border:1px solid #292219;
+      border-radius:12px;
+      padding:12px;
+    }
+    .post .meta{font-size:11px;color:var(--accent)}
+    .post .body{font-size:13px;margin-top:5px}
+    .post .reply{
+      margin-top:8px;padding-left:10px;border-left:2px solid #3b3125;color:var(--muted);font-size:12px
+    }
+    .runtime{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px
+    }
+    .runtime .box{
+      background:#100e0b;border:1px solid #292219;border-radius:12px;padding:12px
+    }
+    .runtime strong{display:block;margin-bottom:4px}
+    .pill{
+      display:inline-block;padding:3px 8px;border:1px solid #51432f;border-radius:999px;
+      color:#d5c5ae;font-size:11px;margin:3px 4px 0 0
+    }
+    .footer{
+      color:var(--muted);font-size:12px;text-align:center;padding:26px 0 6px
+    }
+    @media(max-width:1100px){.grid{grid-template-columns:1fr 1fr}.grid>.stack:last-child{grid-column:1/-1}}
+    @media(max-width:760px){
+      .shell{padding:16px}.hero{padding:22px}.hero:after{display:none}
+      .grid{grid-template-columns:1fr}.grid>.stack:last-child{grid-column:auto}
+      .systems,.choices,.runtime{grid-template-columns:1fr}
+      h1{font-size:29px}
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <section class="hero">
+    <div class="eyebrow">RP Module Forge · Concept Prototype V0</div>
+    <h1>天道降维互助论坛 · 中国古代适配包</h1>
+    <p class="sub">
+      一个用于验证“身份权限 → 能力模块 → 专家认知镜头 → 老乡论坛经验 → Prompt / Runtime”关系的概念原型。
+      它不是当前生产实现，也不是最终视觉稿。请以仓库最新 V0.1 specs 为工程事实。
+    </p>
+    <div class="notice">【维护组公告】有位老乡提交了一条新的血泪批注。本次事故已被整理成可复用模块，愿后来者不必再踩同一个坑。</div>
+  </section>
+
+  <main class="grid">
+    <div class="stack">
+      <section class="panel">
+        <h2>① 当前身份权限确认</h2>
+        <p class="help">身份决定你“能知道什么、能命令谁、承担什么责任”。</p>
+        <div class="choices" id="roles"></div>
+      </section>
+
+      <section class="panel">
+        <h2>② 核心子系统</h2>
+        <p class="help">点击启用。推荐模块会根据身份动态变化；推荐 ≠ 强制。</p>
+        <div class="systems" id="systems"></div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel">
+        <h2>③ 专家认知镜头</h2>
+        <p class="help">专家包不是人格覆盖，也不是历史人物附体；它们只是不同的分析视角。</p>
+        <div class="experts" id="experts"></div>
+      </section>
+
+      <section class="panel">
+        <h2>④ 当前装配摘要</h2>
+        <div class="summary" id="summary"></div>
+      </section>
+
+      <section class="panel">
+        <h2>⑤ Runtime 预览</h2>
+        <p class="help">未来 SillyTavern 集成中，这些能力可以按事件临时展开，而不是永久占用 token。</p>
+        <div class="runtime">
+          <div class="box">
+            <strong>常驻</strong>
+            <span class="pill">身份权限</span>
+            <span class="pill">证据边界</span>
+            <span class="pill">宿主裁决</span>
+          </div>
+          <div class="box">
+            <strong>按需调用</strong>
+            <span class="pill">御前反对席</span>
+            <span class="pill">鱼鳞算盘</span>
+            <span class="pill">烽燧图</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel">
+        <h2>⑥ Traveler Forum / 老乡论坛层</h2>
+        <p class="help">论坛不是装饰；它可以成为真正的经验数据层，也可以映射现实中的开源贡献。</p>
+        <div class="forum" id="forum"></div>
+      </section>
+
+      <section class="panel">
+        <h2>⑦ 模块祖训</h2>
+        <div class="post">
+          <div class="meta">CORE CONTRACT</div>
+          <div class="body">
+            本模块提高的是“发现矛盾、组织证据、模拟反应”的能力，不是凭空获得当前世界事实。
+          </div>
+        </div>
+        <div class="post">
+          <div class="meta">DECISION BOUNDARY</div>
+          <div class="body">本模块不替宿主做决定。重大事件只提供方案、代价、争议与缺口。</div>
+        </div>
+        <div class="post">
+          <div class="meta">经典维护者留言</div>
+          <div class="body">“当前可用数据不足。请给我账本。”</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer">
+    Concept prototype only · RP Module Forge · 第109届维护组
+  </div>
+</div>
+
+<script>
+const roles = [
+  {id:"emperor", name:"皇帝", note:"中枢决策 / 高权限 / 高责任", rec:["accountability","ledger","network","public","redteam"]},
+  {id:"local", name:"地方官", note:"地方治理 / 有限上行权限", rec:["accountability","ledger","network","public"]},
+  {id:"general", name:"将军", note:"军政执行 / 后勤优先", rec:["beacon","network","redteam"]},
+  {id:"servant", name:"奴婢 / 低权限角色", note:"生存、身份、关系与信息路径优先", rec:["mirror","network","legacy"]}
+];
+
+const systems = [
+  {id:"accountability", name:"【考成台】", tag:"Ancient skin", desc:"行政执行、责任链、承诺、延迟与责任断点。"},
+  {id:"mirror", name:"【知行镜】", tag:"Ancient skin", desc:"比较公开表态与实际行为，识别言行偏差。"},
+  {id:"ledger", name:"【鱼鳞算盘】", tag:"Ancient skin", desc:"财政、田亩、人口、税粮、仓储等数据交叉验证。"},
+  {id:"network", name:"【朋党谱】", tag:"Ancient skin", desc:"师生、姻亲、同乡、利益、理念、恩怨等动态关系网络。"},
+  {id:"beacon", name:"【烽燧图】", tag:"Ancient skin", desc:"军事与后勤：可调兵力、军粮、军饷、马匹、军令与服从度。"},
+  {id:"public", name:"【民声池】", tag:"Ancient skin", desc:"分群体舆情与情绪，不压缩成单一“民心值”。"},
+  {id:"redteam", name:"【御前反对席】", tag:"Core: Red Team", desc:"重大决策前，从敌手视角推演如何破坏、绕过或反制。"},
+  {id:"legacy", name:"【老乡遗言库】", tag:"Core: Forum/Legacy", desc:"血泪批注、怨气批注、野路子、维护者争论与经验索引。"}
+];
+
+const experts = [
+  {id:"zhang", name:"张居正镜头", hint:"权责 / 财政 / 考成 / 执行"},
+  {id:"wang", name:"王阳明镜头", hint:"动机 / 知行 / 时机 / 最小有效行动"},
+  {id:"qi", name:"戚继光镜头", hint:"训练 / 编制 / 军纪 / 后勤"},
+  {id:"hai", name:"海瑞镜头", hint:"法度 / 责任 / 廉政风险"},
+  {id:"fanli", name:"范蠡镜头", hint:"商业 / 资源 / 风险 / 流通"}
+];
+
+const forumPosts = {
+  emperor:[
+    ["血泪批注 · 匿名-047","别问‘天下民心多少’，三千万人不是一个进度条。","匿名-076：先分群体。士绅、商人、军中、灾民根本不是一回事。"],
+    ["维护者争论 · #18472","县库空了怎么办？","匿名-112：先别救县库，先搞清楚谁有权限看账。"]
+  ],
+  local:[
+    ["地方治理专区 · 匿名-031","不要一上任就把所有旧吏当敌人。你还没弄清谁真的在维持系统运转。","匿名-089：同意。先画责任链，再动人。"],
+    ["血泪批注 · 匿名-204","灾情数字漂亮得太整齐时，先查统计口径，不要直接喊贪墨。",""]
+  ],
+  general:[
+    ["烽燧版置顶 · 第47任维护者","以后再让我看见‘号称二十万大军’我就杀人。先给我算每天吃多少粮。","匿名-089：还要算马。上次粮没断，草先断了。"],
+    ["后勤争论 · 匿名-112","你们俩都漏了运输损耗。",""]
+  ],
+  servant:[
+    ["低权限生存专区 · 匿名-009","你知道真相，不代表你有资格说真相。","匿名-063：先确认‘谁会因为你知道这件事而杀你’。"],
+    ["血泪批注 · 匿名-118","别给奴婢开‘改革全国税制’任务。先活过今晚。","第109届维护组：已修复身份权限层。"]
+  ]
+};
+
+let state = {
+  role:"emperor",
+  enabled:new Set(["accountability","ledger","redteam"]),
+  experts:new Set(["zhang","wang"])
+};
+
+function renderRoles(){
+  const root=document.getElementById("roles");
+  root.innerHTML="";
+  roles.forEach(r=>{
+    const b=document.createElement("button");
+    b.className="choice"+(state.role===r.id?" active":"");
+    b.innerHTML=`<strong>${r.name}</strong><small>${r.note}</small>`;
+    b.onclick=()=>{
+      state.role=r.id;
+      state.enabled=new Set(r.rec.slice(0,3));
+      renderAll();
+    };
+    root.appendChild(b);
+  });
+}
+
+function renderSystems(){
+  const root=document.getElementById("systems");
+  root.innerHTML="";
+  const role=roles.find(r=>r.id===state.role);
+  systems.forEach(s=>{
+    const recommended=role.rec.includes(s.id);
+    const div=document.createElement("div");
+    div.className="system-card"+(state.enabled.has(s.id)?" active":"")+(recommended?" recommended":"");
+    div.innerHTML=`
+      <div><span class="name">${s.name}</span><span class="tag">${s.tag}</span></div>
+      <div class="desc">${s.desc}</div>
+      <div class="why">推荐原因：与当前身份的可知信息、可执行动作和主要风险相关。</div>`;
+    div.onclick=()=>{
+      state.enabled.has(s.id)?state.enabled.delete(s.id):state.enabled.add(s.id);
+      renderAll();
+    };
+    root.appendChild(div);
+  });
+}
+
+function renderExperts(){
+  const root=document.getElementById("experts");
+  root.innerHTML="";
+  experts.forEach(e=>{
+    const b=document.createElement("button");
+    b.className="expert"+(state.experts.has(e.id)?" active":"");
+    b.title=e.hint;
+    b.textContent=e.name;
+    b.onclick=()=>{
+      state.experts.has(e.id)?state.experts.delete(e.id):state.experts.add(e.id);
+      renderAll();
+    };
+    root.appendChild(b);
+  });
+}
+
+function renderSummary(){
+  const role=roles.find(r=>r.id===state.role);
+  const enabled=systems.filter(s=>state.enabled.has(s.id)).map(s=>s.name).join("、") || "无";
+  const chosen=experts.filter(e=>state.experts.has(e.id)).map(e=>e.name).join("、") || "无";
+  document.getElementById("summary").textContent =
+`【当前身份】${role.name}
+【权限倾向】${role.note}
+
+【启用系统】
+${enabled}
+
+【专家认知镜头】
+${chosen}
+
+【运行边界】
+- 不凭空获得当前世界事实
+- 证据不足时明确指出缺口
+- 身份决定可访问数据与可执行动作
+- 专家是认知镜头，不覆盖角色人格
+- 重大事件最终由宿主裁决
+
+【输出原则】
+系统发现异常 → 指出缺口 → 建议补证 → 模拟后果 → 宿主决定`;
+}
+
+function renderForum(){
+  const root=document.getElementById("forum");
+  root.innerHTML="";
+  forumPosts[state.role].forEach(p=>{
+    const div=document.createElement("div");
+    div.className="post";
+    div.innerHTML=`<div class="meta">${p[0]}</div><div class="body">${p[1]}</div>${p[2]?`<div class="reply">${p[2]}</div>`:""}`;
+    root.appendChild(div);
+  });
+}
+
+function renderAll(){
+  renderRoles();renderSystems();renderExperts();renderSummary();renderForum();
+}
+renderAll();
+</script>
+</body>
+</html>
