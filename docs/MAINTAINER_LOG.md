@@ -122,6 +122,31 @@ Date: 2026-09-03
 - **References:** commits `ed3c860b9903847bc4072668627bf94b79f38b97`, `32ae8e21ebbb3a888b1a2f0a9e41b8c047f237d3`, `7a8a251466cc7efe1fbeda4e056fa8862a51ca9b`; CI run `33775446092`.
 - **Follow-up:** implement deterministic canonical validation/normalization and runtime permission checks; add structured facts/claims editing and evidence-state flow; make token modes materially change prompt detail; implement Traveler Forum data/retrieval; remove birth-version compatibility exports only after the migration window is explicitly closed.
 
+## 【第114次维护记录】老乡终于不是现编的了。
+
+Date: 2026-09-04
+
+> 有人问：论坛里的穿越者老乡留言，是不是全靠 AIRP 时让 AI 当场编？  
+> 维护组看了一眼只有开关、没有人的论坛，决定停止表演“这里以后会很热闹”。  
+> 于是第一批老乡正式入住仓库：有人算错过粮，有人被漂亮奏报骗过，有人只想提醒奴婢先活过今晚；还有一位坚持穿夜行衣翻墙进户部，现已被维护组连人带帖一起封存。  
+> 原帖可以嘴硬、犯错、记仇、互相抬杠；但能进入 Runtime 的【老乡遗言库】，必须另过审核、可靠度与适用边界。  
+>  
+> 【Sol 批注：老乡可以胡说，数据库不可以装作他没胡说过。】
+
+### Engineering record
+
+- **Category:** feature / pack-content / validation
+- **Scope:** Traveler Forum Core contracts and retrieval, Ancient China forum seed data, Web App forum browser, regression tests
+- **Problem:** V0.1 already specified Traveler Forum as a first-class subsystem, but the implementation only exposed configuration switches. Without repository-backed thread/reply/curated-note data, runtime forum material would have to be fabricated at session time or remain empty.
+- **Decision:** implement typed thread, reply, curated-note, provenance, reliability, review-state and conflict models; add deterministic curated-note retrieval and reference-integrity validation; seed Ancient China with 18 maintainer-authored threads, 14 replies and 10 curated runtime notes; expose raw-thread browsing and curated-candidate preview as visibly separate layers in the Web App.
+- **Behavior change:** users can now browse identity-relevant forum posts that physically exist in the repository. Runtime candidates are derived only from curated notes matching the current world pack, identity, enabled capability, minimum reliability and optional situation/exclusion labels. Raw posts are never auto-injected by this retrieval path.
+- **Compatibility:** additive; existing canonical manifests and birth-version compatibility exports remain readable. Traveler Forum config fields keep their existing shape.
+- **Schema impact:** adds forum entity contracts for authors, provenance, applicability, post/review types, thread/reply/curated-note records, retrieval queries/results, conflict links and integrity issues.
+- **Content provenance:** all founding posts use `maintainer-seed` provenance and anonymous traveler IDs. They are not presented as pre-existing real community contributions. Future real contributor identities require the consent rules already defined in the forum specification.
+- **Privacy/security impact:** raw, pending, display-only, superseded and deprecated material is ineligible for automatic curated retrieval; unknown or weak material cannot become current-world fact merely by appearing in the forum; the deliberately bad “night raid on the Ministry of Revenue” post remains visible only as superseded/deprecated archive material.
+- **Validation:** the clean feature commit is `465bd07d24a3f81e88dca3003c4b0dd661ae31a8`. Its code tree was validated by GitHub Actions run `33778216290` before history cleanup: frozen install, workspace typecheck, all Core tests and full build passed. Tests cover eligibility, reliability, exclusions, conflict preservation, deterministic ordering and broken forum references.
+- **Follow-up:** feed real event/situation labels into retrieval; implement contribution/review/moderation flow; add token-budget and contradiction policy; keep any future AI-generated forum chatter explicitly `session-only` / synthetic so it can never masquerade as repository history.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
