@@ -1,3 +1,5 @@
+export { ancientChinaForumData } from "./forumData.js";
+
 import type {
   CanonicalWorldPack,
   ExpertDefinition,

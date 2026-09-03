@@ -3,16 +3,19 @@ import {
   generateCanonicalCompactPrompt,
   generateCanonicalManifest,
   generateCanonicalOneLiner,
+  retrieveCuratedForumNotes,
   type CanonicalForgeConfig,
   type CapabilityMode,
+  type CoreCapabilityId,
   type ExpertWeight,
   type ForumInjectionPolicy,
   type ForumReliability,
   type TokenMode
 } from "@rpmf/core";
-import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china";
+import { ancientChinaForumData, ancientChinaPackV01 } from "@rpmf/pack-ancient-china";
 
 const pack = ancientChinaPackV01;
+const forumData = ancientChinaForumData;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 app.innerHTML = `
@@ -59,7 +62,7 @@ app.innerHTML = `
       </section>
 
       <section class="card">
-        <h2>5. Traveler Forum</h2>
+        <h2>5. Traveler Forum Runtime</h2>
         <label class="inline-toggle">
           <input id="forumEnabled" type="checkbox" checked />
           <span>启用天道降维互助论坛</span>
@@ -87,8 +90,30 @@ app.innerHTML = `
         </label>
       </section>
 
+      <section class="card span-2 forum-shell">
+        <div class="forum-heading">
+          <div>
+            <div class="muted">6. 天道降维互助论坛</div>
+            <h2>老乡们真的留下过东西</h2>
+          </div>
+          <div class="forum-stats">${forumData.threads.length} 原帖 · ${forumData.replies.length} 回复 · ${forumData.curatedNotes.length} 遗言库条目</div>
+        </div>
+        <p class="muted">这里展示的是仓库中的真实 seed 数据，不是 AIRP 时由模型临场伪造的“历史帖子”。原帖可以有偏见、争吵和馊主意；只有右侧通过审核与适用性筛选的 curated notes 才有资格进入 Runtime。</p>
+        <div class="forum-grid">
+          <div>
+            <div class="forum-subhead">当前身份可读原帖</div>
+            <div id="forumThreads" class="forum-list"></div>
+          </div>
+          <div>
+            <div class="forum-subhead">当前装配可检索的【老乡遗言库】</div>
+            <div class="muted forum-help">这是检索候选预览，不代表没有事件触发时就自动塞进 Prompt。</div>
+            <div id="forumCurated" class="forum-list"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="card span-2">
-        <h2>6. 本局补丁</h2>
+        <h2>7. 本局补丁</h2>
         <textarea id="sessionPatch" placeholder="例如：本局采用虚构王朝；宿主已知北疆战事；某项制度与常见历史默认不同……"></textarea>
         <p class="muted">这里暂存自由说明。结构化 facts / claims 编辑器会在后续 M1/M2 继续补齐。</p>
       </section>
@@ -118,6 +143,8 @@ const forumEnabled = document.querySelector<HTMLInputElement>("#forumEnabled")!;
 const forumPolicy = document.querySelector<HTMLSelectElement>("#forumPolicy")!;
 const forumReliability = document.querySelector<HTMLSelectElement>("#forumReliability")!;
 const showThreadLinks = document.querySelector<HTMLInputElement>("#showThreadLinks")!;
+const forumThreads = document.querySelector<HTMLDivElement>("#forumThreads")!;
+const forumCurated = document.querySelector<HTMLDivElement>("#forumCurated")!;
 const sessionPatch = document.querySelector<HTMLTextAreaElement>("#sessionPatch")!;
 const output = document.querySelector<HTMLDivElement>("#output")!;
 
@@ -182,6 +209,12 @@ function selectedIdentity() {
   return pack.identities.find((item) => item.id === identitySelect.value)!;
 }
 
+function enabledCapabilityIds(): CoreCapabilityId[] {
+  return capabilitySelects()
+    .filter((select) => select.value !== "disabled")
+    .map((select) => select.dataset.capability as CoreCapabilityId);
+}
+
 function applyRecommendations() {
   const identity = selectedIdentity();
 
@@ -243,18 +276,97 @@ function config(): CanonicalForgeConfig {
   };
 }
 
+const postTypeLabels: Record<string, string> = {
+  "verified-practice": "经验核验",
+  "blood-and-tears": "血泪帖",
+  "grudge-note": "记仇帖",
+  "unverified-trick": "未核验偏方",
+  question: "求助",
+  correction: "勘误",
+  "maintainer-argument": "维护组争论",
+  "case-report": "案例回报"
+};
+
+function renderForum() {
+  const identity = selectedIdentity();
+  const visibleThreads = forumData.threads
+    .filter((thread) => thread.appliesTo.identities.length === 0 || thread.appliesTo.identities.includes(identity.id))
+    .filter((thread) => !["draft", "pending", "changes-requested", "rejected"].includes(thread.reviewStatus))
+    .slice(0, 8);
+
+  forumThreads.innerHTML = visibleThreads.length
+    ? visibleThreads.map((thread) => {
+        const replies = forumData.replies.filter((reply) => reply.threadId === thread.id).slice(0, 2);
+        const archived = thread.reviewStatus === "superseded" || thread.reliability === "deprecated";
+        return `
+          <article class="forum-post ${archived ? "is-archived" : ""}">
+            <div class="forum-meta">
+              <span class="badge">${postTypeLabels[thread.postType] ?? thread.postType}</span>
+              <span class="badge">${thread.reliability}</span>
+              <span>${thread.author.travelerId}</span>
+              <span>${thread.board}</span>
+            </div>
+            <h3>${thread.title}</h3>
+            <p>${thread.body}</p>
+            ${replies.length ? `<div class="reply-stack">${replies.map((reply) => `<div class="forum-reply"><strong>${reply.author.travelerId}</strong>：${reply.body}</div>`).join("")}</div>` : ""}
+            <div class="forum-origin">${archived ? "已封存 · " : ""}provenance: ${thread.provenance.kind}</div>
+          </article>
+        `;
+      }).join("")
+    : `<div class="forum-empty">这个身份暂时没有匹配的原帖。</div>`;
+
+  if (!forumEnabled.checked) {
+    forumCurated.innerHTML = `<div class="forum-empty">Traveler Forum Runtime 已关闭。原帖仍可浏览，但不会产生 Runtime 检索候选。</div>`;
+    return;
+  }
+
+  const retrieved = retrieveCuratedForumNotes(forumData.curatedNotes, {
+    worldPack: pack.id,
+    identity: identity.id,
+    capabilities: enabledCapabilityIds(),
+    minimumReliability: forumReliability.value as ForumReliability,
+    maxNotes: 6
+  });
+
+  forumCurated.innerHTML = retrieved.length
+    ? retrieved.map((note) => `
+        <article class="curated-note">
+          <div class="forum-meta">
+            <span class="badge">${note.reliability}</span>
+            <span class="badge">approved-for-runtime</span>
+            <span>${note.capability}</span>
+          </div>
+          <p>${note.lesson}</p>
+          ${note.conflictWith.length ? `<div class="conflict-note">⚖ 与 ${note.conflictWith.join("、")} 存在已知冲突；Runtime 必须保留分歧。</div>` : ""}
+          <div class="forum-origin">${note.reasonRetrieved}</div>
+        </article>
+      `).join("")
+    : `<div class="forum-empty">当前身份、已启用能力与最低可靠度组合下，没有可自动检索的遗言库条目。可以切换能力或降低可靠度查看候选。</div>`;
+}
+
 function renderCompact() {
   output.textContent = generateCanonicalCompactPrompt(config(), pack);
 }
 
+function refreshForumAndPrompt() {
+  renderForum();
+  renderCompact();
+}
+
 identitySelect.addEventListener("change", () => {
   applyRecommendations();
-  renderCompact();
+  refreshForumAndPrompt();
 });
 document.querySelector("#auto")!.addEventListener("click", () => {
   applyRecommendations();
-  renderCompact();
+  refreshForumAndPrompt();
 });
+for (const select of capabilitySelects()) select.addEventListener("change", renderForum);
+forumEnabled.addEventListener("change", renderForum);
+forumReliability.addEventListener("change", renderForum);
+forumPolicy.addEventListener("change", renderForum);
+showThreadLinks.addEventListener("change", renderForum);
+
 document.querySelector("#oneLine")!.addEventListener("click", () => {
   output.textContent = generateCanonicalOneLiner(config(), pack);
 });
@@ -264,4 +376,5 @@ document.querySelector("#manifest")!.addEventListener("click", () => {
 });
 
 applyRecommendations();
+renderForum();
 renderCompact();
