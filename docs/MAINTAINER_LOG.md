@@ -74,6 +74,30 @@ Date: 2026-09-03
 - **Validation:** the handoff names the specification precedence explicitly; the prototype remains a self-contained single-file HTML/CSS/JS artifact with no build step.
 - **Follow-up:** use the prototype to recover interaction principles and test invariants, not its temporary IDs, state model, visual hierarchy, or recommendation algorithm.
 
+## 【第112次维护记录】旧路引可以带，新户籍不能瞎填。
+
+Date: 2026-09-03
+
+> M1 开工，维护组开始给出生版配置换发 V0.1 路引。  
+> 能确认的一对一旧名直接迁；一项旧模块其实塞了两套职责的，当场拆开写明；已经升格成通用律例的，不再硬装回“模块”盒子里。  
+> 对不上号的旧东西先扣在复核桌上，宁可留一条“待人工确认”，也不替后来的老乡编造祖籍。  
+>  
+> 【Sol 批注：迁移最忌讳“差不多得了”。差不多，就是下一任维护者的血泪帖。】
+
+### Engineering record
+
+- **Category:** refactor / schema migration
+- **Scope:** `packages/core/src/types.ts`, `packages/core/src/legacyMigration.ts`, core exports, implementation status
+- **Problem:** the birth-version `ForgeConfig` stores world pack, role, modules, experts, legacy notes, and session patch in a provisional shape; several old module IDs either combine multiple V0.1 responsibilities or represent semantics that now belong to identity permissions and global runtime invariants.
+- **Decision:** add the V0.1 canonical TypeScript contract and the eight stable generic capability IDs while temporarily retaining the birth-version `ForgeConfig` for the current Web App. Add a guarded Ancient China legacy migrator that records direct, split, absorbed, and manual-review mappings instead of forcing false one-to-one conversions.
+- **Behavior change:** no Web App or Prompt Builder behavior changes yet. Callers may now migrate current birth-version Ancient China configs into a `CanonicalForgeConfig`; lossy or ambiguous transitions return warnings and `requiresReview`.
+- **Compatibility:** additive and compatible for current consumers; the legacy type remains exported during migration. Canonical manifests are not yet declared stable.
+- **Schema impact:** introduces typed V0.1 world-pack refs, identity refs, capability selections and activation modes, expert weights, Traveler Forum policy, runtime policy, session patch structure, permission-profile dimensions, and canonical config shape.
+- **Migration notes:** `administration` → `accountability-execution`; `fiscal` → `ledger-evidence-crosscheck`; `logistics` → `readiness-logistics`; `motives` splits into `claim-action-consistency` + `multiplex-relationship-graph`; `intelligence`, `survival`, and `status` are absorbed into V0.1 runtime/evidence or identity-permission semantics; `resources` remains manual-review because there is no lossless single V0.1 capability equivalent.
+- **Privacy/security impact:** migration fails closed for unknown identities/world packs and does not infer privileged permission profiles. `omniscience = false` and `hostFinalDecision = true` remain literal runtime invariants in the canonical type.
+- **Validation:** strict TypeScript type-check passed locally; emperor and servant migration fixtures were executed locally; the servant fixture did not acquire `ledger-evidence-crosscheck`, and both runtime invariants remained intact. Repository-level automated migration tests and CI are still pending.
+- **Follow-up:** add the committed test harness; migrate Ancient China pack content, Prompt Builder, and Web App onto canonical IDs/config; implement full permission profiles and deterministic validation/normalization.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
