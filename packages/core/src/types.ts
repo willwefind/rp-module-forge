@@ -93,9 +93,40 @@ export type PermissionProfile = {
   risks: string[];
 };
 
+export type IdentityDefinition = {
+  id: string;
+  label: string;
+  summary: string;
+  permissionProfile: PermissionProfile;
+  recommendedCapabilities: CapabilitySelection[];
+  recommendedExperts: ExpertSelection[];
+};
+
+export type CapabilityPresentation = {
+  id: CoreCapabilityId;
+  label: string;
+  description: string;
+};
+
+export type ExpertDefinition = {
+  id: string;
+  label: string;
+  strengths: string[];
+  caution?: string;
+};
+
+export type CanonicalWorldPack = {
+  id: string;
+  version: string;
+  label: string;
+  identities: IdentityDefinition[];
+  capabilities: CapabilityPresentation[];
+  experts: ExpertDefinition[];
+};
+
 /**
- * Birth-version configuration shape kept temporarily for migration and the
- * current Web App. It is not the V0.1 canonical manifest contract.
+ * Birth-version configuration shape kept temporarily for migration and
+ * compatibility. It is not the V0.1 canonical manifest contract.
  */
 export type ForgeConfig = {
   schemaVersion: 1;
@@ -124,13 +155,7 @@ export type ModuleDefinition = {
   description: string;
 };
 
-export type ExpertDefinition = {
-  id: string;
-  label: string;
-  strengths: string[];
-  caution?: string;
-};
-
+/** @deprecated Birth-version pack shape retained during M1 migration. */
 export type WorldPack = {
   id: string;
   label: string;
