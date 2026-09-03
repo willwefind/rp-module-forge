@@ -2,7 +2,7 @@
 
 **面向 AIRP 与文本 RP 的可视化辅助系统装配器：可移植、不全知、由身份权限约束。**
 
-[English](README.en.md) · [产品定义](docs/PRODUCT_V0.md) · [架构](docs/ARCHITECTURE.md) · [中国古代包](docs/ANCIENT_CHINA_PACK_V0.md)
+[English](README.en.md) · [🌐 在线预览](https://willwefind.github.io/rp-module-forge/) · [📜 穿越者老乡维护组日志](docs/MAINTAINER_LOG.md) · [产品定义](docs/PRODUCT_V0.md) · [架构](docs/ARCHITECTURE.md) · [中国古代包](docs/ANCIENT_CHINA_PACK_V0.md)
 
 RP Module Forge 用一组可复用部件，为一场 RP 装配“世界内辅助系统”：
 

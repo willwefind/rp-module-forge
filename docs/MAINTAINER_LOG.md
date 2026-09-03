@@ -147,6 +147,31 @@ Date: 2026-09-04
 - **Validation:** the clean feature commit is `465bd07d24a3f81e88dca3003c4b0dd661ae31a8`. Its code tree was validated by GitHub Actions run `33778216290` before history cleanup: frozen install, workspace typecheck, all Core tests and full build passed. Tests cover eligibility, reliability, exclusions, conflict preservation, deterministic ordering and broken forum references.
 - **Follow-up:** feed real event/situation labels into retrieval; implement contribution/review/moderation flow; add token-budget and contradiction policy; keep any future AI-generated forum chatter explicitly `session-only` / synthetic so it can never masquerade as repository history.
 
+## 【第115次维护记录】拿着算盘，不等于拿着钥匙。
+
+Date: 2026-09-04
+
+> 维护组这回终于把一件看似显而易见、实际上最容易被模型偷偷越过去的事钉死了：会用【鱼鳞算盘】，不代表你就能进户部。  
+> 能力只负责告诉宿主“该核对什么、缺什么证据、下一步可以怎么问”；身份权限才决定“你到底能不能看、能不能拿、能不能命令别人去做”。  
+> 奴婢当然可以开算盘。算盘可以老老实实回答：“还缺账本。”它不可以顺手补一句：“户部大门已为你打开。”  
+> 同时，新户籍每次出门前都要过一遍规范化：世界包、身份、权限档案、模块顺序和 Runtime 不变量逐项核验，脏数据可以修的修，越过底线的一律不放行。  
+>  
+> 【Sol 批注：会算账的是脑子，能进账房的是身份。别混。】
+
+### Engineering record
+
+- **Category:** feature / validation / security-boundary
+- **Scope:** Core canonical normalization, permission gate, Web App export path, regression tests, README navigation
+- **Problem:** canonical configs were assembled by the Web App but were not yet passed through a deterministic Core normalizer before export, and permission profiles existed as descriptive data without an executable fail-closed gate. This left room for stale permission-profile IDs, duplicated selections, weakened runtime invariants, or future capability code accidentally treating “enabled tool” as “granted authority.”
+- **Decision:** add a deterministic canonical normalizer and a permission-gate primitive. The normalizer validates schema/world-pack/version/identity, derives the permission profile from the selected identity, resolves duplicates deterministically, fixes canonical ordering, normalizes disabled forum behavior, and rejects weakened runtime invariants. The permission gate requires an exact declared profile scope or explicit accepted session-context override and returns `permitted`, `denied`, or `needs-context`; capability selection is never an authorization source.
+- **Behavior change:** all Web App exports now pass through Core normalization. The Web App visibly exposes current `access` / `command` bounds and canonical validation state. A low-permission identity may enable analytical capabilities without silently acquiring the records, places, resources, or command authority those capabilities might prefer to use.
+- **Compatibility:** additive and compatible for existing V0.1 configs that already satisfy current invariants. Stale mismatched permission-profile IDs are normalized to the identity’s current profile with a warning; unsupported world pack/version/identity values and weakened runtime invariants fail closed.
+- **Schema impact:** no manifest schema-version bump. Adds Core normalization result/issue types and permission request/decision/basis types; existing `CanonicalForgeConfig` remains the persisted V0.1 shape.
+- **Privacy/security impact:** reduces privilege escalation through stale manifests or capability-driven action suggestions. Session overrides must cite accepted RP context and do not mutate the base identity profile. Blank overrides and invented profile scopes cannot authorize an action.
+- **Validation:** clean feature commit `f7c78ccf151cdda32be6360b1db27fa2513fa770` has the same feature tree as pre-cleanup commit `080363385d2d37f7468c677e869566cf26ca76cb`, validated by GitHub Actions run `33780443544`: frozen install, workspace typecheck, all Core tests, and full build passed.
+- **References:** `f7c78ccf151cdda32be6360b1db27fa2513fa770`; CI run `33780443544`.
+- **Follow-up:** require every permission-sensitive capability action in the runtime event pipeline to call the gate; add machine-readable permission requirements to capability contracts; implement structured evidence states and session facts/claims so accepted context grants can be audited rather than carried as free text.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.

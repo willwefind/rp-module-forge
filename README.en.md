@@ -2,7 +2,7 @@
 
 **A visual builder for portable, non-omniscient assistance systems in AI and text roleplay.**
 
-[简体中文](README.md) · [Product definition](docs/PRODUCT_V0.md) · [Architecture](docs/ARCHITECTURE.md) · [Ancient China Pack](docs/ANCIENT_CHINA_PACK_V0.md)
+[简体中文](README.md) · [🌐 Live preview](https://willwefind.github.io/rp-module-forge/) · [📜 Maintainer Log](docs/MAINTAINER_LOG.md) · [Product definition](docs/PRODUCT_V0.md) · [Architecture](docs/ARCHITECTURE.md) · [Ancient China Pack](docs/ANCIENT_CHINA_PACK_V0.md)
 
 RP Module Forge helps roleplayers assemble an in-world support system from reusable parts:
 
