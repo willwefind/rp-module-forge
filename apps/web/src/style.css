@@ -9,16 +9,23 @@ button, select, textarea, input { font: inherit; }
 .shell { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 64px; }
 .hero { margin-bottom: 24px; }
 .hero h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 52px); }
-.hero p { max-width: 760px; line-height: 1.7; color: #6b7280; }
+.hero p { max-width: 820px; line-height: 1.7; color: #6b7280; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.span-2 { grid-column: span 2; }
 .card { background: rgba(255,255,255,.8); border: 1px solid #dedbd2; border-radius: 18px; padding: 18px; }
 .card h2 { margin: 0 0 12px; font-size: 18px; }
-label { display: block; margin-bottom: 8px; }
+label { display: block; margin-bottom: 10px; }
 select, textarea { width: 100%; border: 1px solid #cfcac0; border-radius: 12px; background: white; padding: 12px; }
 textarea { min-height: 110px; resize: vertical; }
-.checks { display: grid; gap: 8px; }
-.check { display: flex; gap: 9px; align-items: flex-start; }
-.check input { margin-top: 4px; }
+.settings-list { display: grid; gap: 10px; }
+.setting-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 14px; align-items: start; border-top: 1px solid #ece8df; padding-top: 10px; }
+.setting-row:first-child { border-top: 0; padding-top: 0; }
+.setting-copy strong { display: inline-block; margin-right: 8px; }
+.setting-copy code { font-size: 12px; color: #77716a; }
+.mode-select { min-width: 0; }
+.inline-toggle { display: flex; align-items: center; gap: 8px; }
+.inline-toggle input { margin: 0; }
+.invariant-note { border: 1px dashed #cfcac0; border-radius: 12px; padding: 10px 12px; color: #77716a; font-size: 13px; line-height: 1.5; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
 button { border: 1px solid #bdb7aa; border-radius: 999px; padding: 10px 14px; background: white; cursor: pointer; }
 button.primary { background: #27231f; color: white; border-color: #27231f; }
@@ -26,5 +33,7 @@ button.primary { background: #27231f; color: white; border-color: #27231f; }
 .muted { color: #77716a; font-size: 14px; line-height: 1.6; }
 @media (max-width: 760px) {
   .grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+  .setting-row { grid-template-columns: 1fr; }
   .shell { width: min(100% - 20px, 1100px); padding-top: 20px; }
 }

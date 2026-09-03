@@ -1,46 +1,106 @@
 import "./style.css";
-import { generateCompactPrompt, generateManifest, generateOneLiner, type ForgeConfig } from "@rpmf/core";
-import { ancientChinaPack } from "@rpmf/pack-ancient-china";
+import {
+  generateCanonicalCompactPrompt,
+  generateCanonicalManifest,
+  generateCanonicalOneLiner,
+  type CanonicalForgeConfig,
+  type CapabilityMode,
+  type ExpertWeight,
+  type ForumInjectionPolicy,
+  type ForumReliability,
+  type TokenMode
+} from "@rpmf/core";
+import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china";
 
-const pack = ancientChinaPack;
+const pack = ancientChinaPackV01;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 app.innerHTML = `
   <div class="shell">
     <section class="hero">
-      <div class="muted">Public V0 · Ancient China Pack</div>
+      <div class="muted">Public V0.1 · ${pack.label}</div>
       <h1>RP Module Forge</h1>
-      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份决定权限，能力模块决定能做什么，专家包决定用什么视角思考。</p>
+      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份先决定权限边界，再选择通用能力、专家认知镜头与 Runtime 行为；古代名称只是 world pack 的呈现，不再充当数据身份证。</p>
     </section>
+
     <div class="grid">
       <section class="card">
-        <h2>1. 宿主身份</h2>
-        <select id="role"></select>
-        <p id="roleSummary" class="muted"></p>
+        <h2>1. 宿主身份与权限</h2>
+        <select id="identity"></select>
+        <p id="identitySummary" class="muted"></p>
       </section>
+
       <section class="card">
-        <h2>2. 能力模块</h2>
-        <div id="modules" class="checks"></div>
+        <h2>2. Runtime</h2>
+        <label>
+          <span class="muted">Token 模式</span>
+          <select id="tokenMode">
+            <option value="light">Light</option>
+            <option value="standard" selected>Standard</option>
+            <option value="full">Full</option>
+          </select>
+        </label>
+        <label class="inline-toggle">
+          <input id="showEvidenceState" type="checkbox" checked />
+          <span>显示证据状态</span>
+        </label>
+        <div class="invariant-note">固定不变量：omniscience = false · hostFinalDecision = true</div>
       </section>
-      <section class="card">
-        <h2>3. 专家认知包</h2>
-        <div id="experts" class="checks"></div>
+
+      <section class="card span-2">
+        <h2>3. 能力系统</h2>
+        <p class="muted">同一个 Core capability 可以在不同 world pack 中换名字；这里显示的是 Ancient China presentation。</p>
+        <div id="capabilities" class="settings-list"></div>
       </section>
+
       <section class="card">
-        <h2>4. 本局补丁</h2>
-        <textarea id="sessionPatch" placeholder="例如：大晟末代皇帝；宿主现代法学与金融背景；北疆战事……"></textarea>
-        <label class="check" style="margin-top:10px">
-          <input id="legacyNotes" type="checkbox" checked />
-          <span>启用历代穿越者血泪批注</span>
+        <h2>4. 专家认知镜头</h2>
+        <div id="experts" class="settings-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>5. Traveler Forum</h2>
+        <label class="inline-toggle">
+          <input id="forumEnabled" type="checkbox" checked />
+          <span>启用天道降维互助论坛</span>
+        </label>
+        <label>
+          <span class="muted">注入策略</span>
+          <select id="forumPolicy">
+            <option value="off">Off</option>
+            <option value="curated-only" selected>Curated only</option>
+            <option value="curated-plus-links">Curated + links</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+        <label>
+          <span class="muted">最低可靠度</span>
+          <select id="forumReliability">
+            <option value="plausible">Plausible</option>
+            <option value="contested">Contested</option>
+            <option value="corroborated" selected>Corroborated</option>
+          </select>
+        </label>
+        <label class="inline-toggle">
+          <input id="showThreadLinks" type="checkbox" checked />
+          <span>显示来源帖链接</span>
         </label>
       </section>
+
+      <section class="card span-2">
+        <h2>6. 本局补丁</h2>
+        <textarea id="sessionPatch" placeholder="例如：本局采用虚构王朝；宿主已知北疆战事；某项制度与常见历史默认不同……"></textarea>
+        <p class="muted">这里暂存自由说明。结构化 facts / claims 编辑器会在后续 M1/M2 继续补齐。</p>
+      </section>
     </div>
+
     <div class="actions">
-      <button class="primary" id="auto">按身份自动适配</button>
+      <button class="primary" id="auto">按身份恢复推荐</button>
       <button id="oneLine">一句话版</button>
       <button id="compact">简版 Prompt</button>
-      <button id="manifest">Manifest</button>
+      <button id="manifest">Canonical Manifest</button>
     </div>
+
     <section class="card">
       <h2>输出预览</h2>
       <div id="output" class="output"></div>
@@ -48,70 +108,160 @@ app.innerHTML = `
   </div>
 `;
 
-const roleSelect = document.querySelector<HTMLSelectElement>("#role")!;
-const roleSummary = document.querySelector<HTMLParagraphElement>("#roleSummary")!;
-const modulesEl = document.querySelector<HTMLDivElement>("#modules")!;
+const identitySelect = document.querySelector<HTMLSelectElement>("#identity")!;
+const identitySummary = document.querySelector<HTMLParagraphElement>("#identitySummary")!;
+const capabilitiesEl = document.querySelector<HTMLDivElement>("#capabilities")!;
 const expertsEl = document.querySelector<HTMLDivElement>("#experts")!;
+const tokenMode = document.querySelector<HTMLSelectElement>("#tokenMode")!;
+const showEvidenceState = document.querySelector<HTMLInputElement>("#showEvidenceState")!;
+const forumEnabled = document.querySelector<HTMLInputElement>("#forumEnabled")!;
+const forumPolicy = document.querySelector<HTMLSelectElement>("#forumPolicy")!;
+const forumReliability = document.querySelector<HTMLSelectElement>("#forumReliability")!;
+const showThreadLinks = document.querySelector<HTMLInputElement>("#showThreadLinks")!;
 const sessionPatch = document.querySelector<HTMLTextAreaElement>("#sessionPatch")!;
-const legacyNotes = document.querySelector<HTMLInputElement>("#legacyNotes")!;
 const output = document.querySelector<HTMLDivElement>("#output")!;
 
-for (const role of pack.roles) {
+for (const identity of pack.identities) {
   const option = document.createElement("option");
-  option.value = role.id;
-  option.textContent = role.label;
-  roleSelect.append(option);
+  option.value = identity.id;
+  option.textContent = identity.label;
+  identitySelect.append(option);
 }
 
-function addCheck(container: HTMLElement, id: string, label: string, description?: string) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "check";
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.value = id;
-  const text = document.createElement("span");
-  text.innerHTML = `<strong>${label}</strong>${description ? `<div class="muted">${description}</div>` : ""}`;
-  wrapper.append(input, text);
-  container.append(wrapper);
+for (const capability of pack.capabilities) {
+  const row = document.createElement("div");
+  row.className = "setting-row";
+
+  const copy = document.createElement("div");
+  copy.className = "setting-copy";
+  copy.innerHTML = `<strong>${capability.label}</strong><code>${capability.id}</code><div class="muted">${capability.description}</div>`;
+
+  const select = document.createElement("select");
+  select.dataset.capability = capability.id;
+  select.className = "mode-select";
+  select.innerHTML = `
+    <option value="disabled">关闭</option>
+    <option value="resident">常驻</option>
+    <option value="on-demand">按需</option>
+  `;
+
+  row.append(copy, select);
+  capabilitiesEl.append(row);
 }
 
-for (const module of pack.modules) addCheck(modulesEl, module.id, module.label, module.description);
-for (const expert of pack.experts) addCheck(expertsEl, expert.id, expert.label, expert.strengths.join(" · "));
+for (const expert of pack.experts) {
+  const row = document.createElement("div");
+  row.className = "setting-row";
 
-function selected(container: HTMLElement) {
-  return [...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked')].map(x => x.value);
+  const copy = document.createElement("div");
+  copy.className = "setting-copy";
+  copy.innerHTML = `<strong>${expert.label}</strong><code>${expert.id}</code><div class="muted">${expert.strengths.join(" · ")}${expert.caution ? `｜注意：${expert.caution}` : ""}</div>`;
+
+  const select = document.createElement("select");
+  select.dataset.expert = expert.id;
+  select.className = "mode-select";
+  select.innerHTML = `
+    <option value="off">关闭</option>
+    <option value="primary">主镜头</option>
+    <option value="secondary">辅镜头</option>
+  `;
+
+  row.append(copy, select);
+  expertsEl.append(row);
+}
+
+function capabilitySelects() {
+  return [...capabilitiesEl.querySelectorAll<HTMLSelectElement>("select[data-capability]")];
+}
+
+function expertSelects() {
+  return [...expertsEl.querySelectorAll<HTMLSelectElement>("select[data-expert]")];
+}
+
+function selectedIdentity() {
+  return pack.identities.find((item) => item.id === identitySelect.value)!;
 }
 
 function applyRecommendations() {
-  const role = pack.roles.find(x => x.id === roleSelect.value)!;
-  modulesEl.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach(x => {
-    x.checked = role.recommendedModules.includes(x.value);
-  });
-  expertsEl.querySelectorAll<HTMLInputElement>('input[type="checkbox"]').forEach(x => {
-    x.checked = role.recommendedExperts.includes(x.value);
-  });
-  roleSummary.textContent = `${role.permissionSummary}｜主要风险：${role.risks.join("、")}`;
+  const identity = selectedIdentity();
+
+  for (const select of capabilitySelects()) select.value = "disabled";
+  for (const recommendation of identity.recommendedCapabilities) {
+    const select = capabilitySelects().find((item) => item.dataset.capability === recommendation.id);
+    if (select) select.value = recommendation.mode;
+  }
+
+  for (const select of expertSelects()) select.value = "off";
+  for (const recommendation of identity.recommendedExperts) {
+    const select = expertSelects().find((item) => item.dataset.expert === recommendation.id);
+    if (select) select.value = recommendation.weight;
+  }
+
+  const risks = identity.permissionProfile.risks.join("、") || "按当前情境判断";
+  identitySummary.textContent = `${identity.summary}｜权限档案：${identity.permissionProfile.id}｜主要风险：${risks}`;
 }
 
-function config(): ForgeConfig {
+function config(): CanonicalForgeConfig {
+  const identity = selectedIdentity();
+  const enabledForum = forumEnabled.checked;
+
   return {
     schemaVersion: 1,
-    worldPack: pack.id,
-    role: roleSelect.value,
-    modules: selected(modulesEl),
-    experts: selected(expertsEl),
-    legacyNotes: legacyNotes.checked,
-    omniscience: false,
-    hostFinalDecision: true,
-    sessionPatch: sessionPatch.value.trim()
+    worldPack: { id: pack.id, version: pack.version },
+    identity: {
+      id: identity.id,
+      permissionProfile: identity.permissionProfile.id
+    },
+    capabilities: capabilitySelects().map((select) => ({
+      id: select.dataset.capability as CanonicalForgeConfig["capabilities"][number]["id"],
+      mode: select.value as CapabilityMode
+    })),
+    experts: expertSelects()
+      .filter((select) => select.value !== "off")
+      .map((select) => ({
+        id: select.dataset.expert!,
+        weight: select.value as ExpertWeight
+      })),
+    travelerForum: {
+      enabled: enabledForum,
+      autoInject: (enabledForum ? forumPolicy.value : "off") as ForumInjectionPolicy,
+      showThreadLinks: enabledForum && showThreadLinks.checked,
+      minimumReliability: forumReliability.value as ForumReliability
+    },
+    runtime: {
+      tokenMode: tokenMode.value as TokenMode,
+      activationPolicy: "event-driven",
+      showEvidenceState: showEvidenceState.checked,
+      hostFinalDecision: true,
+      omniscience: false
+    },
+    sessionPatch: {
+      facts: [],
+      claims: [],
+      notes: sessionPatch.value.trim()
+    }
   };
 }
 
-roleSelect.addEventListener("change", applyRecommendations);
-document.querySelector("#auto")!.addEventListener("click", applyRecommendations);
-document.querySelector("#oneLine")!.addEventListener("click", () => output.textContent = generateOneLiner(config(), pack));
-document.querySelector("#compact")!.addEventListener("click", () => output.textContent = generateCompactPrompt(config(), pack));
-document.querySelector("#manifest")!.addEventListener("click", () => output.textContent = generateManifest(config()));
+function renderCompact() {
+  output.textContent = generateCanonicalCompactPrompt(config(), pack);
+}
+
+identitySelect.addEventListener("change", () => {
+  applyRecommendations();
+  renderCompact();
+});
+document.querySelector("#auto")!.addEventListener("click", () => {
+  applyRecommendations();
+  renderCompact();
+});
+document.querySelector("#oneLine")!.addEventListener("click", () => {
+  output.textContent = generateCanonicalOneLiner(config(), pack);
+});
+document.querySelector("#compact")!.addEventListener("click", renderCompact);
+document.querySelector("#manifest")!.addEventListener("click", () => {
+  output.textContent = generateCanonicalManifest(config());
+});
 
 applyRecommendations();
-output.textContent = generateCompactPrompt(config(), pack);
+renderCompact();
