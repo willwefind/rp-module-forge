@@ -53,7 +53,7 @@ export const ancientChinaAgendas: AgendaDefinition[] = [
     id: "pleasure-and-stability",
     label: "享乐 / 富贵闲人路线",
     kind: "leisure",
-    summary: "目标不是最大化政绩，而是在不把自身安全、资产、继承与基本秩序炸掉的前提下尽量享受生活。",
+    summary: "把享受生活本身当成正当目标，同时看清为了维持这种生活真正不能失去的安全、资源、关系与自由。",
     suggestedStartingIdentities: ["emperor", "heir", "regent-powerful-minister", "merchant"],
     capabilityOverlay: [
       { id: "readiness-logistics", mode: "on-demand" },
@@ -65,7 +65,72 @@ export const ancientChinaAgendas: AgendaDefinition[] = [
       { id: "su-shi", weight: "primary" },
       { id: "fan-li", weight: "secondary" }
     ],
-    focusQuestions: ["你真正想享受的是什么，而不是别人替你定义的富贵？", "怎样的享乐成本会反过来毁掉自由和安全？"]
+    focusQuestions: ["你真正想享受的是什么，而不是别人替你定义的富贵？", "怎样的代价会反过来毁掉这份自由和舒服？"],
+    identityFacets: [
+      {
+        identities: ["emperor", "heir", "regent-powerful-minister"],
+        summary: "不把治理成就当人生唯一目标；在不让人身安全、权力交接、财政与身边关系失控的前提下，为自己保留真正想过的生活。",
+        focusQuestions: ["哪些责任必须有人接住，才能让你真的有闲？", "哪些享乐会制造新的财政、继承或宫廷风险？"],
+        expertOverlay: [
+          { id: "su-shi", weight: "primary" },
+          { id: "fan-li", weight: "secondary" }
+        ]
+      },
+      {
+        identities: ["general", "local-official"],
+        summary: "不把职位表现当人生全部；在不让职责失守、人身与家计被拖垮的前提下，争取可持续的休息、爱好、亲友和生活空间。",
+        focusQuestions: ["哪些职责必须亲自守，哪些可以合理交接？", "你想保住的生活会不会被职位风险随时吞掉？"],
+        expertOverlay: [
+          { id: "su-shi", weight: "primary" },
+          { id: "tao-yuanming", weight: "secondary" }
+        ]
+      },
+      {
+        identities: ["merchant"],
+        summary: "让赚钱服务于生活，而不是让生意吞掉生活；在不掏空本钱、信用和退路的前提下安排消费、闲暇、旅行、收藏与人情。",
+        focusQuestions: ["你赚到什么程度才算够，而不是永远再多一点？", "哪些享受在消耗现金，哪些其实在消耗信用或自由？"],
+        expertOverlay: [
+          { id: "fan-li", weight: "primary" },
+          { id: "su-shi", weight: "secondary" }
+        ]
+      },
+      {
+        identities: ["scholar"],
+        summary: "不把功名和声誉当唯一正事；在生计、名声与现实责任允许的范围里，为读书、交游、山水、酒食、写作与闲暇留位置。",
+        focusQuestions: ["你想要的是功名带来的生活，还是那种生活本身？", "哪些名声与人情会把闲适重新变成另一种差事？"],
+        expertOverlay: [
+          { id: "su-shi", weight: "primary" },
+          { id: "li-qingzhao", weight: "secondary" }
+        ]
+      },
+      {
+        identities: ["commoner"],
+        label: "享乐 / 小日子路线",
+        summary: "不把“活着”压缩成只剩劳作和避祸；在有限钱粮、时间和家庭责任里，争取能反复拥有的休息、吃喝、节庆、爱好、朋友与舒服日子。",
+        focusQuestions: ["哪一种快乐最便宜、最稳定、最不容易被夺走？", "为了这一点舒服，你真正愿意拿多少时间、钱粮或人情去换？"],
+        expertOverlay: [
+          { id: "su-shi", weight: "primary" },
+          { id: "li-qingzhao", weight: "secondary" }
+        ]
+      },
+      {
+        identities: ["servant"],
+        label: "偷得浮生 / 小日子路线",
+        summary: "不默认你要上进、夺权或立功。目标就是在极低正式权限下，尽量争取属于自己的睡眠、吃穿、小钱、朋友、爱好与可支配时间，同时别因为偷闲、擅动物品或失职把自己送进险局。",
+        focusQuestions: ["一天里真正属于你的时间有多少，怎样才能多保住一点？", "什么小享受不会留下明显把柄，也不会透支你明天的安全？"],
+        caution: "享乐不等于系统替宿主偷取主家财物、逃避明确差事或假定拥有自由支配权；所有行动仍按当前身份权限与本局事实判断。",
+        capabilityOverlay: [
+          { id: "readiness-logistics", mode: "on-demand" },
+          { id: "claim-action-consistency", mode: "on-demand" },
+          { id: "multiplex-relationship-graph", mode: "on-demand" },
+          { id: "red-team", mode: "on-demand" }
+        ],
+        expertOverlay: [
+          { id: "su-shi", weight: "primary" },
+          { id: "li-qingzhao", weight: "secondary" }
+        ]
+      }
+    ]
   },
   {
     id: "official-ascent",
@@ -184,7 +249,7 @@ export const ancientChinaAgendas: AgendaDefinition[] = [
     id: "retreat-and-seclusion",
     label: "归隐 / 辞官 / 退场路线",
     kind: "retirement",
-    summary: "把退出权力、重新安排资产与家人、选择落脚地、维持生计和降低被重新卷入的风险作为核心。",
+    summary: "离开当前高占用的位置或生活结构，把资产、家人、落脚地、生计和被重新卷入的风险一起安排好。",
     suggestedStartingIdentities: ["emperor", "heir", "regent-powerful-minister", "general", "local-official", "scholar", "merchant"],
     capabilityOverlay: [
       { id: "readiness-logistics", mode: "resident" },
@@ -196,8 +261,31 @@ export const ancientChinaAgendas: AgendaDefinition[] = [
       { id: "tao-yuanming", weight: "primary" },
       { id: "fan-li", weight: "secondary" }
     ],
-    focusQuestions: ["你是在辞去职位，还是要真正切断别人继续利用你的理由？", "退场后靠什么生活、保护谁、住在哪里？"],
-    caution: "归隐是发展目标，不自动撤销当前身份、债务、政治敌意或家庭责任。"
+    focusQuestions: ["你真正想退出的是什么：职位、关系、义务、危险，还是某种生活方式？", "退出以后靠什么生活、保护谁、住在哪里？"],
+    caution: "归隐是发展目标，不自动撤销当前身份、债务、政治敌意、依附关系或家庭责任。",
+    identityFacets: [
+      {
+        identities: ["emperor", "heir", "regent-powerful-minister", "general", "local-official"],
+        summary: "把退出权力、职位或高风险责任，与交接、资产、家人、生计和被重新卷入的风险一起安排。",
+        focusQuestions: ["你是在辞去职位，还是要真正切断别人继续利用你的理由？", "交接以后还有谁能把你重新拖回去？"]
+      },
+      {
+        identities: ["scholar", "merchant", "commoner"],
+        summary: "离开现在消耗你的职业、圈子或生活方式，重新安排住处、生计、家人、人情债与未来节奏。",
+        focusQuestions: ["你真正想摆脱的是哪一种消耗？", "换一种生活后，稳定收入、住处和家人安排靠什么接上？"]
+      },
+      {
+        identities: ["servant"],
+        label: "离开主家 / 换活法路线",
+        summary: "目标不是“辞官”，而是尽可能安全地离开当前依附关系或差事结构，寻找新的住处、生计、庇护与身份落点。",
+        focusQuestions: ["你现在有没有合法或现实可行的离开路径？", "离开主家后第一晚住哪、靠什么吃饭、谁可能追索你？"],
+        caution: "想离开不等于当前已经自由身；赎身、放籍、逃离、转卖或改换差事的现实条件必须按本局制度与证据分别判断。",
+        expertOverlay: [
+          { id: "tao-yuanming", weight: "primary" },
+          { id: "li-qingzhao", weight: "secondary" }
+        ]
+      }
+    ]
   },
   {
     id: "survive-and-protect",

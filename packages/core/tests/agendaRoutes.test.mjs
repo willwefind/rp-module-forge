@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveAgenda, resolveAgendaAssembly } from "../.test-dist/agendaRoutes.js";
+import {
+  resolveAgenda,
+  resolveAgendaAssembly,
+  resolveAgendaForIdentity
+} from "../.test-dist/agendaRoutes.js";
 import { normalizeCanonicalConfig } from "../.test-dist/canonicalNormalization.js";
+import { generateCanonicalCompactPrompt } from "../.test-dist/promptBuilder.js";
 
 function testPack() {
   return {
@@ -16,7 +21,8 @@ function testPack() {
     ],
     experts: [
       { id: "baseline-expert", label: "Baseline", strengths: [] },
-      { id: "power-expert", label: "Power", strengths: [] }
+      { id: "power-expert", label: "Power", strengths: [] },
+      { id: "leisure-expert", label: "Leisure", strengths: [] }
     ],
     identities: [
       {
@@ -67,6 +73,29 @@ function testPack() {
         expertOverlay: [{ id: "power-expert", weight: "primary" }],
         focusQuestions: ["What is the next real gate?"],
         caution: "Aspiration is not authority."
+      },
+      {
+        id: "leisure",
+        label: "Leisure",
+        kind: "leisure",
+        summary: "Generic wealthy leisure wording about succession and state order.",
+        suggestedStartingIdentities: [],
+        capabilityOverlay: [{ id: "readiness-logistics", mode: "on-demand" }],
+        expertOverlay: [{ id: "power-expert", weight: "primary" }],
+        focusQuestions: ["How do you preserve wealth?"],
+        identityFacets: [
+          {
+            identities: ["servant"],
+            label: "Small pleasures",
+            summary: "Protect rest, small comforts, friends and discretionary time.",
+            focusQuestions: ["How much time is actually yours?"],
+            capabilityOverlay: [
+              { id: "readiness-logistics", mode: "on-demand" },
+              { id: "red-team", mode: "on-demand" }
+            ],
+            expertOverlay: [{ id: "leisure-expert", weight: "primary" }]
+          }
+        ]
       },
       {
         id: "custom",
@@ -130,6 +159,39 @@ test("route primary expert demotes an unrelated baseline primary instead of pret
     { id: "baseline-expert", weight: "secondary" },
     { id: "power-expert", weight: "primary" }
   ]);
+});
+
+test("identity facet rescales route wording and replaces route overlays without changing the stable route id", () => {
+  const pack = testPack();
+  const resolved = resolveAgendaForIdentity(pack, "servant", "leisure");
+  const assembly = resolveAgendaAssembly(pack, "servant", "leisure");
+
+  assert.equal(resolved.id, "leisure");
+  assert.equal(resolved.label, "Small pleasures");
+  assert.equal(resolved.summary.includes("small comforts"), true);
+  assert.deepEqual(resolved.focusQuestions, ["How much time is actually yours?"]);
+  assert.deepEqual(resolved.expertOverlay, [{ id: "leisure-expert", weight: "primary" }]);
+  assert.equal(assembly.experts.some((item) => item.id === "power-expert"), false);
+  assert.equal(assembly.experts.find((item) => item.id === "leisure-expert").weight, "primary");
+  assert.equal(pack.identities[0].permissionProfile.id, "test:servant:v1");
+  assert.equal(pack.identities[0].permissionProfile.command.length, 0);
+});
+
+test("compact prompt uses the identity-scaled route instead of leaking high-status route wording", () => {
+  const pack = testPack();
+  const assembly = resolveAgendaAssembly(pack, "servant", "leisure");
+  const config = canonicalConfig({
+    agenda: { routeId: "leisure" },
+    capabilities: assembly.capabilities,
+    experts: assembly.experts
+  });
+  const prompt = generateCanonicalCompactPrompt(config, pack);
+
+  assert.equal(prompt.includes("Small pleasures"), true);
+  assert.equal(prompt.includes("Protect rest, small comforts, friends and discretionary time."), true);
+  assert.equal(prompt.includes("How much time is actually yours?"), true);
+  assert.equal(prompt.includes("succession and state order"), false);
+  assert.equal(config.identity.permissionProfile, "test:servant:v1");
 });
 
 test("no agenda preserves the identity playbook baseline", () => {

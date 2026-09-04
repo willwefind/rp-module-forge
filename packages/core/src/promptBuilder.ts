@@ -6,7 +6,7 @@ import type {
   WorldPack
 } from "./types.js";
 import { resolveCapabilityFacet, resolveIdentityPlaybook } from "./identityPlaybooks.js";
-import { resolveAgenda } from "./agendaRoutes.js";
+import { resolveAgendaForIdentity } from "./agendaRoutes.js";
 
 function resolved(config: ForgeConfig, pack: WorldPack) {
   return {
@@ -64,7 +64,7 @@ export function generateCanonicalOneLiner(
   const resolvedPlaybook = resolveIdentityPlaybook(pack, config.identity.id);
   const identity = resolvedPlaybook?.identity ?? pack.identities.find((item) => item.id === config.identity.id);
   const playbook = resolvedPlaybook?.playbook;
-  const agenda = resolveAgenda(pack, config.agenda?.routeId);
+  const agenda = resolveAgendaForIdentity(pack, config.identity.id, config.agenda?.routeId);
   const activeCapabilities = config.capabilities
     .filter((selection) => selection.mode !== "disabled")
     .map((selection) => {
@@ -78,7 +78,7 @@ export function generateCanonicalOneLiner(
   });
   const routeLabel = agenda?.label ?? config.agenda?.customGoal ?? "未指定长期路线";
 
-  return `$当前已装载【${pack.label}·${identity?.label ?? config.identity.id}辅助系统${playbook ? `｜${playbook.label}` : ""}】；发展路线：${routeLabel}；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。路线描述想去哪里，不改变当前身份权限；系统不凭空获得隐藏事实，最终裁决由宿主完成。`;
+  return `$当前已装载【${pack.label}·${identity?.label ?? config.identity.id}辅助系统${playbook ? `｜${playbook.label}` : ""}】；发展路线：${routeLabel}；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。路线会按当前身份尺度解释，但不改变当前身份权限；系统不凭空获得隐藏事实，最终裁决由宿主完成。`;
 }
 
 export function generateCanonicalCompactPrompt(
@@ -88,7 +88,7 @@ export function generateCanonicalCompactPrompt(
   const resolvedPlaybook = resolveIdentityPlaybook(pack, config.identity.id);
   const identity = resolvedPlaybook?.identity ?? pack.identities.find((item) => item.id === config.identity.id);
   const playbook = resolvedPlaybook?.playbook;
-  const agenda = resolveAgenda(pack, config.agenda?.routeId);
+  const agenda = resolveAgendaForIdentity(pack, config.identity.id, config.agenda?.routeId);
   const profile = identity?.permissionProfile;
 
   const capabilityLines = config.capabilities
@@ -170,8 +170,8 @@ export function generateCanonicalCompactPrompt(
     "2. 先区分事实、据称、推断、假设与未知，再进行分析。",
     "3. 任何取证或行动建议都必须先经过当前身份权限检查。",
     "4. 身份处境方案只改变默认组合、问题尺度与呈现，不授予任何权限。",
-    "5. 人生路线描述宿主想去哪里；它不能预支未来身份、职位、资源或权力。",
-    "6. 专家只是认知镜头；专家推荐随路线和事件变化，不接管宿主人格或决定。",
+    "5. 人生路线描述宿主想去哪里；路线可按当前身份缩放说明和推荐，但不能预支未来身份、职位、资源或权力。",
+    "6. 专家只是认知镜头；专家推荐随身份尺度、路线和事件变化，不接管宿主人格或决定。",
     "7. Traveler Forum 经验不得覆盖当前世界证据。",
     "8. hostFinalDecision = true：最终重大决定始终由宿主作出。",
     "9. 本局补丁不能削弱以上不变量。",

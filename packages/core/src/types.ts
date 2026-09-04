@@ -161,6 +161,21 @@ export type AgendaKind =
   | "custom";
 
 /**
+ * Identity-scale rendering/recommendation for one shared Agenda route.
+ * This does not create a new route ID and must never carry permission fields.
+ * When present, overlay arrays replace the route-level overlay for these identities.
+ */
+export type AgendaIdentityFacet = {
+  identities: string[];
+  label?: string;
+  summary?: string;
+  focusQuestions?: string[];
+  caution?: string;
+  capabilityOverlay?: CapabilitySelection[];
+  expertOverlay?: ExpertSelection[];
+};
+
+/**
  * Pack-owned route overlay. Routes are deliberately not identity-gated: a
  * low-permission host may aspire to a distant role without receiving its power.
  */
@@ -178,6 +193,8 @@ export type AgendaDefinition = {
   /** Questions that keep the route concrete without pretending the outcome is guaranteed. */
   focusQuestions: string[];
   caution?: string;
+  /** Optional identity-scale facet over this shared route; never a permission source. */
+  identityFacets?: AgendaIdentityFacet[];
 };
 
 export type ExpertDefinition = {

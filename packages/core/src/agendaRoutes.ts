@@ -1,6 +1,7 @@
 import {
   CORE_CAPABILITY_IDS,
   type AgendaDefinition,
+  type AgendaIdentityFacet,
   type CanonicalWorldPack,
   type CapabilitySelection,
   type ExpertSelection
@@ -21,6 +22,40 @@ export function resolveAgenda(
   return pack.agendas.find((item) => item.id === routeId) ?? null;
 }
 
+function resolveIdentityFacet(
+  agenda: AgendaDefinition,
+  identityId: string
+): AgendaIdentityFacet | null {
+  const matches = (agenda.identityFacets ?? []).filter((facet) => facet.identities.includes(identityId));
+  return matches.length === 1 ? matches[0] : null;
+}
+
+/**
+ * Resolve a shared route into the current identity's scale of life.
+ * The stable route ID is preserved and no permission data can be introduced here.
+ */
+export function resolveAgendaForIdentity(
+  pack: CanonicalWorldPack,
+  identityId: string,
+  routeId?: string
+): AgendaDefinition | null {
+  const agenda = resolveAgenda(pack, routeId);
+  if (!agenda) return null;
+
+  const facet = resolveIdentityFacet(agenda, identityId);
+  if (!facet) return agenda;
+
+  return {
+    ...agenda,
+    label: facet.label ?? agenda.label,
+    summary: facet.summary ?? agenda.summary,
+    focusQuestions: facet.focusQuestions ?? agenda.focusQuestions,
+    caution: facet.caution ?? agenda.caution,
+    capabilityOverlay: facet.capabilityOverlay ?? agenda.capabilityOverlay,
+    expertOverlay: facet.expertOverlay ?? agenda.expertOverlay
+  };
+}
+
 export function resolveAgendaAssembly(
   pack: CanonicalWorldPack,
   identityId: string,
@@ -30,7 +65,7 @@ export function resolveAgendaAssembly(
   if (!playbookResolution) return null;
 
   const { identity, playbook } = playbookResolution;
-  const agenda = resolveAgenda(pack, routeId);
+  const agenda = resolveAgendaForIdentity(pack, identityId, routeId);
 
   const baseCapabilities = playbook?.capabilityDefaults ?? identity.recommendedCapabilities;
   const capabilityById = new Map(baseCapabilities.map((item) => [item.id, { ...item }]));
