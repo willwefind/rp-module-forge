@@ -222,6 +222,30 @@ Date: 2026-09-04
 - **References:** `docs/CHARACTER_AGENDA_SPEC_V0.md`; CI run `33827763231`.
 - **Follow-up:** implement event-driven temporary expert activation, route-aware Traveler Forum applicability, route stages / milestones, accepted-RP identity transitions, and UI explanations for why each capability or expert is recommended.
 
+## 【第118次维护记录】奴婢想睡个好觉，不用先交继承方案。
+
+Date: 2026-09-04
+
+> 维护组刚把“你现在是谁”和“你想往哪里走”拆开，Dawn 就拿着网页抓到了下一层祖传味：奴婢选了【享乐】，Prompt 居然还在跟她谈“政绩、继承和基本秩序”。  
+> 原因很简单：路线虽然独立了，但路线说明仍是一份人人共用的模板。于是同一个“享乐”，皇帝背的是国库和继承，奴婢也被迫一起背。  
+> 这次新增 Agenda identity facet：路线 ID 仍然共用，但落到不同身份时，可以换成这个身份真正面对的生活尺度、焦点问题和专家/能力推荐。奴婢的享乐终于可以只是睡眠、吃穿、小钱、朋友、爱好和一点属于自己的时间。  
+>  
+> 【Sol 批注：奴婢想睡个好觉，不需要先提交王朝继承方案。】
+
+### Engineering record
+
+- **Category:** architecture correction / pack-content / validation
+- **Scope:** Core Agenda identity-facet contract and resolver, Prompt Builder, Ancient China leisure and retreat routes, Agenda regression tests, Agenda specification
+- **Problem:** a shared Agenda route could still carry high-status assumptions into low-permission output. The concrete failure was `servant + pleasure-and-stability`, whose compact Prompt inherited language about maximizing political achievement, succession and basic order even though those concepts were not the servant host's life scale.
+- **Decision:** add optional `AgendaIdentityFacet` data under a shared route. Exactly one matching facet may override route-facing label, summary, focus questions, caution, capability overlay and expert overlay. The stable `routeId` remains unchanged, and facets contain no permission fields. Zero matches use the shared route; ambiguous multiple matches fail closed to the shared route rather than using array order.
+- **Behavior change:** Ancient China `pleasure-and-stability` now resolves by identity scale. Servant leisure becomes 【偷得浮生 / 小日子路线】 with sleep, food, small money, friends, hobbies and discretionary time as the focus; its route experts are 苏轼 primary + 李清照 secondary. Commoner, scholar, merchant, officials/military and high-authority hosts receive different leisure framing. `retreat-and-seclusion` also gains identity scaling; servant retirement is presented as 【离开主家 / 换活法路线】 rather than “辞官”.
+- **Compatibility:** additive. Existing manifests still persist the same `agenda.routeId`; identity facets are pack-owned resolution data and require no manifest migration.
+- **Schema impact:** no `schemaVersion` bump. Adds optional `identityFacets` to `AgendaDefinition` through the new `AgendaIdentityFacet` contract.
+- **Privacy/security impact:** none to authority. Identity facets cannot grant or mutate permissions; route selection and route presentation remain subordinate to the current identity permission profile.
+- **Validation:** clean feature commit `ff32daec4632f9f7577c703f24f3471bf671b193` has the same code/test tree as pre-cleanup checkpoint `c533858b71bda5216681a2bbc872f92fd6f5de55`. GitHub Actions run `33829523781` passed frozen install, workspace typecheck, all Core tests and full build. A regression test now generates the compact Prompt and asserts that the servant-scale leisure text is used while high-status succession/state-order wording is absent.
+- **References:** `ff32daec4632f9f7577c703f24f3471bf671b193`; `docs/CHARACTER_AGENDA_SPEC_V0.md`; CI run `33829523781`.
+- **Follow-up:** make the Web route-preview/expert-hint panel read the same resolved identity facet, then extend identity-scale route fixtures where other shared routes reveal social-scale wording mismatches.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.

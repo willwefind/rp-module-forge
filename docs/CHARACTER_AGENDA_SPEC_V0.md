@@ -21,6 +21,8 @@ Two hosts with the same current identity may want completely different stories:
 
 Therefore expert recommendations and capability defaults MUST NOT be determined by identity alone.
 
+The inverse is also true: one shared route MUST NOT assume that every starting identity experiences that goal at the same scale. “Leisure” for an emperor may involve delegation, succession and fiscal exposure; “leisure” for a servant may mean sleep, food, small money, friends, hobbies and a little discretionary time without creating evidence of neglect or theft.
+
 ## 2. The four distinct axes
 
 ```text
@@ -71,17 +73,20 @@ V0.1 stores:
 
 `agenda` remains optional for birth-version / early V0.1 compatibility. New first-party Web manifests persist it.
 
+Identity-specific Agenda facets are pack data and are NOT persisted separately. They are deterministically resolved from the persisted `routeId` plus current canonical identity.
+
 ## 5. Route ownership
 
-World packs own route labels, examples, route-specific capability overlays, and route-specific expert recommendations.
+World packs own route labels, examples, route-specific capability overlays, route-specific expert recommendations, and optional identity-scale Agenda facets.
 
 Core owns:
 
-- the generic `AgendaSelection` and `AgendaDefinition` contracts;
+- the generic `AgendaSelection`, `AgendaDefinition`, and `AgendaIdentityFacet` contracts;
 - deterministic route lookup;
+- deterministic identity-facet resolution;
 - deterministic combination of identity-playbook defaults with route overlays;
 - validation that a persisted route exists in the loaded pack;
-- the invariant that route data is not a permission source.
+- the invariant that route or route-facet data is not a permission source.
 
 ## 6. No hard identity eligibility gate
 
@@ -97,11 +102,13 @@ V0.1 recommendation order:
 
 1. resolve the current identity;
 2. resolve its Identity Playbook, if any;
-3. take playbook capability / expert defaults (or identity defaults when no playbook exists);
-4. overlay the selected Agenda route;
-5. preserve current permission profile unchanged;
-6. allow the user to manually edit the resulting capability modes and expert weights;
-7. at runtime, a current event may later request temporary capability or expert activation without rewriting the long-term Agenda.
+3. resolve the selected Agenda route;
+4. if exactly one Agenda identity facet matches the current identity, resolve that facet over the shared route;
+5. take playbook capability / expert defaults (or identity defaults when no playbook exists);
+6. overlay the resolved Agenda capability / expert recommendations;
+7. preserve current permission profile unchanged;
+8. allow the user to manually edit the resulting capability modes and expert weights;
+9. at runtime, a current event may later request temporary capability or expert activation without rewriting the long-term Agenda.
 
 ### 7.1 Capability overlay
 
@@ -119,6 +126,44 @@ An Agenda may promote different experts for the same identity. When a route intr
 
 Manual user selection still wins after recommendation restoration.
 
+### 7.3 Identity-scaled Agenda facets
+
+A shared route may still contain language or recommendations that only make sense at one social scale. Packs MAY therefore attach `identityFacets` to a route.
+
+An Agenda identity facet may override:
+
+- user-facing route label;
+- route summary;
+- focus questions;
+- caution text;
+- route capability overlay;
+- route expert overlay.
+
+It MUST NOT contain or mutate permission data.
+
+The stable route ID remains unchanged. A servant and an emperor can both persist:
+
+```json
+{ "routeId": "pleasure-and-stability" }
+```
+
+but the resolved route presentation may differ.
+
+Example:
+
+```text
+Emperor + pleasure-and-stability
+  focus: delegation, fiscal exposure, succession, court risk, protected leisure
+
+Servant + pleasure-and-stability
+  focus: sleep, food, small money, friends, hobbies, discretionary time,
+         avoiding punishment for neglect or unauthorized use of property
+```
+
+If zero facets match, Core uses the shared route definition. If more than one facet matches the same identity, V0.1 MUST fail closed to the shared route rather than choosing by array order.
+
+This layer exists to remove social-scale assumptions from routes without creating one route ID per identity.
+
 ## 8. Expert routing examples
 
 Same identity, different routes:
@@ -129,12 +174,14 @@ Same identity, different routes:
 | Emperor | 铁腕 / 暴君叙事 | 孙武 primary; 管仲 secondary |
 | Emperor | 享乐 / 富贵闲人 | 苏轼 primary; 范蠡 secondary |
 | Emperor | 归隐 / 退场 | 陶渊明 primary; 范蠡 secondary |
+| Servant | 享乐 / 小日子 | 苏轼 primary; 李清照 secondary |
 | Servant | 入仕上升 | 张居正 primary; 王阳明 secondary |
 | Servant | 从军掌兵 | 戚继光 primary; 孙武 secondary |
 | Servant | 宫斗 / 宅斗 | 武则天 primary; 王阳明 secondary |
 | Servant | 经商致富 | 范蠡 primary; 管仲 secondary |
 | Servant | 诗文书画 | 苏轼 primary; 顾恺之 / 李清照 secondary |
 | Servant | 夺权称帝 | 孙武 primary; 武则天 secondary |
+| Servant | 离开主家 / 换活法 | 陶渊明 primary; 李清照 secondary |
 
 These are cognitive lenses, not summoned personas and not guarantees of success.
 
@@ -145,14 +192,14 @@ The first-party pack currently seeds:
 - `open-road` — 未定路线 / 先活着看看
 - `benevolent-rule` — 明君 / 治世路线
 - `iron-rule` — 铁腕统治 / 暴君叙事
-- `pleasure-and-stability` — 享乐 / 富贵闲人路线
+- `pleasure-and-stability` — 享乐 / 富贵闲人路线, with identity-scale facets
 - `official-ascent` — 科举 / 入仕 / 官场上升
 - `military-ascent` — 从军 / 掌兵 / 将领路线
 - `throne-seeking` — 夺权 / 称帝路线
 - `court-household-struggle` — 宫斗 / 宅斗 / 内廷权力
 - `commerce-wealth` — 经商 / 致富 / 产业路线
 - `arts-and-letters` — 诗人 / 画家 / 文艺路线
-- `retreat-and-seclusion` — 归隐 / 辞官 / 退场路线
+- `retreat-and-seclusion` — 归隐 / 辞官 / 退场路线, with identity-scale facets
 - `survive-and-protect` — 求生 / 保家 / 先别死
 - `custom` — 自定义路线
 
@@ -193,9 +240,13 @@ Future forum records may include route / goal applicability, but route tags MUST
 ## 13. Acceptance tests
 
 - the same identity can select multiple routes with different expert recommendations;
+- the same stable route can resolve to different identity-scale wording and recommendation overlays;
+- an identity facet preserves the stable route ID and cannot alter permission profile;
+- ambiguous multiple identity-facet matches fall back to the shared route rather than array-order guessing;
 - route selection never mutates identity permission profile;
 - a low-permission identity may select a high-ambition route without acquiring high-permission actions;
 - an emperor can select a low-power / retirement / artistic route without the system forcing governance as the sole objective;
+- a servant selecting leisure is not described in terms of maximizing political achievement, succession or state order;
 - unknown persisted route IDs fail canonical normalization;
 - custom route goal text is trimmed and preserved;
 - route overlays preserve stable Core capability IDs;
