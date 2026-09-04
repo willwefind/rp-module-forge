@@ -14,7 +14,7 @@ const pack = {
     { id: "readiness-logistics", label: "烽燧图", description: "test" },
     { id: "plural-stakeholder-signals", label: "民声池", description: "test" },
     { id: "red-team", label: "御前反对席", description: "test" },
-    { id: "curated-practitioner-knowledge", label: "老乡遗言库", description: "test" }
+    { id: "curated-practitioner-knowledge", label: "老乡经验库", description: "test" }
   ],
   identities: [
     {

@@ -54,6 +54,7 @@ app.innerHTML = `
     <section class="hero">
       <div class="muted">公开预览 V0.1 · ${pack.label} · 当前界面语言：简体中文</div>
       <h1>RP Module Forge</h1>
+      <p><a href="${import.meta.env.BASE_URL}prototypes/forum-first-concept-v3.html">🏮 返回天道降维互助论坛 · V3 试玩版</a></p>
       <p>给文字角色扮演装配可移植的角色辅助系统。身份回答“你现在是谁、能做什么”，发展路线回答“你想往哪里走”；同一个开局，也可以拥有完全不同的人生。</p>
     </section>
 
@@ -154,7 +155,7 @@ app.innerHTML = `
             <div id="forumThreads" class="forum-list"></div>
           </div>
           <div>
-            <div class="forum-subhead">当前装配可检索的【老乡遗言库】</div>
+            <div class="forum-subhead">当前装配可检索的【老乡经验库】</div>
             <div class="muted forum-help">这是检索候选预览。发展路线目前还没有进入论坛适用性筛选；现阶段仍按身份、能力与可靠度匹配。</div>
             <div id="forumCurated" class="forum-list"></div>
           </div>

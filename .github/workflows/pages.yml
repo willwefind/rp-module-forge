@@ -38,7 +38,7 @@ jobs:
       - name: Publish standalone HTML prototypes
         run: |
           mkdir -p apps/web/dist/prototypes
-          cp prototypes/*.html apps/web/dist/prototypes/
+          cp -R prototypes/. apps/web/dist/prototypes/
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

@@ -28,7 +28,7 @@ export const ancientChinaPackV01: CanonicalWorldPack = {
     { id: "readiness-logistics", label: "烽燧图", description: "区分名义规模、可调动规模、有效能力、补给、时间与路线约束。" },
     { id: "plural-stakeholder-signals", label: "民声池", description: "保留不同群体、地区、渠道与时间上的冲突信号，不生成万能民心值。" },
     { id: "red-team", label: "御前反对席", description: "从对手、执行层、后勤、激励与意外后果角度攻击方案；不替宿主作决定。" },
-    { id: "curated-practitioner-knowledge", label: "老乡遗言库", description: "调用经过审校、适用边界明确的 Traveler Forum 经验，不把轶事当当前世界事实。" }
+    { id: "curated-practitioner-knowledge", label: "老乡经验库", description: "调用经过审校、适用边界明确的 Traveler Forum 经验，不把轶事当当前世界事实。" }
   ],
   identities: [
     {

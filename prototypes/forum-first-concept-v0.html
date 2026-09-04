@@ -561,7 +561,7 @@
       <button data-tab="latest">最新</button>
       <button data-tab="featured">精华</button>
       <button data-tab="modules">模块仓</button>
-      <button data-tab="legacy">老乡遗言库</button>
+      <button data-tab="legacy">老乡经验库</button>
       <button data-tab="maintainer">维护组</button>
     </nav>
   </header>
@@ -698,7 +698,7 @@
       {node:'merchant', tab:'featured', type:'案例', tone:'good', title:'粮道不是一条路，是一串会翻脸的人：商队版本复盘', author:'匿名老乡 311', tags:['#商贾','#路线','#关系网'], replies:26, views:1760, time:'2 小时前', featured:true},
       {node:'ordinary', tab:'latest', type:'求助', tone:'warn', title:'家里只够撑六个月：是先修屋顶、存粮，还是送孩子去学手艺？', author:'匿名老乡 633', tags:['#普通人','#家计','#避险'], replies:53, views:2416, time:'2 小时前'},
       {node:'household', tab:'latest', type:'争论', tone:'warn', title:'宫斗里“知道得多”到底是优势还是死亡倒计时？维护组吵了三页还没吵完', author:'匿名老乡 166', tags:['#宫斗','#信息','#暴露风险'], replies:112, views:6690, time:'3 小时前'},
-      {node:'survival', tab:'legacy', type:'遗言库', tone:'good', title:'【老乡遗言库】低权限角色先守住“可否认性”，不要把每一次观察都变成公开立场', author:'维护组整理', tags:['#奴婢','#低权限','#已审核'], replies:0, views:3980, time:'昨日', featured:true},
+      {node:'survival', tab:'legacy', type:'遗言库', tone:'good', title:'【老乡经验库】低权限角色先守住“可否认性”，不要把每一次观察都变成公开立场', author:'维护组整理', tags:['#奴婢','#低权限','#已审核'], replies:0, views:3980, time:'昨日', featured:true},
       {node:'notice', tab:'maintainer', type:'维护', tone:'danger', title:'【第118次维护记录】奴婢想睡个好觉，不用先交继承方案。', author:'穿越者老乡维护组', tags:['#维护记录','#人生路线'], replies:12, views:504, time:'今日 10:31', maintainer:true},
       {node:'notice', tab:'maintainer', type:'维护', tone:'danger', title:'【第117次维护记录】户籍是起点，不是人生判决书。', author:'穿越者老乡维护组', tags:['#维护记录','#专家镜头'], replies:15, views:611, time:'今日 10:05', maintainer:true},
       {node:'official', tab:'modules', type:'模块发布', tone:'module', title:'【地方官到任前三十天别把自己作死包 v23】账、人、粮、民声、上峰五线并看', author:'匿名老乡 203', tags:['#地方官','#到任','#模块'], replies:73, views:4918, time:'昨日', module:true, featured:true},
@@ -714,7 +714,7 @@
     const nodeLabels = {
       all:'首页', notice:'天道公告', emperor:'皇帝专区', official:'官场与地方', military:'军旅与边关', merchant:'商贾与行旅', arts:'士林与文艺', ordinary:'普通人生', survival:'低权限求生', household:'宫廷与家宅'
     };
-    const tabLabels = {latest:'最新主题', featured:'精华', modules:'模块仓', legacy:'老乡遗言库', maintainer:'维护组'};
+    const tabLabels = {latest:'最新主题', featured:'精华', modules:'模块仓', legacy:'老乡经验库', maintainer:'维护组'};
 
     function rowHtml(topic) {
       const toneClass = topic.tone === 'module' ? 'module' : topic.tone;
