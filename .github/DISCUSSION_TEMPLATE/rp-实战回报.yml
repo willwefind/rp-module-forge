@@ -1,0 +1,103 @@
+title: "[实战回报] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎回来报平安，也欢迎来写血泪史。成功与失败都很有价值。
+        这是一条真实 GitHub Discussion；是否进入产品论坛、以什么署名进入，会单独审核。
+  - type: input
+    id: world
+    attributes:
+      label: 世界域 / 世界包
+      description: 例如「东方古代 → 架空王朝」。尚未开放或自定义世界也可以直接写。
+      placeholder: 东方古代 → 架空王朝
+    validations:
+      required: true
+  - type: input
+    id: identity
+    attributes:
+      label: 开局身份 / 当前身份
+      placeholder: 例如：奴婢、地方官、商贾、皇帝……
+    validations:
+      required: true
+  - type: input
+    id: agenda
+    attributes:
+      label: 发展路线 / 长期目标
+      description: 没想好也可以写「未定」。
+      placeholder: 例如：小日子、入仕、从军、归隐……
+    validations:
+      required: true
+  - type: textarea
+    id: situation
+    attributes:
+      label: 发生了什么
+      description: 请写清楚关键情境、你当时掌握的信息，以及实际采取的行动。
+      placeholder: 从这里开始讲你的这局……
+    validations:
+      required: true
+  - type: textarea
+    id: worked
+    attributes:
+      label: 哪些东西真的有用
+      description: 模块、能力、专家镜头、论坛经验，或者你自己的临场判断都可以。
+  - type: textarea
+    id: failed
+    attributes:
+      label: 哪些地方翻车了 / 不适用
+      description: 如果某条经验只在特定身份、地区、制度或阶段有效，也请写出来。
+  - type: textarea
+    id: lesson
+    attributes:
+      label: 你最想留给后来者的一句话
+      description: 可以很短，也可以是一段完整复盘。
+  - type: dropdown
+    id: import_consent
+    attributes:
+      label: 是否愿意未来被整理进产品论坛
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定是否整理
+        - 不愿意，仅留在 GitHub Discussions
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 如果进入产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+      description: 只有上一项选择「自定义署名」时需要填写；进入产品论坛前会做轻量审核。
+      placeholder: 例如：南梁·跑路失败三次的账房先生
+  - type: dropdown
+    id: wording_consent
+    attributes:
+      label: 如果获准整理，是否允许尽量保留你的原文语气
+      options:
+        - 可以，尽量保留我的原文措辞与语气
+        - 可以整理，但请只保留事实与核心意思
+        - 不适用，因为我不希望进入产品论坛
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道这条 Discussion 会公开显示我的 GitHub 账号；论坛署名不会抹掉真实来源与 provenance。
+          required: true

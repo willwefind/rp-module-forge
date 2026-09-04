@@ -1,0 +1,90 @@
+title: "[模块投稿] "
+body:
+  - type: input
+    id: module_name
+    attributes:
+      label: 模块名称
+      placeholder: 可以很正经，也可以很老乡论坛。
+    validations:
+      required: true
+  - type: input
+    id: target_world
+    attributes:
+      label: 目标世界域 / 世界包
+      placeholder: 例如：东方古代 → 架空王朝
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: 它解决什么问题
+      description: 适合哪些身份 / 路线 / 情境？哪些情况明确不适合？
+    validations:
+      required: true
+  - type: textarea
+    id: assembly
+    attributes:
+      label: 能力 / 专家 / 论坛经验怎么组合
+      description: 不需要懂代码，用自然语言讲清楚模块想做什么即可。
+    validations:
+      required: true
+  - type: textarea
+    id: permission_risk
+    attributes:
+      label: 权限与误用风险
+      description: 请特别说明它会不会偷偷假设宿主拥有更高权限、更多资源或全知信息。
+    validations:
+      required: true
+  - type: textarea
+    id: artifact
+    attributes:
+      label: 现有材料（可选）
+      description: 可以贴 Prompt、JSON、仓库链接、截图说明、测试记录或原型。
+  - type: dropdown
+    id: import_consent
+    attributes:
+      label: 是否愿意进入模块审核 / 产品论坛
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定
+        - 只想讨论，不希望进入产品模块仓
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 如果进入产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+  - type: dropdown
+    id: wording_consent
+    attributes:
+      label: 如果获准整理，是否允许尽量保留你的原文语气
+      options:
+        - 可以，尽量保留我的原文措辞与语气
+        - 可以整理，但请只保留事实与核心意思
+        - 不适用，因为我不希望进入产品论坛
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道这条投稿首先是一条公开 GitHub Discussion；任何产品内导入都需要额外审核与 provenance。
+          required: true

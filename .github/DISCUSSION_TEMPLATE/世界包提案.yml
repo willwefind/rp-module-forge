@@ -1,0 +1,96 @@
+title: "[世界包提案] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这里收新的世界域 / 世界包提案。请尽量说明它为什么需要自己的规则，而不只是现有世界包的换皮标签。
+  - type: input
+    id: realm
+    attributes:
+      label: 世界域
+      description: 例如：东方古代、西方幻想、未来科幻；也可以提议新的世界域。
+      placeholder: 例如：东方古代
+    validations:
+      required: true
+  - type: input
+    id: pack_name
+    attributes:
+      label: 世界包名称
+      placeholder: 例如：武侠江湖 / 修仙宗门
+    validations:
+      required: true
+  - type: textarea
+    id: premise
+    attributes:
+      label: 这个世界包的核心体验是什么
+      description: 写清楚世界规则、典型冲突、角色会真正关心什么。
+    validations:
+      required: true
+  - type: textarea
+    id: ontology
+    attributes:
+      label: 它有哪些独立的身份、权力、资源或社会规则
+      description: 例如宗门层级、武林声望、舰队权限、魔法资源、企业身份等。
+    validations:
+      required: true
+  - type: textarea
+    id: separate_reason
+    attributes:
+      label: 为什么它应该是独立 World Pack，而不是现有 Pack 的标签
+      description: 如果只是视觉变化或少量术语变化，可能不需要拆成新世界包。
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: 示例身份 / 路线 / 模块 / 专家
+      description: 不必完整，先给几组最能说明这个世界特色的例子。
+  - type: dropdown
+    id: import_consent
+    attributes:
+      label: 是否愿意未来被整理进产品论坛
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定是否整理
+        - 不愿意，仅留在 GitHub Discussions
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 如果进入产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+      placeholder: 例如：第三次申请去魔法世界仍被驳回的预备役
+  - type: dropdown
+    id: wording_consent
+    attributes:
+      label: 如果获准整理，是否允许尽量保留你的原文语气
+      options:
+        - 可以，尽量保留我的原文措辞与语气
+        - 可以整理，但请只保留事实与核心意思
+        - 不适用，因为我不希望进入产品论坛
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道这条 Discussion 会公开显示我的 GitHub 账号；论坛署名不会抹掉真实来源与 provenance。
+          required: true

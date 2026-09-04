@@ -1,0 +1,98 @@
+title: "[经验复现 / 勘误] "
+body:
+  - type: input
+    id: source_thread
+    attributes:
+      label: 你在评议哪篇档案帖 / 模块 / 经验
+      description: 最好贴标题或链接。
+      placeholder: 标题或 URL
+    validations:
+      required: true
+  - type: dropdown
+    id: relation
+    attributes:
+      label: 这次属于哪一种
+      options:
+        - 我复现成功了
+        - 部分成功 / 有条件成立
+        - 我遇到了反例
+        - 事实或引用勘误
+        - 适用范围需要收窄
+        - 我有补充材料
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: world_context
+    attributes:
+      label: 世界 / 身份 / 路线背景
+      placeholder: 例如：架空王朝 · 商贾 · 经商致富
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 你具体怎么复现 / 遇到反例的
+      description: 请尽量写清楚前提、过程和结果。
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: 你建议怎样修改原经验
+      description: 可以是补条件、改表述、标记冲突，或者明确「这条不能泛化」。
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 可补充的证据 / 对照（可选）
+      description: RP 记录、截图、版本、相关帖子、资料来源都可以。
+  - type: dropdown
+    id: import_consent
+    attributes:
+      label: 是否愿意这次复现 / 勘误被整理进产品论坛
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定
+        - 不愿意，仅留在 GitHub Discussions
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 如果进入产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+  - type: dropdown
+    id: wording_consent
+    attributes:
+      label: 如果获准整理，是否允许尽量保留你的原文语气
+      options:
+        - 可以，尽量保留我的原文措辞与语气
+        - 可以整理，但请只保留事实与核心意思
+        - 不适用，因为我不希望进入产品论坛
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道这条 Discussion 是公开来源；反应数与热度不会自动改变经验库可靠度。
+          required: true

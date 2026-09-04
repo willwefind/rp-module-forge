@@ -1,0 +1,76 @@
+title: "[反馈] "
+body:
+  - type: dropdown
+    id: feedback_type
+    attributes:
+      label: 这是什么类型的反馈
+      options:
+        - Bug / 明显错误
+        - UI / 布局 / 视觉
+        - 交互 / 使用流程
+        - 论坛内容 / 世界观
+        - 模块 / Prompt / 适配逻辑
+        - 无障碍 / 可读性
+        - 文档
+        - 新点子 / 其他
+    validations:
+      required: true
+  - type: input
+    id: surface
+    attributes:
+      label: 发生在哪个页面 / 功能
+      placeholder: 例如：Forum V3、本局档案切换、模块工坊……
+  - type: textarea
+    id: actual
+    attributes:
+      label: 你看到了什么 / 遇到了什么
+      description: 如果是 Bug，请尽量写出复现步骤；如果是点子，直接讲你希望发生什么也可以。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你原本期待什么
+  - type: input
+    id: environment
+    attributes:
+      label: 设备 / 浏览器（如相关）
+      placeholder: 例如：iPhone Safari、Windows Chrome……
+  - type: dropdown
+    id: import_consent
+    attributes:
+      label: 如果这条反馈很适合成为公开论坛案例，是否允许维护组整理
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定
+        - 不愿意，仅作为产品反馈
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 若被整理进产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道 GitHub Discussion 是公开来源；若被整理进产品论坛，仍会保留可追溯 provenance。
+          required: true

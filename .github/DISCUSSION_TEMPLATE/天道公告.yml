@@ -1,0 +1,45 @@
+title: "[天道公告] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        维护组公告模板。公告可以讲人话，但重要迁移 / 兼容性 / 行为变化请写清楚。
+  - type: dropdown
+    id: announcement_type
+    attributes:
+      label: 公告类型
+      options:
+        - 产品更新
+        - 维护记录
+        - 兼容 / 迁移
+        - 社区规则
+        - 世界包开放 / 调整
+        - 临时故障 / 已知问题
+        - 其他
+    validations:
+      required: true
+  - type: input
+    id: scope
+    attributes:
+      label: 影响范围
+      placeholder: 例如：全部用户 / 架空王朝 / 模块工坊 / GitHub Discussions
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 公告正文
+      description: 先说发生了什么，再说为什么。
+    validations:
+      required: true
+  - type: textarea
+    id: action
+    attributes:
+      label: 用户需要做什么
+      description: 如果什么都不用做，也请明确写「无需操作」。
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: 相关链接 / Commit / 维护记录（可选）

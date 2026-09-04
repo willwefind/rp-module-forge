@@ -1,0 +1,69 @@
+title: "[求助] "
+body:
+  - type: dropdown
+    id: question_area
+    attributes:
+      label: 你在问哪一类问题
+      options:
+        - 怎么使用论坛 / 模块工坊
+        - 身份 / 路线 / 权限逻辑
+        - 模块 / Prompt / 导出
+        - 世界包 / 论坛内容
+        - 贡献 / 投稿 / 署名
+        - 开发 / GitHub
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 你的问题
+      description: 直接讲，不需要先懂术语。
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: 你已经试过什么（可选）
+  - type: input
+    id: related
+    attributes:
+      label: 相关页面 / 帖子 / 模块（可选）
+  - type: dropdown
+    id: faq_consent
+    attributes:
+      label: 如果这段问答对后来者也有帮助，是否允许整理进公开 FAQ / 产品论坛
+      options:
+        - 愿意，可以进入维护组审核
+        - 可以先联系我确认，再决定
+        - 不愿意，仅保留本 Discussion
+    validations:
+      required: true
+  - type: dropdown
+    id: forum_signature
+    attributes:
+      label: 若被整理进产品论坛，希望使用什么署名
+      options:
+        - 匿名老乡 · 随机编号
+        - 穿越者预备役 · 随机编号
+        - 在途穿越者 · 随机编号
+        - 职业穿越者 · 随机编号
+        - 时空总局·外勤员 · 随机编号
+        - 时空总局·档案员 · 随机编号
+        - 时空总局·后勤员 · 随机编号
+        - 模块维修工 · 随机编号
+        - 自定义署名（请填写下一项）
+        - 直接使用 GitHub 用户名
+    validations:
+      required: true
+  - type: input
+    id: custom_signature
+    attributes:
+      label: 自定义论坛署名（可选）
+  - type: checkboxes
+    id: public_source
+    attributes:
+      label: 公开来源确认
+      options:
+        - label: 我知道 GitHub Discussion 是公开的；若被整理进产品论坛，仍会保留来源可追溯性。
+          required: true
