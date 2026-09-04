@@ -246,6 +246,30 @@ Date: 2026-09-04
 - **References:** `ff32daec4632f9f7577c703f24f3471bf671b193`; `docs/CHARACTER_AGENDA_SPEC_V0.md`; CI run `33829523781`.
 - **Follow-up:** make the Web route-preview/expert-hint panel read the same resolved identity facet, then extend identity-scale route fixtures where other shared routes reveal social-scale wording mismatches.
 
+## 【第119次维护记录】数据库可以讲机器话，门口牌匾别中英夹生。
+
+Date: 2026-09-04
+
+> Dawn 刷了一圈装配台，又发现一个很朴素的问题：维护组这两天修权限、修人生路线修得起劲，界面却一会儿 Runtime、一会儿 Canonical、一会儿中文，像三拨老乡共用一块牌匾。  
+> 于是 V0.1 先把简体中文版本做好：按钮、状态、论坛标签、路线说明、专家提示和人读的提示词统一讲简中；稳定 ID 和 JSON 字段继续留在机器契约里，不拿内部户籍号追着普通老乡跑。繁中和英文等产品术语稳定后，再从同一套语义一次性同步。  
+> 顺手，维护组自己的故事也搬进了 Forge。网页不另抄一份日志，而是构建时直接从这份 `MAINTAINER_LOG.md` 抽取每条故事层；以后新写一条，网页就跟着多一条。  
+>  
+> 【Sol 批注：数据库可以讲机器话，门口牌匾别一半中文一半英文。】
+
+### Engineering record
+
+- **Category:** feature / presentation / docs / integration
+- **Scope:** primary Web App, Simplified Chinese presentation labels, canonical human prompt output, identity-scaled route/expert hints, maintainer lore feed, localization policy
+- **Problem:** the primary Web surface mixed Simplified Chinese product copy with internal English enum values, stable IDs and engineering terms. The route recommendation logic had already become identity-scaled, but some Web expert hints still read the unscaled route definition. Maintainer lore also existed only in repository documentation despite being useful product history.
+- **Decision:** treat Simplified Chinese (`zh-CN`) as the V0.1 source product locale. Keep canonical IDs and JSON fields language-neutral, but hide them from ordinary product copy. Localize current enum/status presentation and canonical human-readable prompts. Make Web route/expert hints call the same identity-scaled Agenda resolver used by assembly and prompt output. Derive the in-product maintainer timeline directly from the lore blockquotes in `docs/MAINTAINER_LOG.md` so there is only one log source.
+- **Behavior change:** the ordinary Web interface now reads coherently in Simplified Chinese except for the product brand and deliberate machine-facing formats such as JSON. Internal capability/expert IDs are no longer displayed in normal cards; forum reliability/provenance/review labels are localized; the compact prompt no longer leaks runtime enum values or permission-profile IDs; the Web timeline shows the latest maintainer lore with older entries expandable.
+- **Compatibility:** additive presentation change. Canonical manifests, stable IDs, permission profiles, route IDs, capability modes, expert weights, runtime invariants and forum eligibility are unchanged.
+- **Schema impact:** none. Adds Web-only locale/presentation helpers and build-time lore extraction; no canonical schema change.
+- **Privacy/security impact:** none. The lore extractor reads only the public repository maintainer log. Machine identifiers remain available in explicit JSON export rather than being translated into unstable localized keys.
+- **Validation:** the clean feature commit `fc8a6fc2f2135f1dd830b0ac46808375423116b6` has the same feature tree as pre-cleanup commit `902222bac4d4b3491036cce733167a62df20ac46`, validated by GitHub Actions run `33835505335`: frozen install, workspace typecheck, all Core tests and full build passed. GitHub Pages run `33835505395` also built and deployed the same Web tree successfully.
+- **References:** `fc8a6fc2f2135f1dd830b0ac46808375423116b6`; `docs/LOCALIZATION_STRATEGY_V0.md`; CI run `33835505335`; Pages run `33835505395`.
+- **Follow-up:** keep shaping and terminology work in Simplified Chinese first; after the product surface stabilizes, add Traditional Chinese and English from the same semantic source plus cross-locale regression tests. Continue moving remaining inline presentation strings behind an explicit locale boundary when it becomes useful rather than translating machine IDs.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.

@@ -15,6 +15,9 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - [x] Align current TypeScript IDs and primary Web manifest shape with V0.1 contracts
 - [x] Add Identity Playbook layer so generic capabilities adapt to different scales of agency without changing permission
 - [x] Add Character Agenda / Development Route layer so the same identity can pursue different long-term lives with different capability and expert recommendations
+- [x] Add identity-scaled Agenda facets so a shared route such as pleasure or retirement is interpreted at the current identity's actual life scale
+- [x] Establish Simplified Chinese (`zh-CN`) as the V0.1 source product locale while keeping canonical IDs language-neutral
+- [x] Surface the lore layer of `docs/MAINTAINER_LOG.md` inside the Web App without duplicating the log source
 - [ ] Implement full export set from normalized config
 
 ## V0.2 — Ancient China playable foundation
@@ -22,6 +25,7 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - identity profiles: emperor, heir, regent/powerful minister, general, local official, scholar, merchant, commoner, servant
 - nine default Identity Playbooks spanning imperial governance through household livelihood and low-permission survival
 - 13 seeded development routes from open-ended survival through governance, wealth, arts, retirement, court struggle and throne-seeking
+- identity-scaled route presentation and recommendations for shared routes such as pleasure and retirement
 - route-aware expert recommendation, including literary/artistic/retirement lenses beyond the original governance-heavy expert pool
 - resident / on-demand / disabled capability modes
 - all eight core systems available through the Web builder with identity-scale facets
@@ -56,6 +60,10 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - accessibility and keyboard navigation
 - deterministic validation and migration tests
 - public deployment
+- freeze Simplified Chinese product terminology after the primary flows stabilize
+- add Traditional Chinese (`zh-Hant`) and English (`en`) presentation from the same semantic source
+- add language selection without changing canonical IDs, permissions, route selections, expert weights, or forum eligibility
+- cross-locale regression fixtures proving locale changes presentation only
 
 ## V0.7 — Contributor ecosystem
 
@@ -84,6 +92,7 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - compatibility and migration policy
 - contributor pack specification
 - validated cross-identity and cross-route behavior
+- stable Simplified Chinese / Traditional Chinese / English presentation over the same canonical contract
 
 ## Later world directions
 

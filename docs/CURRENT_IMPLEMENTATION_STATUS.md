@@ -19,11 +19,17 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - identity-scale capability facets that can change labels, descriptions, questions, and examples while preserving the same stable Core capability ID;
 - Character Agenda / Development Route Core contracts plus deterministic identity-playbook + route recommendation composition;
 - 13 Ancient China route presets covering open-ended play, governance, iron rule, pleasure, official or military ascent, throne-seeking, court/household struggle, commerce, arts, retirement, survival, and custom goals;
+- identity-scaled Agenda facets: the same stable route ID may change its human-facing label, summary, focus questions, capability overlay, and expert overlay for the current identity without changing permission;
 - five additional route-oriented expert lenses: 武则天、苏轼、李清照、顾恺之、陶渊明;
-- route-aware capability and expert defaults in the Web App, while every route preserves the current identity permission profile;
+- route-aware and identity-scaled capability/expert defaults in the Web App, while every route preserves the current identity permission profile;
 - route suggestions are hints only: any identity may select any route, including servant → throne-seeking or emperor → retirement / arts;
 - new Web manifests persist optional `agenda.routeId` and trimmed `agenda.customGoal`; unknown persisted routes fail canonical normalization;
 - playbook- and agenda-aware one-line / compact prompt output, with explicit separation between current authority and desired future trajectory;
+- Simplified Chinese (`zh-CN`) is now the primary V0.1 product presentation locale;
+- ordinary Web controls, route previews, expert hints, forum badges, reliability labels, validation text, and human-readable prompt output are presented coherently in Simplified Chinese instead of exposing internal enum values;
+- stable canonical IDs, JSON field names, route IDs, permission-profile IDs, and runtime enum values remain language-neutral and are still available in the machine manifest;
+- the Web App reads `docs/MAINTAINER_LOG.md` at build time and extracts only the lore blockquotes into an in-product maintainer timeline, avoiding a second manually copied log source;
+- current identity × route expert hints use the same identity-scaled Agenda resolver as recommendation assembly and prompt output;
 - visible Web App explanation that birth-version `status` now lives in the always-on permission foundation and `intelligence` in the always-on evidence/non-omniscience foundation;
 - canonical compact prompt, one-line output, and manifest serializers;
 - deterministic canonical normalizer for schema/world-pack/version/identity/agenda checks, permission-profile derivation, duplicate resolution, stable capability/expert ordering, disabled-forum normalization, and runtime-invariant enforcement;
@@ -49,7 +55,7 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - accepted-RP identity-transition handling that changes permission profiles only when the current-world identity actually changes;
 - explanation UI for every recommendation (“why this module / expert?”);
 - cross-identity usefulness fixtures that execute the same crisis through emperor, local official, merchant, commoner, and servant perspectives;
-- same-identity multi-route fixtures beyond the current Core route-composition tests;
+- broader same-identity multi-route fixtures beyond the current Core route-composition and identity-scaled prompt tests;
 - explicit playbook selection when a pack offers more than one valid playbook for one identity;
 - richer incompatibility/redundancy diagnostics beyond the current deterministic canonical normalizer;
 - structured fact / claim / inference / hypothesis / unknown data flow in the Web App;
@@ -61,12 +67,14 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - contribution/review/moderation workflow for accepting real community forum submissions;
 - session-only AI-generated forum chatter as an explicitly synthetic presentation layer;
 - runtime activation/withdrawal behavior for on-demand capabilities;
+- Traditional Chinese (`zh-Hant`) and English (`en`) presentation plus a language selector; these are intentionally deferred until Simplified Chinese terminology and product flows stabilize;
+- cross-locale regression fixtures proving locale changes presentation only and never canonical IDs, permissions, Agenda, expert weights, or forum eligibility;
 - SillyTavern runtime behavior;
 - removal of birth-version compatibility exports after a bounded migration window.
 
 ## Current assembly boundary
 
-The primary Web App now has four separate concepts instead of treating identity as a complete life plan:
+The primary Web App now has four separate character-assistance concepts instead of treating identity as a complete life plan:
 
 1. **Identity** — where the host is now and which permission profile applies;
 2. **Identity Playbook** — how stable Core capabilities are translated to the host's current scale of agency;
@@ -74,6 +82,8 @@ The primary Web App now has four separate concepts instead of treating identity 
 4. **Current Event / Situation** — specified as the future temporary activation layer for immediate problems.
 
 The first product-level correction for the emperor-first birth prototype remains implemented through Identity Playbooks. A playbook recomposes the same Core capabilities around the selected identity's scale of agency. For example, `readiness-logistics` may appear as military readiness for a general, 商路盘 for a merchant, 活路图 for a commoner, or 活路与储备图 for a servant. These are facets of one Core capability, not separate engines.
+
+Agenda is also scaled by current identity where needed. A shared route such as `pleasure-and-stability` remains one stable route in the manifest, but its servant-facing interpretation can emphasize rest, small personal resources, free time and exposure risk while its emperor-facing interpretation can discuss delegation, succession and political stability. The route ID is shared; the life-scale presentation and recommendation overlay may differ. No Agenda facet contains permission data.
 
 Playbooks are intentionally not persisted in `CanonicalForgeConfig`: they are pack-owned presentation / assembly defaults recoverable from the canonical identity. Agenda is different because it is user intent and materially changes long-term assistance. New Web manifests therefore persist an optional `agenda` object while birth-version / early V0.1 manifests without it remain readable.
 
@@ -84,6 +94,16 @@ Before any Web App export, the current config is normalized against the loaded w
 The Core permission gate is deliberately evidence-based rather than semantic guesswork. A capability may request an `access`, `request`, `command`, `allocate`, `publish`, `conceal`, or `observe` step, but it cannot grant that permission. Permission requires an exact declared profile scope or an explicit accepted session-context override. The full runtime event pipeline still needs to call this gate for every permission-sensitive capability action.
 
 The Traveler Forum has a real repository-backed data layer. Raw threads are display/lore material and are not automatically injected. Runtime retrieval consumes only curated notes that pass review and applicability filters. Route-aware forum applicability is not yet implemented and is labelled as such in the Web App.
+
+## Presentation / localization boundary
+
+V0.1 currently treats Simplified Chinese as the source product locale. The ordinary Web surface should read as a coherent Simplified Chinese product; internal enum values and stable IDs are not ordinary UI copy.
+
+The canonical machine contract remains language-neutral. Changing future locale must never translate or mutate stable IDs, permission profiles, route selections, capability modes, expert weights, runtime invariants, or forum eligibility. The detailed sequencing policy is in `docs/LOCALIZATION_STRATEGY_V0.md`.
+
+The in-product maintainer timeline is derived from the lore blockquotes in `docs/MAINTAINER_LOG.md`. Engineering records are deliberately not copied into the product surface and remain in the repository documentation.
+
+## Birth-version compatibility boundary
 
 The birth-version compatibility layer remains intentionally narrow:
 
@@ -101,14 +121,18 @@ New canonical identities and Agenda routes are not backported into the birth-ver
 
 ## Validation in repository
 
-The latest Agenda route code/test checkpoint is GitHub Actions run `33827763231` on commit `894a138d00ea2d39bd724068a601a6eba3aafa58`:
+The current Simplified Chinese Web / lore-feed feature tree was validated before history cleanup by GitHub Actions run `33835505335` on commit `902222bac4d4b3491036cce733167a62df20ac46`:
 
 - `pnpm install --frozen-lockfile` — passed;
 - `pnpm typecheck` — passed;
 - `pnpm test` — passed;
 - `pnpm build` — passed.
 
-The committed tests now cover:
+The same Web build was deployed successfully by GitHub Pages run `33835505395`.
+
+The committed tests also cover the earlier identity-scaled Agenda correction, including a generated compact-prompt regression that prevents servant + pleasure from falling back to succession/state-order framing while preserving the servant permission profile.
+
+The wider test suite covers:
 
 - servant non-escalation during legacy migration;
 - fail-closed unknown identities and world packs;
@@ -125,6 +149,7 @@ The committed tests now cover:
 - ambiguous implicit playbook fail-closed fallback;
 - capability facets preserving their stable Core capability ID and identity permission profile;
 - Agenda overlays changing recommendations without mutating the current identity permission profile;
+- identity-scaled Agenda facets preserving stable route identity while changing route-scale presentation/recommendations;
 - deterministic demotion of an unrelated baseline primary expert when a route introduces a new primary;
 - no-Agenda fallback preserving the Identity Playbook baseline;
 - unknown persisted Agenda IDs failing canonical normalization;
