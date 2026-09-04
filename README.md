@@ -203,7 +203,7 @@ docs/                        产品、论坛、主题与系统规格
 
 **Public V0.1：正在锁定 forum-first 信息架构、世界域 / 世界包分类、canonical 契约与架空王朝首包体验。**
 
-当前 Pages 根路径仍是模块工坊；[Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) 已可直接审看：站内七分类发帖入口、本地多档案管理、12 篇独立档案与 40 条收录回复、正文和楼层搜索、日间 / 夜间 / 护眼配色。工坊与论坛有双向入口。
+当前 Pages 根路径仍是模块工坊；[Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) 已可直接审看：站内七分类发帖入口、本地多档案管理、22 篇独立档案与 82 条收录回复、正文和楼层搜索、日间 / 夜间 / 护眼配色。工坊与论坛有双向入口。
 
 真人交流在 GitHub Discussions，当前没有导入真人投稿或同步实时互动数。模块仍需在工坊手动配置，未开放世界包只接受提案。详见 [V3 试玩验收与维护说明](docs/FORUM_V3_REVIEW.md)。
 

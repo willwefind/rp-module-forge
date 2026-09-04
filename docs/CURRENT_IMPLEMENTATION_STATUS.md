@@ -41,7 +41,7 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - fail-closed exclusion of raw/pending/display-only/superseded/deprecated material from automatic curated-note retrieval;
 - conflict preservation for eligible curated notes instead of silent averaging;
 - Traveler Forum reference-integrity validation for thread/reply/source/conflict links;
-- Ancient China founding forum seed: 18 authored threads, 14 replies, and 10 curated runtime notes, all marked as maintainer seed rather than simulated community history;
+- Ancient China founding forum seed: 18 authored threads, 20 replies, and 10 curated runtime notes, all marked as maintainer seed rather than simulated community history; every seed thread now has at least one reply except the intentionally closed ones;
 - Web App Traveler Forum browser showing identity-relevant raw threads separately from currently retrievable curated-note candidates;
 - birth-version config, pack, and prompt exports retained temporarily for migration compatibility;
 - planned SillyTavern integration directory.
