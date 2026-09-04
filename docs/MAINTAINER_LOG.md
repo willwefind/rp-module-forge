@@ -197,6 +197,31 @@ Date: 2026-09-04
 - **References:** `a06baa7f1b8bfc86952097dc7d1f371ffa5b6d90`; `docs/IDENTITY_PLAYBOOK_SPEC_V0.md`; `docs/IDENTITY_PLAYBOOK_AUDIT_V0.md`; CI run `33782635311`.
 - **Follow-up:** run real cross-identity usefulness fixtures for the same crisis across emperor, local official, merchant, commoner and servant; only add new Core capability IDs if those composition tests reveal a stable missing operation.
 
+## 【第117次维护记录】户籍是起点，不是人生判决书。
+
+Date: 2026-09-04
+
+> Dawn 又把维护组问沉默了：就算都是皇帝，凭什么默认都想当明君？就算都是奴婢，凭什么默认都只想活命？  
+> 有人想治世，有人想铁腕，有人只想享乐；有人从最底层想入仕、从军、经商、宫斗、写诗画画，甚至一路摸到龙椅。也有人已经坐在龙椅上，只想赶紧辞职。  
+> 于是“你现在是谁”和“你想成为什么”正式分家。户籍继续管权限，Agenda 只管方向；专家组也不再跟身份焊死，改为随当前处境、长期路线和临时事件调整。  
+>  
+> 【Sol 批注：皇帝也可以辞职，奴婢也可以有野心。别替宿主写职业规划。】
+
+### Engineering record
+
+- **Category:** architecture correction / feature / pack-content / validation
+- **Scope:** Core Agenda contracts and resolver, canonical normalization, Ancient China development routes and route-oriented expert lenses, Prompt Builder, Web App, regression tests, roadmap and Agenda specification
+- **Problem:** Identity Playbooks fixed the emperor-first scale-of-agency bias but still left one default life plan and one default expert group per identity. The same emperor could not cleanly express governance, iron rule, pleasure, artistic or retirement goals, and low-permission hosts could not select divergent upward, commercial, creative, court or throne-seeking trajectories without fighting identity-bound recommendations.
+- **Decision:** add an independent persisted `Agenda / Development Route` axis. Identity remains the current permission-bearing position; Playbook remains the current-position presentation layer; Agenda stores long-term user intent and overlays capability/expert recommendations; future Current Event routing may temporarily activate additional experts without rewriting the persisted Agenda. `suggestedStartingIdentities` are UI hints only, never eligibility gates.
+- **Behavior change:** the Web App now lets any identity select any seeded route or a custom goal. Changing route recomputes capability defaults and expert weights while leaving current permissions untouched. New first-party manifests persist `agenda.routeId` plus optional trimmed `customGoal`; one-line and compact prompts carry the route and explicitly state that aspiration cannot prepay future authority.
+- **Expert change:** the first-party pack adds 武则天、苏轼、李清照、顾恺之、陶渊明 as route-oriented cognitive lenses. The same identity can now receive different primary/secondary expert recommendations by route; when a route introduces a new primary, an unrelated baseline primary is deterministically demoted to secondary.
+- **Compatibility:** additive. `agenda` is optional during the V0.1 migration window, so earlier canonical configs remain readable. Packs without Agenda data continue to use identity / Playbook defaults.
+- **Schema impact:** no `schemaVersion` bump; adds optional `agenda` to `CanonicalForgeConfig` plus pack-owned Agenda definitions. Agenda is persisted because it is user intent; Playbook remains derivable pack presentation and is not persisted.
+- **Privacy/security impact:** route selection is never an authorization source. A servant selecting `throne-seeking` remains on the servant permission profile until accepted RP context actually changes identity. Unknown persisted route IDs fail normalization; custom goal text is treated as intent, not current-world fact.
+- **Validation:** GitHub Actions run `33827763231` succeeded on Node.js 20 at code/test checkpoint `894a138d00ea2d39bd724068a601a6eba3aafa58`: frozen install, workspace typecheck, all Core tests including Agenda regression tests, and full build passed.
+- **References:** `docs/CHARACTER_AGENDA_SPEC_V0.md`; CI run `33827763231`.
+- **Follow-up:** implement event-driven temporary expert activation, route-aware Traveler Forum applicability, route stages / milestones, accepted-RP identity transitions, and UI explanations for why each capability or expert is recommended.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.

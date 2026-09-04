@@ -14,12 +14,15 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - [x] Dual engineering + traveler-lore maintainer log convention
 - [x] Align current TypeScript IDs and primary Web manifest shape with V0.1 contracts
 - [x] Add Identity Playbook layer so generic capabilities adapt to different scales of agency without changing permission
+- [x] Add Character Agenda / Development Route layer so the same identity can pursue different long-term lives with different capability and expert recommendations
 - [ ] Implement full export set from normalized config
 
 ## V0.2 — Ancient China playable foundation
 
 - identity profiles: emperor, heir, regent/powerful minister, general, local official, scholar, merchant, commoner, servant
 - nine default Identity Playbooks spanning imperial governance through household livelihood and low-permission survival
+- 13 seeded development routes from open-ended survival through governance, wealth, arts, retirement, court struggle and throne-seeking
+- route-aware expert recommendation, including literary/artistic/retirement lenses beyond the original governance-heavy expert pool
 - resident / on-demand / disabled capability modes
 - all eight core systems available through the Web builder with identity-scale facets
 - visible always-on permission and evidence foundations
@@ -29,11 +32,15 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - current-session patch with typed facts / claims
 - one-line, compact, full, and manifest exports
 - five-identity crisis validation scenarios including commoner and servant usefulness, not only non-escalation
+- same-identity multi-route fixtures, e.g. emperor governance vs pleasure vs retirement; servant survival vs ascent vs arts vs throne-seeking
 
 ## V0.3 — Forge usability
 
-- explanation for every recommendation (“why this module?”)
+- explanation for every recommendation (“why this module / expert?”)
 - playbook selection when a world pack offers multiple valid playbooks for one identity
+- route-aware forum applicability and contribution metadata
+- event-driven temporary expert activation without rewriting the persisted long-term Agenda
+- route stage / milestone support for long transitions such as servant → official → minister or commoner → soldier → general
 - conflict and incompatibility warnings
 - manifest import / export
 - local presets without account or backend
@@ -76,7 +83,7 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - first-party SillyTavern integration
 - compatibility and migration policy
 - contributor pack specification
-- validated cross-identity behavior
+- validated cross-identity and cross-route behavior
 
 ## Later world directions
 
