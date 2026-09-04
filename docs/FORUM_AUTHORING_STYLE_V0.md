@@ -61,12 +61,12 @@ Possible states include:
 - contradicted by later replies;
 - abandoned without explanation;
 - interrupted mid-sentence;
-- later annotated as author missing / deceased / returned home / unknown;
+- later annotated as the current traversal identity ended / author missing / returned / traveler status unknown;
 - revived hundreds of years later because a new traveler encountered the same problem;
 - quoted into later module releases;
 - partially deprecated while some sections remain useful.
 
-The author's later fate is lore context, not automatic proof that their advice was right or wrong.
+A traversal identity's death or ending does not automatically prove the underlying traveler ceased to exist. The author's later status is lore context, not automatic proof that their advice was right or wrong.
 
 ## 5. Example: interrupted historical thread
 
@@ -83,7 +83,7 @@ A valid forum experience may look like:
 
 ——正文在此中断——
 
-回复 427：作者已于永宁三年殉国。
+回复 427：永宁帝身份于永宁三年殉国；该穿越者后续状态未知。
 ```
 
 The emotional force comes from forum structure and missing continuation, not from a narrator explaining how sad the reader should feel.
@@ -122,14 +122,16 @@ known relationships to other forum authors
 
 This profile exists to preserve consistency across multiple posts by the same fictional traveler. It must not become a rigid personality generator.
 
-## 8. Do not confuse voice with reliability
+Member kind / presence status is separate; see `docs/FORUM_MEMBER_AND_ATTRIBUTION_V0.md`.
+
+## 8. Do not confuse voice / fate with reliability
 
 A funny post may be correct.
 A polished scholarly post may be catastrophically wrong.
 A terrified one-line warning may save lives.
-A dead author's advice does not become sacred merely because the ending is tragic.
+A tragic identity-ending does not make advice sacred.
 
-Reliability, review status, provenance, and applicability remain separate data dimensions.
+Reliability, review status, provenance, applicability, member kind, and presence status remain separate data dimensions.
 
 ## 9. Real community voices
 
@@ -148,6 +150,6 @@ Before a larger founding forum corpus is considered healthy, a random screen of 
 - shares the same politics or ethics;
 - has the same sense of humor;
 - writes the same length;
-- survives long enough to write a tidy conclusion.
+- survives one identity long enough to write a tidy conclusion.
 
 A living forum needs unfinished lives as well as finished guides.
