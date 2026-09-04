@@ -146,9 +146,9 @@ app.innerHTML = `
             <div class="muted">7. 天道降维互助论坛</div>
             <h2>老乡们真的留下过东西</h2>
           </div>
-          <div class="forum-stats">${forumData.threads.length} 原帖 · ${forumData.replies.length} 回复 · ${forumData.curatedNotes.length} 条遗言库</div>
+          <div class="forum-stats">${forumData.threads.length} 原帖 · ${forumData.replies.length} 回复 · ${forumData.curatedNotes.length} 条老乡经验库</div>
         </div>
-        <p class="muted">这里展示的是仓库里真实存在的创世数据，不是角色扮演时由模型临场伪造的“历史帖子”。原帖可以有偏见、争吵和馊主意；只有通过审核、可靠度与适用性筛选的遗言库条目，才有资格进入运行时辅助。</p>
+        <p class="muted">这里展示的是仓库里真实存在的创世数据，不是角色扮演时由模型临场伪造的“历史帖子”。原帖可以有偏见、争吵和馊主意；只有通过审核、可靠度与适用性筛选的老乡经验库条目，才有资格进入运行时辅助。</p>
         <div class="forum-grid">
           <div>
             <div class="forum-subhead">当前身份可读原帖</div>
@@ -511,7 +511,7 @@ function renderForum() {
           </article>
         `;
       }).join("")
-    : `<div class="forum-empty">当前身份、已启用能力与最低可靠度组合下，没有可自动检索的遗言库条目。可以切换能力或降低可靠度查看候选。</div>`;
+    : `<div class="forum-empty">当前身份、已启用能力与最低可靠度组合下，没有可自动检索的老乡经验库条目。可以切换能力或降低可靠度查看候选。</div>`;
 }
 
 function renderLoreEntry(entry: MaintainerLoreEntry): string {

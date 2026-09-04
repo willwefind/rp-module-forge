@@ -3,7 +3,7 @@
 Status: **content / data-quality proposal**  
 Last updated: 2026-09-04
 
-V3 review implementation: 12 independently authored topics and 40 stored replies, full body/reply search, explicit interrupted content, per-topic provenance and exact loaded/stored counts. The previous 428-floor decoration has no verifiable backing and is removed. See [review record](FORUM_V3_REVIEW.md); the larger production corpus remains a future phase.
+V3 review implementation: 22 independently authored topics and 82 stored replies (after the 2026-09-04 second wave), full body/reply search, explicit interrupted content, per-topic provenance and exact loaded/stored counts. The previous 428-floor decoration has no verifiable backing and is removed. See [review record](FORUM_V3_REVIEW.md); the larger production corpus remains a future phase.
 
 ## 1. Problem
 
@@ -137,4 +137,4 @@ Before production forum migration:
 - interrupted/missing content is represented as an explicit state;
 - author identity ending is separate from traveler existence;
 - real-community imports retain their original voice and provenance;
-- the current 18/14 founding seed is treated as a beginning, not a finished corpus.
+- the current 18/20 canonical founding seed and 22/82 V3 archive are treated as a beginning, not a finished corpus.
