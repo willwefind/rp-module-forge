@@ -149,7 +149,7 @@ Before a major decision, it asks:
 
 This is now understood as a likely **cross-world Core capability** that merely receives Ancient China naming and presentation inside the pack.
 
-### 【老乡遗言库】
+### 【老乡经验库】
 Ancient China presentation of the broader Traveler Forum / Legacy layer.
 
 Possible note classes:

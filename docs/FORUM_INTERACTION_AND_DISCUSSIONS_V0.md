@@ -1,7 +1,9 @@
 # Forum Interaction & GitHub Discussions V0
 
-Status: **product / community interaction proposal**  
+Status: **product contract; V3 review implementation available**
 Last updated: 2026-09-04
+
+Implementation record: [Forum V3 review](FORUM_V3_REVIEW.md). The seven Chinese category slugs and forms are now live in the repository; there is no remaining slug-collection prerequisite.
 
 ## 1. Phase-1 interaction truth
 
@@ -24,13 +26,13 @@ Yes.
 
 Phase 1 behavior:
 
-- `＋ 发主题` opens GitHub Discussions;
+- `＋ 发主题` opens an in-site Chinese category chooser;
 - the user signs in with GitHub;
-- they choose a Chinese category and submit a real Discussion;
+- the chosen category opens its corresponding GitHub form, where they submit a real Discussion;
 - the Discussion remains the real source of record;
 - optional repository/lore import happens only after consent + review.
 
-GitHub supports custom Discussion categories and category forms. Once category slugs are finalized, forms can live under `.github/DISCUSSION_TEMPLATE/` and ask structured questions before submission.
+GitHub supports custom Discussion categories and category forms. The seven forms now live under `.github/DISCUSSION_TEMPLATE/` and ask structured questions before submission.
 
 ## 3. Can users reply / comment?
 
@@ -123,7 +125,7 @@ Do not create one category per fictional world yet. GitHub supports up to a boun
 
 ## 8. Category forms
 
-After the Chinese categories are created / renamed and their slugs are known, add `.github/DISCUSSION_TEMPLATE/<category-slug>.yml` forms.
+The seven Chinese categories now have corresponding `.github/DISCUSSION_TEMPLATE/<category-slug>.yml` forms. V3 constructs direct new-discussion URLs from those exact slugs.
 
 Shared fields may include:
 
@@ -142,7 +144,7 @@ The original Discussion remains editable by its author according to GitHub behav
 
 V0 shell should expose:
 
-- `＋ 发主题` → Discussions;
+- `＋ 发主题` → in-site category chooser → corresponding Discussion form;
 - `这里的老乡是真的` → Discussions home;
 - `参与评议 / 勘误` → related Discussion or the appropriate category;
 - `回复真人讨论` → source Discussion;

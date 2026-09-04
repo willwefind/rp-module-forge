@@ -118,7 +118,7 @@ It should improve questions, evidence handling, operational reasoning and conseq
 2. Submit feedback, RP reports, module ideas, world-pack proposals or questions.
 3. Keep GitHub attribution separate from optional lore alias.
 4. Confirm source / consent / presentation identity before importing into product lore.
-5. Review again before any reusable claim enters 老乡遗言库.
+5. Review again before any reusable claim enters 老乡经验库.
 
 Nothing from a real Discussion auto-injects into runtime knowledge.
 

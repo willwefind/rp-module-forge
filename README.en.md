@@ -64,7 +64,7 @@ The Ancient China Pack gives eight cross-world core capabilities an in-world int
 | 【烽燧图】 | Readiness & Logistics | Separate nominal strength from deployable capacity, supply, time, and route constraints. |
 | 【民声池】 | Plural Stakeholder Signals | Preserve conflicting voices and sampling bias instead of producing one universal popularity score. |
 | 【御前反对席】 | Red Team Engine | Ask how an opponent, bureaucracy, market, or unintended incentive could defeat a plan. |
-| 【老乡遗言库】 | Curated Practitioner Knowledge | Inject reviewed lessons distilled from Traveler Forum threads. |
+| 【老乡经验库】 | Curated Practitioner Knowledge | Inject reviewed lessons distilled from Traveler Forum threads. |
 
 These Chinese names belong to the pack's presentation and lore. Their underlying contracts live in the generic core so future packs can provide their own names, examples, and aesthetics.
 
@@ -73,7 +73,7 @@ These Chinese names belong to the pack's presentation and lore. Their underlying
 Traveler Forum is a first-class subsystem, not a random quote generator. It has two linked layers:
 
 1. **Forum threads** preserve voice, disagreement, replies, failure reports, and provenance.
-2. **Curated knowledge** turns reviewed lessons into compact, reusable notes suitable for prompt injection. In the Ancient China Pack, this layer appears as 【老乡遗言库】 within **天道降维互助论坛**.
+2. **Curated knowledge** turns reviewed lessons into compact, reusable notes suitable for prompt injection. In the Ancient China Pack, this layer appears as 【老乡经验库】 within **天道降维互助论坛**.
 
 Open-source collaboration is part of the fiction: a contribution may appear in-world as a traveler submitting a new field note. The lore never replaces ordinary engineering records, review, attribution, or Git history.
 

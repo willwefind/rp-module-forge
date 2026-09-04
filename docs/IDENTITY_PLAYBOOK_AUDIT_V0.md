@@ -93,7 +93,7 @@ Example servant facets:
 | `readiness-logistics` | 【烽燧图】 | 活路与储备：钱、食物、衣物、路线、时间、可求助的人 |
 | `plural-stakeholder-signals` | 【民声池】 | 院内 / 街坊风向与沉默信号；不假装代表“民意” |
 | `red-team` | 【御前反对席】 | 危局反推：如果这一步被发现，最坏会从哪里发生 |
-| `curated-practitioner-knowledge` | 【老乡遗言库】 | 低权限生存旧帖与失败案例 |
+| `curated-practitioner-knowledge` | 【老乡经验库】 | 低权限生存旧帖与失败案例 |
 
 The UI does not need to erase the shared system lineage. It may show a playbook-facing label first and the underlying Core/system lineage second.
 

@@ -225,7 +225,7 @@ No single total-sentiment score is allowed.
 
 Red-team output tests a plan; it does not establish that an adversary will choose that path.
 
-### 9.8 `curated-practitioner-knowledge` / 【老乡遗言库】
+### 9.8 `curated-practitioner-knowledge` / 【老乡经验库】
 
 **Trigger:** an eligible note matches world, identity, capability, situation, and configured reliability.
 

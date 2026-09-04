@@ -54,7 +54,7 @@ Curated notes are bounded claims distilled from one or more reviewed threads. Th
 - a reason the note may be retrieved;
 - review and version information.
 
-In Ancient China, this runtime-facing knowledge layer is presented as 【老乡遗言库】.
+In Ancient China, this runtime-facing knowledge layer is presented as 【老乡经验库】.
 
 ## 4. Core entities
 

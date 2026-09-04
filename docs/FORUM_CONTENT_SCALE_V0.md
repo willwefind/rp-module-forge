@@ -3,6 +3,8 @@
 Status: **content / data-quality proposal**  
 Last updated: 2026-09-04
 
+V3 review implementation: 12 independently authored topics and 40 stored replies, full body/reply search, explicit interrupted content, per-topic provenance and exact loaded/stored counts. The previous 428-floor decoration has no verifiable backing and is removed. See [review record](FORUM_V3_REVIEW.md); the larger production corpus remains a future phase.
+
 ## 1. Problem
 
 The founding repository seed proved that forum data can exist without runtime fabrication, but it is still deliberately small: many bodies are short and reply chains are sparse.

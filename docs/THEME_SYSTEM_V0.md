@@ -166,7 +166,7 @@ A module release receives a small attachment / brass cue and a stronger title hi
 
 ### Curated notes
 
-老乡遗言库 entries should look more archival and reviewed than raw topics, but not more authoritative than current-world evidence.
+老乡经验库 entries should look more archival and reviewed than raw topics, but not more authoritative than current-world evidence.
 
 ### Maintainer notices
 

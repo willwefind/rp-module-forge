@@ -80,7 +80,7 @@ The pack currently presents eight generic Core capabilities as:
 | 【烽燧图】 | `readiness-logistics` |
 | 【民声池】 | `plural-stakeholder-signals` |
 | 【御前反对席】 | `red-team` |
-| 【老乡遗言库】 | `curated-practitioner-knowledge` |
+| 【老乡经验库】 | `curated-practitioner-knowledge` |
 
 These labels belong to this pack. Other packs may reuse the Core operations under completely different names and examples.
 

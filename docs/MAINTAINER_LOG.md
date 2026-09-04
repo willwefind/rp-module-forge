@@ -129,7 +129,7 @@ Date: 2026-09-04
 > 有人问：论坛里的穿越者老乡留言，是不是全靠 AIRP 时让 AI 当场编？  
 > 维护组看了一眼只有开关、没有人的论坛，决定停止表演“这里以后会很热闹”。  
 > 于是第一批老乡正式入住仓库：有人算错过粮，有人被漂亮奏报骗过，有人只想提醒奴婢先活过今晚；还有一位坚持穿夜行衣翻墙进户部，现已被维护组连人带帖一起封存。  
-> 原帖可以嘴硬、犯错、记仇、互相抬杠；但能进入 Runtime 的【老乡遗言库】，必须另过审核、可靠度与适用边界。  
+> 原帖可以嘴硬、犯错、记仇、互相抬杠；但能进入 Runtime 的【老乡经验库】，必须另过审核、可靠度与适用边界。
 >  
 > 【Sol 批注：老乡可以胡说，数据库不可以装作他没胡说过。】
 
@@ -269,6 +269,26 @@ Date: 2026-09-04
 - **Validation:** the clean feature commit `fc8a6fc2f2135f1dd830b0ac46808375423116b6` has the same feature tree as pre-cleanup commit `902222bac4d4b3491036cce733167a62df20ac46`, validated by GitHub Actions run `33835505335`: frozen install, workspace typecheck, all Core tests and full build passed. GitHub Pages run `33835505395` also built and deployed the same Web tree successfully.
 - **References:** `fc8a6fc2f2135f1dd830b0ac46808375423116b6`; `docs/LOCALIZATION_STRATEGY_V0.md`; CI run `33835505335`; Pages run `33835505395`.
 - **Follow-up:** keep shaping and terminology work in Simplified Chinese first; after the product surface stabilizes, add Traditional Chinese and English from the same semantic source plus cross-locale regression tests. Continue moving remaining inline presentation strings behind an explicit locale boundary when it becomes useful rather than translating machine IDs.
+
+## 【第120次维护记录】户籍册收好，逛隔壁不算重新投胎。
+
+Date: 2026-09-04
+
+> 后勤处把档案柜重新分了格：想换人生可以新建，想改名字可以重写，路过皇帝区不算登基。
+> 通信口挂齐七块中文门牌，老乡能直接去找真人说话。档案馆也把空挂的楼号撤了；缺页就记缺页，没回来的老乡就记状态未知。
+> 【维护组批注：帖子可以热闹，计数不能凑热闹。】
+
+### Engineering record
+
+- **Category:** feature / prototype / content
+- **Scope:** Forum-first V3, Chinese category chooser, local RP profiles, authored archive corpus, terminology, Pages packaging.
+- **Decision:** retain the V3 URL as a reviewable interactive release; the root Web App remains the module workshop with a return link.
+- **Behavior change:** seven direct category form links; multi-profile create/edit/rename/switch/delete with explicit save and JSON export; isolated browse state; full-text body/reply search; 12 topics and 40 per-topic replies; accurate pagination; author status and repository provenance.
+- **Compatibility:** V3 local profiles can be read into version 4 storage without deleting the legacy copy. Corrupt or unavailable storage surfaces a warning and uses temporary state. Theme preference key is retained. Core capability IDs are unchanged.
+- **Privacy:** private RP fields are not sent to Discussions. Only a public archive title may be placed into a review form link. No real community posts were imported, and no test Discussions were published.
+- **Validation:** typecheck, 35 Core tests plus 7 forum tests, build; real-browser profile persistence/rename/switch, browse isolation, 4-to-8 replies, body/reply search, themed desktop/mobile layout, category entry login redirect, zero browser console warnings/errors.
+- **Boundaries:** future packs remain closed. Forum attachments open the workshop for manual configuration; no one-click installation or live counts are claimed. Backup import UI and approved community ingestion are not included.
+- **References:** feature `751e87ba1c6de8400167e0e97c7fd3b83475a143`; [V3 review and maintenance record](FORUM_V3_REVIEW.md).
 
 ## Maintainer roles in the founding fiction
 

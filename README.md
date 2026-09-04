@@ -2,11 +2,11 @@
 
 **面向 AIRP 与文本 RP 的穿越者互助论坛 + 可移植辅助模块体系。**
 
-[English（待简中术语冻结后同步）](README.en.md) · [🌐 当前模块工坊](https://willwefind.github.io/rp-module-forge/) · [🏮 Forum-first V2 原型](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v2.html) · [📡 天道外部通信口](https://github.com/willwefind/rp-module-forge/discussions) · [📜 维护组日志](docs/MAINTAINER_LOG.md)
+[English（待简中术语冻结后同步）](README.en.md) · [🏮 Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) · [🌐 模块工坊](https://willwefind.github.io/rp-module-forge/) · [📡 天道外部通信口](https://github.com/willwefind/rp-module-forge/discussions) · [📜 维护组日志](docs/MAINTAINER_LOG.md)
 
 > 【天道降维互助论坛 · 维护组公告】  
 > 有位老乡又留下了一条血泪帖。  
-> 有人回帖纠错，有人把事故整理成模块，有人负责把真正能复用的东西塞进【老乡遗言库】。  
+> 有人回帖纠错，有人把事故整理成模块，有人负责把真正能复用的东西塞进【老乡经验库】。
 > 后来的老乡可以围观、抄作业、拆模块，也可以从【天道外部通信口】进来真的说两句。
 
 ## 产品本体
@@ -25,7 +25,7 @@
 │   └── 世界包 / World Pack
 │       ├── 普通主题 / 回复 / 勘误 / 血泪帖
 │       ├── 模块发布主题 + 模块附件
-│       └── 老乡遗言库
+│       └── 老乡经验库
 └── RP Module Forge 模块工坊
 ```
 
@@ -117,7 +117,7 @@ GitHub Discussions 已启用：
 → 维护组 review
 → 可选进入论坛档案
 → 如果确有可复用知识，再单独 review
-→ 老乡遗言库
+→ 老乡经验库
 ```
 
 真人贡献可以选择 GitHub handle、Lore alias 或匿名老乡编号。不会擅自把现实账号变成世界观角色。
@@ -157,7 +157,7 @@ GitHub Discussions 已启用：
 | 【烽燧图】 | `readiness-logistics` |
 | 【民声池】 | `plural-stakeholder-signals` |
 | 【御前反对席】 | `red-team` |
-| 【老乡遗言库】 | `curated-practitioner-knowledge` |
+| 【老乡经验库】 | `curated-practitioner-knowledge` |
 
 这些名称属于架空王朝 Pack 的呈现。其他 World Pack 可以给同一个 Core 完全不同的名字和用法。
 
@@ -166,7 +166,7 @@ GitHub Discussions 已启用：
 Traveler Forum 已有正式仓库数据层：原帖、回复、可靠度、审核状态、来源、冲突关系和 curated note 都是对象。
 
 - **论坛原帖层**：允许偏见、争论、失败和馊主意；
-- **老乡遗言库**：只有通过审核和适用性筛选的条目才可能自动进入 Runtime；
+- **老乡经验库**：只有通过审核和适用性筛选的条目才可能自动进入 Runtime；
 - **未来 AI 临场弹幕**：必须明确标成 session-only / synthetic，不能冒充历史贡献；
 - **真人 Discussion**：必须经过授权和 review 才能进入仓库论坛数据。
 
@@ -203,7 +203,9 @@ docs/                        产品、论坛、主题与系统规格
 
 **Public V0.1：正在锁定 forum-first 信息架构、世界域 / 世界包分类、canonical 契约与架空王朝首包体验。**
 
-当前正式 Pages 首页仍是模块工坊；Forum-first V2 是独立概念原型。等论坛壳与数据交互验证到位后，再把论坛升成真正首页，把 Forge 收进模块附件后的工坊入口。
+当前 Pages 根路径仍是模块工坊；[Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) 已可直接审看：站内七分类发帖入口、本地多档案管理、12 篇独立档案与 40 条收录回复、正文和楼层搜索、日间 / 夜间 / 护眼配色。工坊与论坛有双向入口。
+
+真人交流在 GitHub Discussions，当前没有导入真人投稿或同步实时互动数。模块仍需在工坊手动配置，未开放世界包只接受提案。详见 [V3 试玩验收与维护说明](docs/FORUM_V3_REVIEW.md)。
 
 ## License
 

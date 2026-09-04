@@ -5,7 +5,7 @@ Last updated: 2026-09-04
 
 ## 1. Vocabulary correction
 
-The curated runtime-facing knowledge layer is presented as **【老乡经验库】**, not 【老乡遗言库】.
+The curated runtime-facing knowledge layer is presented consistently as **【老乡经验库】**. The label does not imply that a contributor has died.
 
 Reason: leaving useful experience does not imply the contributor is dead. A forum member may be:
 
