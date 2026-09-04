@@ -7,143 +7,130 @@ Last updated: 2026-09-04
 
 The product world is **天道降维互助论坛**.
 
-`RP Module Forge` is not the outer shell of that forum. It is one first-party tool maintained inside the forum ecosystem: a module workshop used to inspect, adapt, assemble, export, and maintain assistance modules shared by travelers.
-
-The primary mental model is therefore:
+`RP Module Forge` is one first-party tool maintained inside that forum ecosystem: a module workshop used to inspect, adapt, assemble, export and maintain assistance modules shared by travelers.
 
 ```text
 天道降维互助论坛
-├── 主题 / 回复 / 分区 / 标签
-├── 模块发布主题
-│   └── 模块附件
-│       └── RP Module Forge 装配器
-├── 老乡遗言库
-├── 维护组公告 / 维护记录
+├── 天道总坛
+│   ├── 维护组 / 公告
+│   ├── 世界包开发
+│   └── 天道外部通信口（真实社区）
+├── 世界域 / Realm
+│   └── 世界包 / World Pack
+│       ├── 主题 / 回复 / 分区 / 标签
+│       ├── 模块发布主题
+│       │   └── 模块附件
+│       │       └── RP Module Forge
+│       └── 老乡遗言库
 └── 当前本局身份档案与推荐
 ```
 
-The current Web builder remains valid engineering work, but its final product role changes from **home page** to **module workshop / assembly surface**.
+The current standalone builder remains valid engineering work, but its final product role is **module workshop**, not homepage.
 
-## 2. Why forum-first
+## 2. Realm → Pack → Node
 
-The founding fiction already speaks in forum-native language:
+Do not flatten every future world into one giant sidebar.
 
-- travelers leave blood-and-tears posts, corrections, grudges, arguments, case reports, and module releases;
-- modules have authors, versions, tags, applicability, warnings, provenance, and community history;
-- maintainer records are already written as lore-facing public posts;
-- curated runtime knowledge is explicitly derived from forum material rather than fabricated as timeless system truth.
+The browsing hierarchy is:
 
-A configuration dashboard as the first screen hides that world. A forum-first shell makes the lore, data model, and interaction model reinforce one another.
+```text
+天道总坛
+→ 世界域
+→ 世界包
+→ 分区 / Node
+→ 主题
+```
 
-## 3. Reference patterns
+Current first open path:
 
-This architecture borrows structure, not visual skin.
+```text
+东方古代
+└── 架空王朝
+    ├── 皇帝专区
+    ├── 官场与地方
+    ├── 军旅与边关
+    ├── 商贾与行旅
+    ├── 士林与文艺
+    ├── 普通人生
+    ├── 低权限求生
+    └── 宫廷与家宅
+```
 
-### Discourse — community navigation + topic list
+Planned sibling packs under 东方古代 include **武侠江湖 / 修仙宗门 / 志怪异闻**. They are separate packs because their social authority, resources and identities may differ radically.
 
-Reference: https://meta.discourse.org/categories
+See `docs/MULTIWORLD_FORUM_ARCHITECTURE_V0.md`.
 
-Useful pattern:
+## 3. Primary forum navigation
 
-- persistent category / tag navigation;
-- dense topic list as the primary content surface;
-- topic detail carries replies, metadata and chronology;
-- sidebars can hold stable community navigation without turning every destination into a giant card.
-
-### V2EX — one primary node
-
-Reference: https://www.v2ex.com/help/node
-
-V2EX gives each topic one primary Node so classification remains simple and understandable.
-
-RP Module Forge adopts the same principle conceptually: each forum topic has **one primary section / node**. Cross-cutting meaning belongs in tags rather than multiple simultaneous primary categories.
-
-### Stack Overflow — cross-cutting tags
-
-Reference: https://stackoverflow.com/help/tagging
-
-Tags connect topics across their primary category and support filtering/discovery. In our forum, tags may represent:
-
-- starting identity;
-- development route;
-- capability family;
-- situation;
-- reliability / review state where appropriate;
-- content form such as module-release.
-
-Tags do not grant permissions and do not replace the canonical identity or Agenda stored in a module attachment.
-
-### Hacker News — scan density
-
-Reference: https://news.ycombinator.com/
-
-The lesson is not to imitate its typography. The lesson is that a forum list should remain highly scannable. The default screen should show many meaningful topic rows, not a small number of oversized SaaS cards.
-
-## 4. Primary navigation
-
-V0 proposal:
+Inside the current context, V0 proposes:
 
 ```text
 首页 / 最新 / 精华 / 模块仓 / 老乡遗言库 / 维护组
 ```
 
-Primary sections / nodes for the Ancient China pack may include:
+天道总坛 remains globally reachable and contains cross-world maintenance / contribution surfaces.
 
-```text
-天道公告
-皇帝专区
-官场与地方
-军旅与边关
-商贾与行旅
-士林与文艺
-普通人生
-低权限求生
-宫廷与家宅
-世界包 / 模块开发
-```
+## 4. One primary Node + cross-cutting tags
 
-These are forum presentation categories, not Core permission classes.
+Each topic has one primary Node inside one World Pack.
 
-A servant may browse `皇帝专区`. A current RP identity restricts in-world actions and automatic runtime applicability; it does **not** become a meta-forum paywall.
+Cross-cutting meaning belongs in tags, such as:
 
-## 5. Topic types
+- starting identity;
+- development route;
+- capability family;
+- situation;
+- reliability / review state;
+- content form such as module-release.
 
-Ordinary forum topics share one dense list language and may display a small type seal:
+Tags aid discovery. They do not grant permissions and do not replace canonical identity / Agenda data.
 
-- 求助
-- 血泪帖
-- 案例回报
-- 勘误
-- 经验核验
-- 记仇帖
-- 维护组争论
-- 模块发布
-- 维护公告
-- 已封存
+## 5. Forum browsing is meta-layer access
 
-Type is not the primary category. A module release can live in `皇帝专区`, `低权限求生`, `士林与文艺`, etc.
+A servant may browse 皇帝专区.
 
-## 6. Module release is a special forum topic
+A 架空王朝 player may browse future 武侠 / 修仙 spaces once they exist.
 
-A module should not live in a separate marketplace UI disconnected from the forum.
+Browsing never mutates the active RP identity, permission profile, World Pack or installed modules.
 
-A module release topic contains normal forum material:
+Cross-pack installation always requires explicit compatibility / adaptation.
+
+## 6. Topic types
+
+Topic rows may use small type marks such as:
+
+- 求助;
+- 血泪帖;
+- 案例回报;
+- 勘误;
+- 经验核验;
+- 记仇帖;
+- 维护组争论;
+- 模块发布;
+- 维护公告;
+- 已封存.
+
+The list should remain dense enough to scan many topics rather than turning every thread into a large SaaS card.
+
+## 7. Module release is a special forum topic
+
+A module remains a normal discussable forum thread with:
 
 ```text
 标题
 作者留言
 回复 / 勘误 / 版本争论
-主要专区
+主要分区
 标签
 版本
 可靠度 / 维护状态
 来源与变更历史
 ```
 
-and one structured **模块附件**:
+and one structured **模块附件** containing, as relevant:
 
 ```text
-适配世界包
+目标 Realm / World Pack
 建议起始身份
 路线适配
 能力组合
@@ -154,7 +141,7 @@ and one structured **模块附件**:
 规范配置
 ```
 
-The attachment may expose actions such as:
+Attachment actions may include:
 
 ```text
 看看它会干什么
@@ -164,110 +151,106 @@ The attachment may expose actions such as:
 打开模块工坊
 ```
 
-`RP Module Forge` opens here as an assembly drawer / dedicated workshop page.
+## 8. Current-session card
 
-## 7. Current-session card
-
-The forum shell may show a compact **本局小档案**:
+The forum shell may show:
 
 ```text
+当前世界域：东方古代
+当前世界包：架空王朝
 当前身份：奴婢 / 仆役
 当前路线：偷得浮生 / 小日子
 当前权限：极低（summary only）
 已装辅助：5
 ```
 
-This card exists to personalize discovery and module compatibility.
+This context may influence recommendation / compatibility hints but must not hide unrelated forum content or create permission.
 
-It may influence:
+## 9. Search scopes
 
-- recommended topics;
-- default filters;
-- module compatibility hints;
-- Traveler Forum curated-note retrieval;
-- the pre-filled RP Module Forge assembly.
-
-It must not:
-
-- hide unrelated forum sections by default;
-- grant new in-world permission;
-- treat a future Agenda as current authority;
-- claim that forum posts are current-world facts.
-
-## 8. Desktop information hierarchy
-
-Preferred desktop structure:
+The UI should be able to grow toward:
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│ brand / global nav / search / theme / current-session indicator  │
-├──────────────┬──────────────────────────────────┬────────────────┤
-│ sections     │ topic stream                     │ session /      │
-│ saved nodes  │ dense rows                       │ workshop rail  │
-│ tags         │ pinned / latest / module posts   │ maintenance    │
-└──────────────┴──────────────────────────────────┴────────────────┘
+当前世界包
+当前世界域
+全部世界
+天道总坛
 ```
 
-The center column is primary. Side rails support navigation and current-session context.
+Default search follows the active World Pack. Global search stays one explicit action away.
 
-Avoid dashboard-card inflation: topic rows should use dividers, type seals, metadata, tags and restrained surface shifts rather than one large rounded card per topic.
+## 10. Maintainer log
 
-## 9. Mobile information hierarchy
+Maintainer lore belongs naturally under 天道总坛 / 维护组 and may also surface as topic-like notices in world streams when relevant.
+
+`docs/MAINTAINER_LOG.md` remains the single source of truth for the lore layer; engineering records remain repository documentation.
+
+## 11. Real community bridge
+
+The forum exposes **【天道外部通信口】** as a clearly real-community surface.
+
+Phase 1 destination is GitHub Discussions:
+
+```text
+https://github.com/willwefind/rp-module-forge/discussions
+```
+
+Real posts remain distinct from authored archive lore. Import into product content requires provenance, consent and review.
+
+See `docs/COMMUNITY_BRIDGE_V0.md`.
+
+## 12. Theme contract
+
+The shell supports:
+
+- 日间｜纸白档案;
+- 夜间｜夜档;
+- 护眼｜青笺.
+
+Realm / Pack motifs may decorate the shell but cannot override accessibility-critical semantic colors.
+
+## 13. Desktop hierarchy
+
+Preferred desktop layout:
+
+```text
+brand / search / theme
+Realm selector
+Pack selector
+forum nav
+────────────────────────────────────────────────────
+Pack nodes     dense topic stream      session / tools
+                                   +   community bridge
+```
+
+The center topic stream remains primary.
+
+## 14. Mobile hierarchy
 
 On narrow screens:
 
-- top bar remains compact;
-- section navigation becomes a drawer or horizontal compact control;
-- topic stream stays first;
-- current-session card becomes a collapsible strip;
-- module attachment opens as a bottom sheet / full-screen drawer;
-- theme selector remains reachable without opening settings.
+- Realm / Pack selectors remain compact and scrollable;
+- Node navigation becomes horizontal or drawer-based;
+- topic stream remains first;
+- current-session information collapses;
+- module attachments open as bottom sheet / full-screen drawer;
+- theme selector remains reachable.
 
-The mobile experience must preserve scan density rather than converting every topic into a tall social-media card.
+## 15. Acceptance criteria before production rearrangement
 
-## 10. Maintainer log in the forum
+The forum-first shell is ready to replace the current dashboard homepage only when it demonstrates:
 
-The current lore feed belongs naturally under:
+1. dense readable topic scanning on desktop and mobile;
+2. Realm → Pack → Node distinction;
+3. 架空王朝 as one Pack, not the definition of all Eastern ancient worlds;
+4. 武侠 / 修仙 as separate future packs;
+5. primary Node + tag distinction;
+6. a module release that still feels like a forum thread;
+7. module attachment → Forge transition without rule duplication;
+8. current identity / Agenda context without turning forum browsing into an in-world permission wall;
+9. maintainer lore fitting naturally into the same ecology;
+10. live real-community bridge clearly distinguished from archive content;
+11. day / night / eye-care themes using one semantic token model;
+12. Simplified Chinese-first presentation with machine IDs hidden from ordinary reading surfaces.
 
-```text
-天道公告 / 维护组
-```
-
-Each lore entry can render as a topic-like maintenance notice:
-
-```text
-【第119次维护记录】数据库可以讲机器话，门口牌匾别中英夹生。
-```
-
-`docs/MAINTAINER_LOG.md` remains the single source of truth. The Web product may derive the lore layer from it; engineering records remain repository documentation.
-
-## 11. Existing V0.1 systems mapped into the forum shell
-
-| Existing work | Forum-first role |
-| --- | --- |
-| Identity | current-session context + compatibility |
-| Permission profile | in-world action boundary; not forum browsing ACL |
-| Identity Playbook | identity-scale module presentation |
-| Agenda | long-term route / recommendation axis |
-| Capability selection | module attachment + workshop assembly |
-| Expert lenses | module attachment + workshop assembly |
-| Traveler Forum threads | native forum topics |
-| Curated notes | 老乡遗言库 |
-| Maintainer lore | 维护组 / 天道公告 |
-| Canonical manifest | machine attachment / export |
-| Current Web builder | RP Module Forge workshop |
-
-## 12. Acceptance criteria before production rearrangement
-
-The forum-first concept is ready to replace the current dashboard shell only when the prototype demonstrates:
-
-1. dense, readable topic scanning on desktop and mobile;
-2. clear primary-node + tag distinction;
-3. a module release that still feels like a forum post;
-4. a module attachment that can lead into the existing Forge without visual rupture;
-5. current identity / Agenda context without turning the forum into an in-world permission wall;
-6. maintainer lore fitting naturally into the same ecology;
-7. day / night / eye-care themes using one semantic token model;
-8. Simplified Chinese-first presentation with machine identifiers hidden from ordinary reading surfaces.
-
-Until then, the current canonical builder remains the production preview and the forum-first page remains a concept prototype.
+Until then, the current canonical builder remains the production preview and forum-first pages remain concept prototypes.

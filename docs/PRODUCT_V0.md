@@ -8,300 +8,266 @@ Last updated: 2026-09-04
 
 **天道降维互助论坛 is the primary product world and interaction shell.**
 
-It is an open-source traveler community where people can browse and contribute threads, replies, corrections, blood-and-tears reports, module releases, maintainer notices, and reviewed reusable knowledge for AI roleplay (AIRP) and text roleplay.
+It is an open-source traveler community for AI roleplay (AIRP) and text roleplay. Users can browse authored traveler threads, replies, corrections, blood-and-tears reports, module releases, maintainer notices and reviewed reusable knowledge.
 
-`RP Module Forge` is a first-party tool maintained inside that forum ecosystem. It is the module workshop used to inspect, adapt, assemble, export, and maintain portable assistance systems shared through forum module-release topics.
+`RP Module Forge` is a first-party tool inside that forum ecosystem. It is the module workshop used to inspect, adapt, assemble, export and maintain portable assistance systems shared through module-release topics.
 
-The forum and the Forge consume the same shared Core contracts. Runtime integrations extend those contracts into RP clients; they do not redefine the product.
+The forum, Forge and runtime integrations consume the same shared Core meaning. They do not maintain separate long-term rule systems.
 
 ## 2. Product truths
 
-These statements are binding for V0.1 design and implementation:
+These statements are binding for V0.1:
 
-1. **Forum-first.** The primary user world is 天道降维互助论坛. The current standalone builder becomes the module workshop, not the permanent home-page identity.
-2. **AIRP/RP generality.** The Core is not tied to a single story, character, model provider, or historical setting.
-3. **World packs, not hard-coded worlds.** Ancient China is the first official pack, not the product's permanent boundary.
-4. **One shared system.** Forum module attachments, the Forge workshop, manifests, Prompt Engine and integrations must reuse shared Core meaning rather than maintain separate long-term rule sets.
-5. **First-party SillyTavern path.** SillyTavern is the first planned official runtime integration and must reuse the shared Core.
-6. **No omniscience.** Methods may be preloaded; current-world facts may not be.
-7. **Identity determines permission.** Recommendations and outputs must respect what the host can plausibly observe, request, order, access, allocate, publish, conceal and survive doing.
-8. **Agenda is intent, not authority.** A desired future route may change long-term recommendations but cannot prepay a future identity or permission profile.
-9. **Experts are lenses.** Expert packs offer questions, heuristics, trade-offs and failure modes. They do not impersonate the historical figure or overwrite the host's personality.
-10. **The host decides.** The system may warn, compare or recommend, but never silently turns advice into a character decision.
-11. **Traveler Forum is a first-class subsystem.** It has a data model, provenance, review states, reply chains, retrieval rules and a curated knowledge layer.
-12. **Forum browsing is meta-layer access, not in-world authority.** A servant may browse emperor topics. Reading a forum post never grants the RP character access to imperial records or actions.
-13. **Module releases are special forum topics.** They remain discussable, versioned community posts with one structured module attachment rather than living in a disconnected marketplace.
-14. **Open-source collaboration enters the lore.** Contributions may be presented as traveler submissions while ordinary engineering records remain complete and readable.
-15. **Simplified Chinese first during V0.1 shaping.** Human-facing product copy is stabilized in `zh-CN` before Traditional Chinese and English are synchronized; machine identifiers remain language-neutral.
+1. **Forum-first.** 天道降维互助论坛 is the product world; the standalone builder becomes the module workshop rather than the permanent homepage identity.
+2. **AIRP/RP generality.** Core is not tied to one story, one character, one model provider or one world.
+3. **Realm and World Pack are separate concepts.** A Realm is broad navigation / presentation affinity; a World Pack owns concrete identities, permissions, experts, modules, forum nodes and runtime assumptions.
+4. **First open path:** `东方古代 → 架空王朝`.
+5. **武侠 / 修仙 are separate future World Packs**, not cosmetic tags on 架空王朝.
+6. **Machine IDs remain stable until migrated.** The first pack currently keeps the engineering id `ancient-china`; human presentation uses `架空王朝`.
+7. **One shared system.** Forum module attachments, Forge, manifests, Prompt Engine and integrations reuse shared Core contracts.
+8. **First-party SillyTavern path.** SillyTavern is the first planned official runtime integration and must reuse shared Core.
+9. **No omniscience.** Methods may be preloaded; current-world hidden facts may not be invented.
+10. **Identity determines current permission.** Recommendations must respect what the host can plausibly observe, access, request, command, allocate, publish, conceal and survive doing.
+11. **Agenda is intent, not authority.** A future route changes attention and recommendations but never prepays a future identity or permission profile.
+12. **Experts are lenses.** They provide questions, heuristics, trade-offs and failure modes; they do not overwrite host personality or act as summoned historical authorities.
+13. **The host decides.** Advice never silently becomes a character decision.
+14. **Traveler Forum is first-class data.** It has provenance, review state, replies, reliability and curated runtime knowledge.
+15. **Forum browsing is meta-layer access.** A servant may read emperor topics; reading never grants imperial in-world access.
+16. **Module releases are forum topics with structured attachments**, not a disconnected marketplace.
+17. **Real community and lore are distinct but bridgeable.** GitHub Discussions is the Phase 1 real-community entrance; imported material requires consent, provenance and review.
+18. **Simplified Chinese first.** V0.1 stabilizes zh-CN human presentation before Traditional Chinese and English; machine identifiers stay language-neutral.
+19. **Free-first infrastructure.** Do not add paid hosting, custom auth or a dedicated forum database before real usage demonstrates the need.
 
-## 3. User promise
+## 3. World navigation model
 
-A forum visitor should be able to discover what earlier travelers tried, what failed, which experiences were reviewed, and which reusable modules may fit the current RP.
+The forum navigation model is:
+
+```text
+天道总坛
+└── 世界域 / Realm
+    └── 世界包 / World Pack
+        └── 分区 / Node
+```
+
+Initial product taxonomy:
+
+```text
+东方古代
+├── 架空王朝       ← first open pack
+├── 武侠江湖       ← planned
+├── 修仙宗门       ← planned
+└── 志怪异闻       ← planned
+
+西方幻想          ← future Realm
+未来科幻          ← future Realm
+工业幻想          ← future Realm
+原始世界          ← future Realm
+```
+
+Unopened spaces must remain visibly unopened rather than being filled with fake forum history.
+
+See `docs/MULTIWORLD_FORUM_ARCHITECTURE_V0.md`.
+
+## 4. User promise
+
+A forum visitor should be able to discover what earlier travelers tried, what failed, what remains disputed, which experiences were reviewed, and which reusable modules may fit the current RP.
 
 When adapting a module, the user should be able to express:
 
-> “Who am I in this world, what can I realistically know and do, where do I want this character's life to go, which forms of assistance do I want, how should they behave, and how much context can I afford?”
+> “我现在是谁、现实能知道和做到什么、想把这个角色的人生带到哪里、希望哪些辅助存在、它们什么时候工作、我愿意花多少上下文？”
 
 The system should return a portable assistance configuration that behaves consistently across supported exports and integrations.
 
-It should improve the quality of questions, evidence handling, operational reasoning and consequence simulation without solving the setting by fiat.
+It should improve questions, evidence handling, operational reasoning and consequence simulation without solving the setting by fiat.
 
-## 4. Primary users
+## 5. Primary users
 
 - roleplayers who want structured assistance without losing character agency;
-- forum readers looking for reusable traveler experience, module releases, corrections and failure reports;
-- scenario and world builders who want reusable system rules rather than one-off prompts;
-- SillyTavern users who want the same configured system to become available during play;
-- pack authors who want to add identities, modules, expert lenses and lore without forking the Core;
-- contributors who want to submit forum content or module improvements with visible provenance and review state;
-- maintainers who want community knowledge contributions to be both reviewable data and part of the world fiction.
+- forum readers looking for traveler experience, corrections and reusable modules;
+- scenario / world builders who want reusable rules rather than one-off prompts;
+- SillyTavern users who want the configured system available during play;
+- World Pack authors adding identities, modules, experts and lore without forking Core;
+- real community contributors submitting play reports, modules, world proposals or corrections;
+- maintainers reviewing community material and preserving both lore history and engineering truth.
 
-## 5. Primary user flows
+## 6. Primary flows
 
-### 5.1 Forum discovery flow
+### 6.1 Forum discovery
 
 1. Enter 天道降维互助论坛.
-2. Browse a primary section / node or the latest / featured stream.
-3. Scan dense topic rows by type, title, node, tags, reliability and activity.
-4. Open ordinary threads, corrections, maintainer posts or module releases.
-5. Optionally use current-session identity / Agenda context to personalize recommendations.
-6. Browse other sections freely regardless of current RP identity.
+2. Choose Realm and World Pack, or remain in 天道总坛.
+3. Browse a Node, latest stream, featured content, module warehouse or curated knowledge.
+4. Search current Pack by default; later optionally widen search to Realm / all worlds / 总坛.
+5. Open ordinary threads, corrections, maintainer records or module releases.
+6. Use current-session context for recommendations without turning forum browsing into an in-world permission wall.
 
-### 5.2 Module adaptation flow
+### 6.2 Module adaptation
 
 1. Open a module-release topic.
 2. Read author notes, replies, corrections, version history and provenance.
 3. Inspect the structured module attachment.
-4. Compare its original identity / route assumptions with the current session.
-5. Choose to install as-is, adapt to the current identity / Agenda, or take only selected capabilities.
-6. Open RP Module Forge when detailed assembly is needed.
-7. Review current permission boundaries, capability modes and expert lenses.
-8. Normalize and export one or more formats.
+4. Compare its original World Pack / identity / Agenda assumptions with the current session.
+5. Install as-is only when compatible, otherwise adapt or take selected capabilities.
+6. Open RP Module Forge for detailed assembly.
+7. Review permission boundaries, capability modes and expert lenses.
+8. Normalize and export.
 
-### 5.3 Contribution / maintenance flow
+### 6.3 Real-community contribution
 
-1. Submit or revise a forum thread, reply, module release or correction.
-2. Preserve provenance and review state.
-3. Keep raw community material separate from curated runtime knowledge.
-4. If material is approved for reuse, derive a curated note or module revision without rewriting the original history.
-5. Record meaningful product / architecture changes in both conventional Git history and the lore-facing maintainer log.
+1. Enter **天道外部通信口** → GitHub Discussions.
+2. Submit feedback, RP reports, module ideas, world-pack proposals or questions.
+3. Keep GitHub attribution separate from optional lore alias.
+4. Confirm source / consent / presentation identity before importing into product lore.
+5. Review again before any reusable claim enters 老乡遗言库.
 
-## 6. Canonical product objects
+Nothing from a real Discussion auto-injects into runtime knowledge.
+
+## 7. Canonical product objects
 
 | Object | Answers | Owned by |
 | --- | --- | --- |
-| Forum node / section | What is this topic primarily about? | Forum / pack presentation |
-| Forum tag | Which identities, routes, situations or topics help discover this content? | Forum presentation / content |
+| Realm | Which broad world family is being browsed? | Forum presentation |
+| World Pack | Which concrete setting rules, identities and presentation are active? | Pack + Core contract |
+| Forum Node | What is this topic primarily about inside a Pack? | Pack / forum presentation |
+| Forum tag | Which cross-cutting identities, routes or situations aid discovery? | Forum content |
 | Forum thread / reply | What did a traveler report, argue, ask or correct? | Forum data |
-| Module release topic | Which reusable assistance package is being discussed and versioned? | Forum data + module attachment |
-| Module attachment | What exact assistance configuration / defaults are offered? | Core contract + pack data |
-| World pack | How is the system named, contextualized and illustrated in this setting? | Pack |
-| Identity profile | What may this host observe, access, request, command, allocate and risk? | Core contract + pack data |
-| Identity Playbook | How are stable capabilities translated to this identity's scale of agency? | Pack presentation |
-| Agenda | Where does the host want to go long-term? | User intent + pack route data |
-| Capability module | What reasoning operation is available? | Core contract + pack presentation |
-| Expert lens | Which method, questions, strengths and blind spots influence analysis? | Pack data |
-| Traveler Forum curated note | Which reviewed field experience is eligible for runtime retrieval? | Core contract + pack content |
-| Runtime rules | When are systems active, what do they consume and what do they return? | Core |
-| Session patch | What has this particular RP established? | User / session |
-| Canonical config | What exact portable assistance system did the user assemble? | Core |
-| Export | How is the same configuration represented for a target context? | Prompt Engine / adapter |
+| Module release topic | Which reusable assistance package is discussed and versioned? | Forum data + attachment |
+| Module attachment | What exact assistance defaults are offered? | Core + Pack |
+| Identity profile | What may the current host observe, access, request, command, allocate and risk? | Core + Pack |
+| Identity Playbook | How are stable capabilities translated to this identity's scale? | Pack presentation |
+| Agenda | Where does the host want to go long-term? | User intent + Pack route data |
+| Capability | What reusable reasoning operation is available? | Core + Pack presentation |
+| Expert lens | Which method and blind spots shape analysis? | Pack data |
+| Curated note | Which reviewed field experience is eligible for runtime retrieval? | Core + Pack content |
+| Runtime rules | When and how do systems activate? | Core |
+| Session patch | What has this RP established? | User / session |
+| Canonical config | What portable assistance system was assembled? | Core |
+| Export | How is that configuration represented for a target context? | Prompt Engine / adapter |
 
-## 7. Forum information architecture
+## 8. First World Pack
 
-V0 primary navigation:
+The first open Pack is **东方古代 → 架空王朝**.
 
-```text
-首页 / 最新 / 精华 / 模块仓 / 老乡遗言库 / 维护组
-```
+Its current implementation lives under the historical package path `packages/pack-ancient-china/` and machine id `ancient-china`. Product-facing UI must say **架空王朝**. A future ID migration must be explicit and tested rather than mixed into UI renaming.
 
-Ancient China primary nodes may include:
+See `docs/FICTIONAL_DYNASTY_PACK_V0.md`.
 
-```text
-天道公告
-皇帝专区
-官场与地方
-军旅与边关
-商贾与行旅
-士林与文艺
-普通人生
-低权限求生
-宫廷与家宅
-世界包 / 模块开发
-```
+## 9. Trust and agency contract
 
-Each topic has one primary node. Cross-cutting discovery uses tags.
+The system distinguishes at least:
 
-A node is a content classification, not a permission grant.
+- established fact;
+- reported claim;
+- inference;
+- hypothesis;
+- unknown.
 
-See `docs/FORUM_FIRST_INFORMATION_ARCHITECTURE_V0.md` for the detailed prototype model.
-
-## 8. Module release contract
-
-A module release remains a forum post and therefore may contain:
-
-- title;
-- author message;
-- primary node;
-- tags;
-- replies / corrections;
-- version / maintenance state;
-- provenance / reliability information where relevant.
-
-It additionally carries a structured module attachment that may contain:
-
-- target world pack;
-- suggested starting identities;
-- route assumptions / adaptation hints;
-- capability defaults;
-- expert-lens defaults;
-- Traveler Forum policy;
-- safety / permission notes;
-- canonical config or derivable normalized config;
-- version metadata.
-
-The attachment may open RP Module Forge for detailed adaptation.
-
-## 9. V0.1 outputs
-
-All machine / prompt outputs must derive from the same normalized configuration:
-
-- **One-line invocation** for sessions that already contain the full rules.
-- **Compact injection prompt** for constrained context windows.
-- **Full setting + injection prompt** for first setup or maximum clarity.
-- **Machine-readable manifest** for import, export, diffing, migration and integrations.
-
-An output formatter may omit detail for size, but it may not change the meaning of permissions, non-omniscience, Agenda intent or host authority.
-
-## 10. Trust and agency contract
-
-The system must distinguish at least:
-
-- **established fact** — explicitly present in accepted RP context or user input;
-- **reported claim** — attributed but not independently verified;
-- **inference** — reasoned from available evidence;
-- **hypothesis** — plausible but weakly supported;
-- **unknown** — absent or insufficiently supported.
-
-When evidence is insufficient, the useful output is not a fabricated answer. It is:
-
-- what is known;
-- what conflicts;
-- what remains unknown;
-- which evidence would discriminate between explanations;
-- which evidence-gathering actions are permitted and safe for the host.
+When evidence is insufficient, the useful output is what is known, what conflicts, what remains unknown, what evidence would discriminate, and which evidence-gathering actions are permitted and safe.
 
 The system must not:
 
-- reveal facts merely because a module's theme implies them;
-- turn an inference into a hidden-world fact;
-- grant an identity powers it does not hold;
-- turn a future Agenda into current authority;
-- make irreversible character choices without an explicit user decision;
-- present expert advice as a command from the real historical person;
-- treat a Traveler Forum anecdote as universal truth;
-- confuse forum-browsing access with in-world access.
+- fabricate hidden facts because a module theme implies them;
+- turn inference into world truth;
+- grant powers the identity does not hold;
+- turn future Agenda into current authority;
+- make irreversible character choices without user decision;
+- present expert advice as a command from the real historical figure;
+- treat forum anecdotes as universal truth;
+- confuse forum browsing with in-world access;
+- treat real-community contributions as runtime-approved merely because they are public.
 
-## 11. Theme / presentation contract
+## 10. Theme / presentation contract
 
-The forum-first product must support three presentation themes:
+Forum-first product supports:
 
 - **日间｜纸白档案**;
 - **夜间｜夜档**;
 - **护眼｜青笺**.
 
-They must use one semantic token system and preserve the same information hierarchy and state meanings.
+Themes share one semantic token model and never alter canonical RP state.
 
-Theme preference is local presentation state and must not enter the canonical RP manifest.
+Realm / Pack accents may decorate surfaces but cannot override accessibility-critical meaning.
 
-See `docs/THEME_SYSTEM_V0.md`.
-
-## 12. V0.1 scope
+## 11. V0.1 scope
 
 V0.1 includes:
 
-- the public monorepo and shared TypeScript Core skeleton;
-- forum-first product / information-architecture specification and concept prototype;
-- the existing Web App retained as the current canonical module-workshop implementation while the new shell is validated;
-- canonical configuration and output contracts;
-- the Ancient China Pack as the first official pack;
-- identity / permission, Identity Playbook, Agenda, capability, expert-lens, Traveler Forum and runtime specifications;
-- repository-backed founding Traveler Forum seed data;
-- one-line, compact, full and manifest export targets;
-- a documented first-party SillyTavern integration boundary;
-- Simplified Chinese-first presentation policy;
-- day / night / eye-care theme contract.
+- public monorepo and shared TypeScript Core;
+- forum-first information architecture and concept prototypes;
+- Realm → World Pack navigation model;
+- existing Forge retained as current canonical module-workshop implementation while the forum shell is validated;
+- `东方古代 → 架空王朝` as the first open Pack;
+- identity / permission, Playbook, Agenda, capability, expert, forum and runtime contracts;
+- repository-backed forum seed data;
+- one-line, compact, full and manifest exports;
+- day / night / eye-care themes;
+- Simplified Chinese-first presentation;
+- GitHub Discussions as the Phase 1 real-community bridge;
+- documented first-party SillyTavern boundary.
 
-## 13. Non-goals for V0.1
+## 12. Non-goals for V0.1
 
-- account system or cloud sync;
-- hosted database;
-- pretending the founding forum seed is already a large real user community;
-- API-key collection, relay or storage;
-- model proxy or built-in model service;
-- automatic reading of private chats by the Web App;
+- custom account system or password database;
+- paid hosted forum infrastructure without demonstrated need;
+- pretending seed data is already a large real community;
+- automatic ingestion of GitHub Discussions into lore or runtime knowledge;
+- API-key collection, relay or model proxy;
+- automatic reading of private chats;
 - autonomous character control;
-- automatic truth extraction from an RP transcript;
-- support for every world genre;
+- support for every world genre immediately;
 - claiming historical reconstruction or professional governance advice;
-- a reputation / voting economy for contributors before contribution and moderation semantics are established;
-- shipping Traditional Chinese / English product copies before Simplified Chinese terminology is stable.
+- shipping zh-Hant / English presentation before zh-CN terminology stabilizes.
 
-## 14. V0.1 acceptance criteria
+## 13. Acceptance criteria
 
-V0.1 is product-valid when all of the following are true:
+V0.1 is product-valid when:
 
-1. The forum-first shell can present dense topics, primary nodes, tags, module-release topics, maintainer notices and the curated-knowledge entry point coherently.
-2. A module-release topic can open a module attachment and lead into RP Module Forge without inventing a separate rule system.
-3. A user can build and export an Ancient China configuration through the Forge workshop.
-4. Emperor, general, local official, merchant / commoner and servant-style starts produce materially different permission boundaries and recommendations.
-5. The same identity can pursue materially different Agenda routes without permission escalation.
-6. Every enabled Ancient China system maps to a generic Core capability ID.
-7. The same config produces semantically consistent one-line, compact, full and manifest exports.
-8. Outputs always include non-omniscience, evidence-state and host-final-decision rules.
-9. Expert lenses can be enabled or removed without replacing the host persona.
-10. Traveler Forum entries carry provenance and reliability state; only eligible curated notes are automatically injected.
-11. Forum browsing does not inherit in-world permission restrictions.
-12. Day, night and eye-care themes preserve readable contrast and the same semantic state meanings.
-13. On-demand capabilities can be expanded and withdrawn without rebuilding the whole configuration.
-14. Imported manifests are validated and fail clearly when incompatible.
-15. The SillyTavern adapter design consumes shared Core contracts and requires no second model API key.
+1. forum shell presents dense topics, Realm / Pack navigation, Nodes, tags, module releases, maintainer notices and curated knowledge coherently;
+2. `东方古代 → 架空王朝` is clearly a Pack path, not the whole forum taxonomy;
+3. 武侠 / 修仙 appear as separate future Packs rather than sharing dynasty permissions by default;
+4. a module-release topic can open an attachment and lead into Forge without inventing a second rule system;
+5. emperor, general, local official, merchant / commoner and servant starts produce materially different permission boundaries and recommendations;
+6. the same identity may pursue different Agenda routes without permission escalation;
+7. stable Core capabilities remain language / world neutral;
+8. one-line, compact, full and manifest exports preserve the same permissions and invariants;
+9. forum browsing never inherits in-world permission restrictions;
+10. only eligible curated notes may auto-inject;
+11. day / night / eye-care themes preserve semantics and readable contrast;
+12. GitHub Discussions is reachable as a clearly real-community surface;
+13. community material requires consent / provenance / review before repository or runtime use;
+14. imported manifests fail clearly when incompatible;
+15. SillyTavern integration consumes shared Core and requires no second model API key.
 
-## 15. Validation scenarios
+## 14. Validation fixtures
 
 ### Cross-identity crisis
 
-Use one shared political or resource crisis and run it through at least:
-
-- emperor;
-- general;
-- local official;
-- merchant / commoner;
-- servant or another low-permission role.
-
-The available evidence, safe questions, executable actions, recommended capabilities and risk warnings must differ. If all receive essentially the same plan with different flavor text, the architecture has failed.
+Run one shared crisis through emperor, general, local official, merchant/commoner and servant. Evidence, safe questions, executable actions, recommended capabilities and risks must differ.
 
 ### Same-identity route divergence
 
-Use one identity and compare materially different Agenda routes, for example:
+Compare one identity across materially different Agenda routes. Recommendations change; current permission does not.
 
-- emperor: governance vs pleasure vs retirement;
-- servant: survival vs official ascent vs arts vs throne-seeking.
+### Cross-pack boundary
 
-The long-term questions and expert / capability recommendations should differ while the current permission profile remains unchanged.
+A user browsing a future 武侠 or 修仙 Pack while the active RP is 架空王朝 must not silently migrate identity, permissions or installed modules.
 
 ### Forum / in-world boundary
 
-A low-permission host should be able to read an emperor-section module post at the forum meta layer while the module adaptation step still refuses to grant emperor-only access or command rights.
+A low-permission host may read emperor topics while adaptation still refuses emperor-only actions.
 
-## 16. Status language
+### Real-community boundary
 
-Documentation, code and releases must use these labels consistently:
+A GitHub Discussion may be visible and valuable without becoming a curated runtime note.
 
-- **specified** — described by an accepted contract;
+## 15. Status language
+
+Use consistently:
+
+- **specified** — accepted contract;
 - **implemented** — present in code;
-- **validated** — covered by proportionate automated or manual evidence;
+- **validated** — covered by proportionate evidence;
 - **integrated** — available through a product surface;
 - **stable** — compatibility policy applies.
 
-“Specified” never implies “implemented.” V0.1 is allowed to be incomplete, but it is not allowed to be ambiguous about what currently works.
+Specified never implies implemented.
