@@ -290,6 +290,30 @@ Date: 2026-09-04
 - **Boundaries:** future packs remain closed. Forum attachments open the workshop for manual configuration; no one-click installation or live counts are claimed. Backup import UI and approved community ingestion are not included.
 - **References:** feature `751e87ba1c6de8400167e0e97c7fd3b83475a143`; [V3 review and maintenance record](FORUM_V3_REVIEW.md).
 
+## 【第121次维护记录】档案馆添了十扇门，旧帖也有人回来敲。
+
+Date: 2026-09-04
+
+> 档案员把第二批卷宗搬上架：老行伍差点被自己人射成刺猬、有人拿着看不懂的契来问、落第举子不肯写墓志铭、灶房第三口锅底下藏着一本记仇账、寡妇卯时挑水开豆腐坊、东宫发现自己只有三只耳朵。
+> 预备役翻出三百年前一篇只剩前半的旧帖；县丞日志写了（一）就没了下文；边军小卒断更逾三月，按他自己的话改挂“状态未知”，没有办丧事。
+> 后勤处想给帖子加“我踩过这个坑”的数字，档案处不同意，争论原样留着，暂定不设站内计数。
+>
+> 【档案员批注：帖子多了，规矩没变——好笑不算可靠，惨也不算。】
+
+### Engineering record
+
+- **Category:** pack-content / prototype content / docs
+- **Scope:** `prototypes/forum-v3/content.mjs`, `prototypes/tests/forum.test.mjs`, `packages/pack-ancient-china/src/forumData.ts`, `apps/web/src/main.ts`, README, forum status docs
+- **Problem:** the V3 archive was 12 topics with one knowledge card and mostly single-era replies; six canonical seed threads had no replies; the primary Web App still labelled the curated layer 遗言库 after the product-wide rename to 老乡经验库.
+- **Decision:** expand the V3 archive along Content Scale Wave B (breadth, short ordinary posts, different temperaments) and Wave C (multi-year replies, a revived fragment, an abandoned serial, an author-requested status change); add one reply to each reply-less canonical thread; retire the old label in the workshop.
+- **Behavior change:** V3 shows 22 topics and 82 stored replies, two knowledge cards, four explicitly marked gaps; the workshop forum panel shows 18 threads / 20 replies / 10 notes and says 老乡经验库.
+- **Compatibility:** additive. No canonical schema, stable ID, permission profile, reliability, review status or curated-note change. No new runtime injection: both knowledge cards remain display-layer summaries.
+- **Schema impact:** none.
+- **Privacy/security impact:** none. All new content is `maintainer-seed`; no real Discussion was imported and no test Discussion was published.
+- **Validation:** `pnpm typecheck`, 35 Core tests and 7 forum tests, `pnpm build`. The forum content test now asserts visible length variation, at least three gap-marked topics, later-era replies and valid `related` links instead of a flat three-paragraph minimum.
+- **References:** this commit; [V3 review record](FORUM_V3_REVIEW.md).
+- **Follow-up:** the 600–1800 character band is still thin; the V3 archive and canonical seed remain two hand-maintained corpora and should eventually derive from one source.
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
