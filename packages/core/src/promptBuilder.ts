@@ -3,6 +3,9 @@ import type {
   CanonicalWorldPack,
   CapabilityMode,
   ForgeConfig,
+  ForumInjectionPolicy,
+  ForumReliability,
+  TokenMode,
   WorldPack
 } from "./types.js";
 import { resolveCapabilityFacet, resolveIdentityPlaybook } from "./identityPlaybooks.js";
@@ -57,6 +60,28 @@ function modeLabel(mode: CapabilityMode): string {
   return "关闭";
 }
 
+function tokenModeLabel(mode: TokenMode): string {
+  if (mode === "light") return "轻量";
+  if (mode === "full") return "完整";
+  return "标准";
+}
+
+function forumPolicyLabel(policy: ForumInjectionPolicy): string {
+  if (policy === "off") return "关闭自动注入";
+  if (policy === "curated-plus-links") return "已审核条目 + 原帖链接";
+  if (policy === "manual") return "仅手动调用";
+  return "仅注入已审核条目";
+}
+
+function forumReliabilityLabel(value: ForumReliability): string {
+  if (value === "unknown") return "未知";
+  if (value === "anecdotal") return "个案经验";
+  if (value === "plausible") return "较可信";
+  if (value === "contested") return "有争议";
+  if (value === "deprecated") return "已废弃";
+  return "已交叉佐证";
+}
+
 export function generateCanonicalOneLiner(
   config: CanonicalForgeConfig,
   pack: CanonicalWorldPack
@@ -70,15 +95,15 @@ export function generateCanonicalOneLiner(
     .map((selection) => {
       const definition = pack.capabilities.find((item) => item.id === selection.id);
       const facet = resolveCapabilityFacet(pack, config.identity.id, selection.id);
-      return `${facet?.label ?? definition?.label ?? selection.id}（${modeLabel(selection.mode)}）`;
+      return `${facet?.label ?? definition?.label ?? "未知能力"}（${modeLabel(selection.mode)}）`;
     });
   const expertLabels = config.experts.map((selection) => {
     const expert = pack.experts.find((item) => item.id === selection.id);
-    return expert?.label ?? selection.id;
+    return expert?.label ?? "未知专家镜头";
   });
   const routeLabel = agenda?.label ?? config.agenda?.customGoal ?? "未指定长期路线";
 
-  return `$当前已装载【${pack.label}·${identity?.label ?? config.identity.id}辅助系统${playbook ? `｜${playbook.label}` : ""}】；发展路线：${routeLabel}；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。路线会按当前身份尺度解释，但不改变当前身份权限；系统不凭空获得隐藏事实，最终裁决由宿主完成。`;
+  return `$当前已装载【${pack.label}·${identity?.label ?? "当前身份"}辅助系统${playbook ? `｜${playbook.label}` : ""}】；发展路线：${routeLabel}；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。路线会按当前身份尺度解释，但不改变当前身份权限；系统不凭空获得隐藏事实，最终裁决由宿主完成。`;
 }
 
 export function generateCanonicalCompactPrompt(
@@ -96,16 +121,16 @@ export function generateCanonicalCompactPrompt(
     .map((selection) => {
       const definition = pack.capabilities.find((item) => item.id === selection.id);
       const facet = resolveCapabilityFacet(pack, config.identity.id, selection.id);
-      const label = facet?.label ?? definition?.label ?? selection.id;
-      const description = facet?.description ?? definition?.description ?? "使用通用 Core 契约。";
-      const lineage = facet && definition && facet.label !== definition.label ? `（Core呈现谱系：${definition.label}）` : "";
-      return `- ${label} [${modeLabel(selection.mode)}]${lineage}：${description}`;
+      const label = facet?.label ?? definition?.label ?? "未知能力";
+      const description = facet?.description ?? definition?.description ?? "使用通用核心能力契约。";
+      const lineage = facet && definition && facet.label !== definition.label ? `（同源核心能力：${definition.label}）` : "";
+      return `- ${label}【${modeLabel(selection.mode)}】${lineage}：${description}`;
     });
 
   const expertLines = config.experts.map((selection) => {
     const expert = pack.experts.find((item) => item.id === selection.id);
     const caution = expert?.caution ? `；注意：${expert.caution}` : "";
-    return `- ${expert?.label ?? selection.id} [${selection.weight === "primary" ? "主镜头" : "辅镜头"}]：${expert?.strengths.join("；") ?? "按已注册专家契约使用"}${caution}`;
+    return `- ${expert?.label ?? "未知专家镜头"}【${selection.weight === "primary" ? "主镜头" : "辅镜头"}】：${expert?.strengths.join("；") ?? "按已注册专家契约使用"}${caution}`;
   });
 
   const permissionLines = profile ? [
@@ -136,10 +161,10 @@ export function generateCanonicalCompactPrompt(
   ];
 
   return [
-    "【RP Module Forge｜V0.1 Canonical Runtime】",
-    `世界适配：${pack.label} (${pack.id}@${pack.version})`,
-    `宿主身份：${identity?.label ?? config.identity.id}`,
-    `权限档案：${config.identity.permissionProfile}`,
+    "【RP Module Forge｜V0.1 规范运行提示】",
+    `世界适配：${pack.label}（版本 ${pack.version}）`, 
+    `宿主身份：${identity?.label ?? "当前身份"}`,
+    "权限档案：由当前身份自动解析；发展路线、能力与专家镜头都不能改写当前权限。",
     identity?.summary ? `身份摘要：${identity.summary}` : "",
     playbook ? `身份处境方案：${playbook.label}` : "",
     playbook?.summary ? `处境重点：${playbook.summary}` : "",
@@ -156,26 +181,26 @@ export function generateCanonicalCompactPrompt(
     "【专家认知镜头】",
     ...(expertLines.length ? expertLines : ["- 无固定专家镜头。"]),
     "",
-    "【Traveler Forum】",
+    "【天道降维互助论坛】",
     `状态：${config.travelerForum.enabled ? "开启" : "关闭"}`,
-    `注入策略：${config.travelerForum.autoInject}`,
-    `最低可靠度：${config.travelerForum.minimumReliability}`,
+    `注入策略：${forumPolicyLabel(config.travelerForum.autoInject)}`,
+    `最低可靠度：${forumReliabilityLabel(config.travelerForum.minimumReliability)}`,
     `显示原帖链接：${config.travelerForum.showThreadLinks ? "是" : "否"}`,
     "",
     "【运行规则】",
-    `Token 模式：${config.runtime.tokenMode}`,
-    `激活策略：${config.runtime.activationPolicy}`,
+    `信息密度：${tokenModeLabel(config.runtime.tokenMode)}`,
+    "激活方式：事件驱动",
     `显示证据状态：${config.runtime.showEvidenceState ? "是" : "否"}`,
-    "1. omniscience = false：不得凭空知道当前世界隐藏事实。",
+    "1. 禁止全知：不得凭空知道当前世界隐藏事实。",
     "2. 先区分事实、据称、推断、假设与未知，再进行分析。",
     "3. 任何取证或行动建议都必须先经过当前身份权限检查。",
     "4. 身份处境方案只改变默认组合、问题尺度与呈现，不授予任何权限。",
     "5. 人生路线描述宿主想去哪里；路线可按当前身份缩放说明和推荐，但不能预支未来身份、职位、资源或权力。",
     "6. 专家只是认知镜头；专家推荐随身份尺度、路线和事件变化，不接管宿主人格或决定。",
-    "7. Traveler Forum 经验不得覆盖当前世界证据。",
-    "8. hostFinalDecision = true：最终重大决定始终由宿主作出。",
-    "9. 本局补丁不能削弱以上不变量。",
-    ...(patchLines.length ? ["", "【本局补丁】", ...patchLines] : [])
+    "7. 老乡论坛经验不得覆盖当前世界证据。",
+    "8. 最终重大决定始终由宿主作出。",
+    "9. 本局补充不能削弱以上固定规则。",
+    ...(patchLines.length ? ["", "【本局补充】", ...patchLines] : [])
   ].filter(Boolean).join("\n");
 }
 
