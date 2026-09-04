@@ -49,6 +49,16 @@ export type ExpertSelection = {
   weight: ExpertWeight;
 };
 
+/**
+ * A user-selected narrative direction. It describes where the host wants to go,
+ * never what authority the host already has.
+ */
+export type AgendaSelection = {
+  routeId: string;
+  /** Free-text intent for the custom route or a scenario-specific refinement. */
+  customGoal?: string;
+};
+
 export type TravelerForumConfig = {
   enabled: boolean;
   autoInject: ForumInjectionPolicy;
@@ -74,6 +84,8 @@ export type CanonicalForgeConfig = {
   schemaVersion: 1;
   worldPack: WorldPackRef;
   identity: IdentityRef;
+  /** Optional during the V0.1 migration window; new Web manifests persist it. */
+  agenda?: AgendaSelection;
   capabilities: CapabilitySelection[];
   experts: ExpertSelection[];
   travelerForum: TravelerForumConfig;
@@ -136,6 +148,38 @@ export type IdentityPlaybookDefinition = {
   facets: CapabilityFacet[];
 };
 
+export type AgendaKind =
+  | "open-ended"
+  | "governance"
+  | "power"
+  | "survival"
+  | "career"
+  | "wealth"
+  | "creative"
+  | "leisure"
+  | "retirement"
+  | "custom";
+
+/**
+ * Pack-owned route overlay. Routes are deliberately not identity-gated: a
+ * low-permission host may aspire to a distant role without receiving its power.
+ */
+export type AgendaDefinition = {
+  id: string;
+  label: string;
+  kind: AgendaKind;
+  summary: string;
+  /** Used only for recommendation ordering / UI hints, never as an eligibility gate. */
+  suggestedStartingIdentities: string[];
+  /** Applied over the current identity playbook when restoring recommendations. */
+  capabilityOverlay: CapabilitySelection[];
+  /** Route-specific expert lenses; these may differ for the same starting identity. */
+  expertOverlay: ExpertSelection[];
+  /** Questions that keep the route concrete without pretending the outcome is guaranteed. */
+  focusQuestions: string[];
+  caution?: string;
+};
+
 export type ExpertDefinition = {
   id: string;
   label: string;
@@ -152,6 +196,8 @@ export type CanonicalWorldPack = {
   experts: ExpertDefinition[];
   /** Pack-owned identity-scale assembly/presentation presets. */
   playbooks?: IdentityPlaybookDefinition[];
+  /** Pack-owned narrative direction overlays. */
+  agendas?: AgendaDefinition[];
 };
 
 /**

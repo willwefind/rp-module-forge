@@ -4,6 +4,8 @@ import {
   generateCanonicalManifest,
   generateCanonicalOneLiner,
   normalizeCanonicalConfig,
+  resolveAgenda,
+  resolveAgendaAssembly,
   resolveCapabilityFacet,
   resolveIdentityPlaybook,
   retrieveCuratedForumNotes,
@@ -27,7 +29,7 @@ app.innerHTML = `
     <section class="hero">
       <div class="muted">Public V0.1 · ${pack.label}</div>
       <h1>RP Module Forge</h1>
-      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份先决定权限边界，身份处境方案再把同一批 Core 能力翻译成这个人真正用得上的问题尺度；能力永远不能反过来给身份加权。</p>
+      <p>给 AIRP / 文本 RP 装配可移植的角色辅助系统。身份回答“你现在是谁、能做什么”，发展路线回答“你想往哪里走”；两者分开以后，同一个身份终于可以拥有完全不同的人生。</p>
     </section>
 
     <div class="grid">
@@ -41,7 +43,21 @@ app.innerHTML = `
       </section>
 
       <section class="card">
-        <h2>2. Runtime</h2>
+        <h2>2. 人生志向 / 发展路线</h2>
+        <label>
+          <span class="muted">当前想往哪里走</span>
+          <select id="agenda"></select>
+        </label>
+        <label>
+          <span class="muted">路线补充目标（可选）</span>
+          <textarea id="agendaGoal" placeholder="例如：不是想做权臣，只想攒够钱带妹妹离开主家；或者想当一个只画猫不入仕的画家……"></textarea>
+        </label>
+        <div id="agendaPreview" class="invariant-note"></div>
+        <p class="muted">路线可以很远：奴婢可以想称帝，皇帝也可以想归隐。路线只改变长期关注点、默认能力与专家镜头，不预支未来权限。</p>
+      </section>
+
+      <section class="card">
+        <h2>3. Runtime</h2>
         <label>
           <span class="muted">Token 模式</span>
           <select id="tokenMode">
@@ -57,19 +73,8 @@ app.innerHTML = `
         <div class="invariant-note">固定不变量：omniscience = false · hostFinalDecision = true</div>
       </section>
 
-      <section class="card span-2">
-        <h2>3. 能力系统</h2>
-        <p class="muted">底层仍是同一批稳定 Core capability；当前身份的 Playbook 可以改变默认组合、标签、问题和例子，但不能改变能力身份或权限。</p>
-        <div id="capabilities" class="settings-list"></div>
-      </section>
-
       <section class="card">
-        <h2>4. 专家认知镜头</h2>
-        <div id="experts" class="settings-list"></div>
-      </section>
-
-      <section class="card">
-        <h2>5. Traveler Forum Runtime</h2>
+        <h2>4. Traveler Forum Runtime</h2>
         <label class="inline-toggle">
           <input id="forumEnabled" type="checkbox" checked />
           <span>启用天道降维互助论坛</span>
@@ -97,10 +102,22 @@ app.innerHTML = `
         </label>
       </section>
 
+      <section class="card span-2">
+        <h2>5. 能力系统</h2>
+        <p class="muted">底层仍是同一批稳定 Core capability。身份 Playbook 决定“在你现在的位置这把工具怎么用”；发展路线只覆盖默认组合，不给你加官。</p>
+        <div id="capabilities" class="settings-list"></div>
+      </section>
+
+      <section class="card span-2">
+        <h2>6. 专家认知镜头</h2>
+        <p class="muted">专家不再由身份一锤定音：身份只提供处境基线，发展路线决定主要镜头，未来事件还可以临时召唤不同专家。</p>
+        <div id="experts" class="settings-list"></div>
+      </section>
+
       <section class="card span-2 forum-shell">
         <div class="forum-heading">
           <div>
-            <div class="muted">6. 天道降维互助论坛</div>
+            <div class="muted">7. 天道降维互助论坛</div>
             <h2>老乡们真的留下过东西</h2>
           </div>
           <div class="forum-stats">${forumData.threads.length} 原帖 · ${forumData.replies.length} 回复 · ${forumData.curatedNotes.length} 遗言库条目</div>
@@ -113,27 +130,27 @@ app.innerHTML = `
           </div>
           <div>
             <div class="forum-subhead">当前装配可检索的【老乡遗言库】</div>
-            <div class="muted forum-help">这是检索候选预览，不代表没有事件触发时就自动塞进 Prompt。</div>
+            <div class="muted forum-help">这是检索候选预览。路线标签还没有进入 Forum applicability；当前仍按身份、能力与可靠度筛选。</div>
             <div id="forumCurated" class="forum-list"></div>
           </div>
         </div>
       </section>
 
       <section class="card span-2">
-        <h2>7. 本局补丁</h2>
+        <h2>8. 本局补丁</h2>
         <textarea id="sessionPatch" placeholder="例如：本局采用虚构王朝；宿主已知北疆战事；某项制度与常见历史默认不同……"></textarea>
-        <p class="muted">这里暂存自由说明。结构化 facts / claims 编辑器会在后续 M1/M2 继续补齐。</p>
+        <p class="muted">这里暂存自由说明。结构化 facts / claims 编辑器会在后续继续补齐。</p>
       </section>
 
       <section class="card span-2">
-        <h2>8. Canonical 校验</h2>
+        <h2>9. Canonical 校验</h2>
         <div id="normalizationStatus" class="invariant-note"></div>
-        <p class="muted">所有导出会先经过 Core normalizer：校验 world pack / identity / runtime 不变量，纠正 permission profile，去重并固定 capability / expert 顺序。Playbook 只影响装配与呈现，不写进权限来源。</p>
+        <p class="muted">所有导出会先经过 Core normalizer。新 Web manifest 会保存发展路线；身份 Playbook 仍只是 pack 的处境呈现，不作为权限来源。</p>
       </section>
     </div>
 
     <div class="actions">
-      <button class="primary" id="auto">按处境方案恢复推荐</button>
+      <button class="primary" id="auto">按身份 + 路线恢复推荐</button>
       <button id="oneLine">一句话版</button>
       <button id="compact">简版 Prompt</button>
       <button id="manifest">Canonical Manifest</button>
@@ -150,6 +167,9 @@ const identitySelect = document.querySelector<HTMLSelectElement>("#identity")!;
 const identitySummary = document.querySelector<HTMLParagraphElement>("#identitySummary")!;
 const playbookPreview = document.querySelector<HTMLDivElement>("#playbookPreview")!;
 const permissionPreview = document.querySelector<HTMLDivElement>("#permissionPreview")!;
+const agendaSelect = document.querySelector<HTMLSelectElement>("#agenda")!;
+const agendaGoal = document.querySelector<HTMLTextAreaElement>("#agendaGoal")!;
+const agendaPreview = document.querySelector<HTMLDivElement>("#agendaPreview")!;
 const capabilitiesEl = document.querySelector<HTMLDivElement>("#capabilities")!;
 const expertsEl = document.querySelector<HTMLDivElement>("#experts")!;
 const tokenMode = document.querySelector<HTMLSelectElement>("#tokenMode")!;
@@ -170,6 +190,14 @@ for (const identity of pack.identities) {
   option.textContent = identity.label;
   identitySelect.append(option);
 }
+
+for (const agenda of pack.agendas ?? []) {
+  const option = document.createElement("option");
+  option.value = agenda.id;
+  option.textContent = agenda.label;
+  agendaSelect.append(option);
+}
+agendaSelect.value = "open-road";
 
 for (const capability of pack.capabilities) {
   const row = document.createElement("div");
@@ -196,10 +224,11 @@ for (const capability of pack.capabilities) {
 for (const expert of pack.experts) {
   const row = document.createElement("div");
   row.className = "setting-row";
+  row.dataset.expertRow = expert.id;
 
   const copy = document.createElement("div");
   copy.className = "setting-copy";
-  copy.innerHTML = `<strong>${expert.label}</strong><code>${expert.id}</code><div class="muted">${expert.strengths.join(" · ")}${expert.caution ? `｜注意：${expert.caution}` : ""}</div>`;
+  copy.innerHTML = `<strong>${expert.label}</strong><code>${expert.id}</code><div class="muted">${expert.strengths.join(" · ")}${expert.caution ? `｜注意：${expert.caution}` : ""}</div><div class="muted" data-expert-route></div>`;
 
   const select = document.createElement("select");
   select.dataset.expert = expert.id;
@@ -230,19 +259,34 @@ function selectedPlaybook() {
   return resolveIdentityPlaybook(pack, identitySelect.value)?.playbook ?? null;
 }
 
+function selectedAgenda() {
+  return resolveAgenda(pack, agendaSelect.value);
+}
+
 function enabledCapabilityIds(): CoreCapabilityId[] {
   return capabilitySelects()
     .filter((select) => select.value !== "disabled")
     .map((select) => select.dataset.capability as CoreCapabilityId);
 }
 
-function renderCapabilityPresentation() {
+function renderIdentityAndCapabilityPresentation() {
   const identity = selectedIdentity();
   const playbook = selectedPlaybook();
 
   playbookPreview.textContent = playbook
     ? `身份处境方案｜${playbook.label}：${playbook.summary}`
     : "当前 world pack 未提供专用身份处境方案；使用基础 capability presentation。";
+
+  const risks = identity.permissionProfile.risks.join("、") || "按当前情境判断";
+  identitySummary.textContent = `${identity.summary}｜权限档案：${identity.permissionProfile.id}｜主要风险：${risks}`;
+
+  const access = identity.permissionProfile.access.length
+    ? identity.permissionProfile.access.join("；")
+    : "无普通访问权限";
+  const command = identity.permissionProfile.command.length
+    ? identity.permissionProfile.command.join("；")
+    : "无普通命令权";
+  permissionPreview.textContent = `权限门依据｜access：${access}｜command：${command}｜Playbook、路线与能力启用都不会扩张这些边界。`;
 
   for (const capability of pack.capabilities) {
     const row = capabilitiesEl.querySelector<HTMLDivElement>(`[data-capability-row="${capability.id}"]`)!;
@@ -259,11 +303,37 @@ function renderCapabilityPresentation() {
   }
 }
 
+function renderAgenda() {
+  const identity = selectedIdentity();
+  const agenda = selectedAgenda();
+
+  for (const option of [...agendaSelect.options]) {
+    const definition = pack.agendas?.find((item) => item.id === option.value);
+    if (!definition) continue;
+    const hinted = definition.suggestedStartingIdentities.includes(identity.id);
+    option.textContent = `${definition.label}${hinted ? " · 此身份常见" : ""}`;
+  }
+
+  agendaPreview.textContent = agenda
+    ? `路线｜${agenda.label}：${agenda.summary}${agenda.caution ? `｜边界：${agenda.caution}` : ""}｜焦点：${agenda.focusQuestions.slice(0, 2).join(" / ")}`
+    : "当前路线未注册；不能自动推断长期目标。";
+
+  const routeExpertWeights = new Map((agenda?.expertOverlay ?? []).map((item) => [item.id, item.weight]));
+  for (const expert of pack.experts) {
+    const row = expertsEl.querySelector<HTMLDivElement>(`[data-expert-row="${expert.id}"]`)!;
+    const hint = row.querySelector<HTMLElement>("[data-expert-route]")!;
+    const weight = routeExpertWeights.get(expert.id);
+    hint.textContent = weight
+      ? `当前路线推荐：${weight === "primary" ? "主镜头" : "辅镜头"}`
+      : "";
+  }
+}
+
 function applyRecommendations() {
   const identity = selectedIdentity();
-  const playbook = selectedPlaybook();
-  const capabilityDefaults = playbook?.capabilityDefaults ?? identity.recommendedCapabilities;
-  const expertDefaults = playbook?.expertDefaults ?? identity.recommendedExperts;
+  const assembly = resolveAgendaAssembly(pack, identity.id, agendaSelect.value);
+  const capabilityDefaults = assembly?.capabilities ?? selectedPlaybook()?.capabilityDefaults ?? identity.recommendedCapabilities;
+  const expertDefaults = assembly?.experts ?? selectedPlaybook()?.expertDefaults ?? identity.recommendedExperts;
 
   for (const select of capabilitySelects()) select.value = "disabled";
   for (const recommendation of capabilityDefaults) {
@@ -277,23 +347,14 @@ function applyRecommendations() {
     if (select) select.value = recommendation.weight;
   }
 
-  const risks = identity.permissionProfile.risks.join("、") || "按当前情境判断";
-  identitySummary.textContent = `${identity.summary}｜权限档案：${identity.permissionProfile.id}｜主要风险：${risks}`;
-
-  const access = identity.permissionProfile.access.length
-    ? identity.permissionProfile.access.join("；")
-    : "无普通访问权限";
-  const command = identity.permissionProfile.command.length
-    ? identity.permissionProfile.command.join("；")
-    : "无普通命令权";
-  permissionPreview.textContent = `权限门依据｜access：${access}｜command：${command}｜Playbook 与能力启用都不会扩张这些边界。`;
-
-  renderCapabilityPresentation();
+  renderIdentityAndCapabilityPresentation();
+  renderAgenda();
 }
 
 function config(): CanonicalForgeConfig {
   const identity = selectedIdentity();
   const enabledForum = forumEnabled.checked;
+  const customGoal = agendaGoal.value.trim();
 
   return {
     schemaVersion: 1,
@@ -301,6 +362,10 @@ function config(): CanonicalForgeConfig {
     identity: {
       id: identity.id,
       permissionProfile: identity.permissionProfile.id
+    },
+    agenda: {
+      routeId: agendaSelect.value,
+      ...(customGoal ? { customGoal } : {})
     },
     capabilities: capabilitySelects().map((select) => ({
       id: select.dataset.capability as CanonicalForgeConfig["capabilities"][number]["id"],
@@ -342,7 +407,7 @@ function normalizedConfig(): CanonicalForgeConfig | null {
 
   normalizationStatus.textContent = result.warnings.length
     ? `✓ 可规范化；${result.warnings.length} 条 warning｜${result.warnings.map((item) => item.message).join("｜")}`
-    : "✓ Canonical config 已通过校验；world pack、identity、permission profile 与 runtime 不变量一致。身份 Playbook 不作为权限来源。";
+    : "✓ Canonical config 已通过校验；身份、路线、permission profile 与 runtime 不变量一致。路线不会预支未来权限。";
   return result.config;
 }
 
@@ -434,6 +499,11 @@ identitySelect.addEventListener("change", () => {
   applyRecommendations();
   refreshForumAndPrompt();
 });
+agendaSelect.addEventListener("change", () => {
+  applyRecommendations();
+  refreshForumAndPrompt();
+});
+agendaGoal.addEventListener("input", renderCompact);
 document.querySelector("#auto")!.addEventListener("click", () => {
   applyRecommendations();
   refreshForumAndPrompt();

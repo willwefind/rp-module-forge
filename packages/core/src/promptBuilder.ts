@@ -6,6 +6,7 @@ import type {
   WorldPack
 } from "./types.js";
 import { resolveCapabilityFacet, resolveIdentityPlaybook } from "./identityPlaybooks.js";
+import { resolveAgenda } from "./agendaRoutes.js";
 
 function resolved(config: ForgeConfig, pack: WorldPack) {
   return {
@@ -63,6 +64,7 @@ export function generateCanonicalOneLiner(
   const resolvedPlaybook = resolveIdentityPlaybook(pack, config.identity.id);
   const identity = resolvedPlaybook?.identity ?? pack.identities.find((item) => item.id === config.identity.id);
   const playbook = resolvedPlaybook?.playbook;
+  const agenda = resolveAgenda(pack, config.agenda?.routeId);
   const activeCapabilities = config.capabilities
     .filter((selection) => selection.mode !== "disabled")
     .map((selection) => {
@@ -74,8 +76,9 @@ export function generateCanonicalOneLiner(
     const expert = pack.experts.find((item) => item.id === selection.id);
     return expert?.label ?? selection.id;
   });
+  const routeLabel = agenda?.label ?? config.agenda?.customGoal ?? "未指定长期路线";
 
-  return `$当前已装载【${pack.label}·${identity?.label ?? config.identity.id}辅助系统${playbook ? `｜${playbook.label}` : ""}】；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。所有分析受当前身份权限约束，不凭空获得隐藏事实，最终裁决由宿主完成。`;
+  return `$当前已装载【${pack.label}·${identity?.label ?? config.identity.id}辅助系统${playbook ? `｜${playbook.label}` : ""}】；发展路线：${routeLabel}；启用${activeCapabilities.join("、") || "基础证据规则"}，专家认知镜头：${expertLabels.join("、") || "无固定镜头"}。路线描述想去哪里，不改变当前身份权限；系统不凭空获得隐藏事实，最终裁决由宿主完成。`;
 }
 
 export function generateCanonicalCompactPrompt(
@@ -85,6 +88,7 @@ export function generateCanonicalCompactPrompt(
   const resolvedPlaybook = resolveIdentityPlaybook(pack, config.identity.id);
   const identity = resolvedPlaybook?.identity ?? pack.identities.find((item) => item.id === config.identity.id);
   const playbook = resolvedPlaybook?.playbook;
+  const agenda = resolveAgenda(pack, config.agenda?.routeId);
   const profile = identity?.permissionProfile;
 
   const capabilityLines = config.capabilities
@@ -115,6 +119,16 @@ export function generateCanonicalCompactPrompt(
     `主要风险：${profile.risks.join("；") || "按当前情境判断"}`
   ] : ["权限档案缺失：不得自行补齐权限，应停止越权行动建议。"];
 
+  const agendaLines = agenda ? [
+    `路线：${agenda.label}`,
+    `路线说明：${agenda.summary}`,
+    ...(config.agenda?.customGoal ? [`宿主补充目标：${config.agenda.customGoal}`] : []),
+    ...(agenda.focusQuestions.length ? ["路线焦点：", ...agenda.focusQuestions.map((item) => `- ${item}`)] : []),
+    ...(agenda.caution ? [`路线边界：${agenda.caution}`] : [])
+  ] : config.agenda?.customGoal
+    ? [`自定义目标：${config.agenda.customGoal}`]
+    : ["路线：未指定；不要替宿主假设长期人生目标。"];
+
   const patchLines = [
     ...(config.sessionPatch.facts.length ? ["已接受事实：", ...config.sessionPatch.facts.map((item) => `- ${item}`)] : []),
     ...(config.sessionPatch.claims.length ? ["待核说法：", ...config.sessionPatch.claims.map((item) => `- ${item}`)] : []),
@@ -129,6 +143,9 @@ export function generateCanonicalCompactPrompt(
     identity?.summary ? `身份摘要：${identity.summary}` : "",
     playbook ? `身份处境方案：${playbook.label}` : "",
     playbook?.summary ? `处境重点：${playbook.summary}` : "",
+    "",
+    "【人生志向 / 发展路线】",
+    ...agendaLines,
     "",
     "【身份权限】",
     ...permissionLines,
@@ -151,12 +168,13 @@ export function generateCanonicalCompactPrompt(
     `显示证据状态：${config.runtime.showEvidenceState ? "是" : "否"}`,
     "1. omniscience = false：不得凭空知道当前世界隐藏事实。",
     "2. 先区分事实、据称、推断、假设与未知，再进行分析。",
-    "3. 任何取证或行动建议都必须先经过身份权限检查。",
+    "3. 任何取证或行动建议都必须先经过当前身份权限检查。",
     "4. 身份处境方案只改变默认组合、问题尺度与呈现，不授予任何权限。",
-    "5. 专家只是认知镜头，不接管宿主人格或决定。",
-    "6. Traveler Forum 经验不得覆盖当前世界证据。",
-    "7. hostFinalDecision = true：最终重大决定始终由宿主作出。",
-    "8. 本局补丁不能削弱以上不变量。",
+    "5. 人生路线描述宿主想去哪里；它不能预支未来身份、职位、资源或权力。",
+    "6. 专家只是认知镜头；专家推荐随路线和事件变化，不接管宿主人格或决定。",
+    "7. Traveler Forum 经验不得覆盖当前世界证据。",
+    "8. hostFinalDecision = true：最终重大决定始终由宿主作出。",
+    "9. 本局补丁不能削弱以上不变量。",
     ...(patchLines.length ? ["", "【本局补丁】", ...patchLines] : [])
   ].filter(Boolean).join("\n");
 }

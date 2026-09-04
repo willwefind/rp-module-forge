@@ -15,6 +15,8 @@ export type CanonicalConfigIssue = {
     | "world-pack"
     | "world-pack-version"
     | "identity"
+    | "unknown-agenda"
+    | "custom-agenda-empty"
     | "permission-profile-corrected"
     | "unsupported-capability"
     | "invalid-capability-mode"
@@ -78,6 +80,23 @@ export function normalizeCanonicalConfig(
   const identity = pack.identities.find((item) => item.id === input.identity.id);
   if (!identity) {
     errors.push(issue("fatal", "identity", "identity.id", `Unknown identity for ${pack.id}@${pack.version}: ${input.identity.id}`));
+  }
+
+  let normalizedAgenda = input.agenda ? { ...input.agenda } : undefined;
+  if (normalizedAgenda) {
+    const agenda = pack.agendas?.find((item) => item.id === normalizedAgenda!.routeId);
+    if (!agenda) {
+      errors.push(issue("fatal", "unknown-agenda", "agenda.routeId", `Unknown agenda route for ${pack.id}@${pack.version}: ${normalizedAgenda.routeId}`));
+    } else {
+      const trimmedGoal = normalizedAgenda.customGoal?.trim();
+      normalizedAgenda = {
+        routeId: agenda.id,
+        ...(trimmedGoal ? { customGoal: trimmedGoal } : {})
+      };
+      if (agenda.kind === "custom" && !trimmedGoal) {
+        warnings.push(issue("warning", "custom-agenda-empty", "agenda.customGoal", "Custom agenda has no goal text; runtime should treat the route as intentionally unspecified."));
+      }
+    }
   }
 
   if (input.runtime.hostFinalDecision !== true) {
@@ -162,6 +181,7 @@ export function normalizeCanonicalConfig(
     schemaVersion: 1,
     worldPack: { id: pack.id, version: pack.version },
     identity: { id: identity.id, permissionProfile },
+    ...(normalizedAgenda ? { agenda: normalizedAgenda } : {}),
     capabilities: CORE_CAPABILITY_IDS
       .map((id) => capabilityById.get(id))
       .filter((item): item is CanonicalForgeConfig["capabilities"][number] => Boolean(item)),
