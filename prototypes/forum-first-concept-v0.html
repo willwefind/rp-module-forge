@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="day">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>天道降维互助论坛 · Forum-first Concept V0</title>
+  <style>
+    :root {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --radius-sm: 7px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --speed: 160ms;
+      --content: 1440px;
+    }
+
+    html[data-theme="day"] {
+      --surface-app: #F4EFE5;
+      --surface-nav: #ECE4D8;
+      --surface-panel: #FFFDF8;
+      --surface-raised: #FFFFFF;
+      --surface-reading: #FFFDF8;
+      --surface-selected: #F1E5D9;
+      --text-primary: #201A17;
+      --text-secondary: #4E443E;
+      --text-muted: #6E625A;
+      --text-inverse: #FFFFFF;
+      --border-subtle: #D8CFC2;
+      --border-strong: #B9AB9A;
+      --action-primary: #94362B;
+      --action-primary-text: #FFFFFF;
+      --action-hover: #7E2B22;
+      --accent-pack: #A47D43;
+      --accent-pack-soft: #EFE2C9;
+      --status-good: #456653;
+      --status-good-soft: #E1ECE3;
+      --status-warn: #8B652C;
+      --status-warn-soft: #F1E7CF;
+      --status-danger: #94362B;
+      --status-danger-soft: #F1DEDA;
+      --status-archived: #81776E;
+      --shadow-soft: 0 10px 30px rgba(56, 42, 30, .08);
+      --focus-ring: #7C2B23;
+      --header-glass: rgba(244,239,229,.88);
+    }
+
+    html[data-theme="night"] {
+      --surface-app: #15110F;
+      --surface-nav: #1A1512;
+      --surface-panel: #211B18;
+      --surface-raised: #2A221E;
+      --surface-reading: #211B18;
+      --surface-selected: #30241F;
+      --text-primary: #F3EBDD;
+      --text-secondary: #D9CEC1;
+      --text-muted: #B8ADA2;
+      --text-inverse: #171311;
+      --border-subtle: #3A302A;
+      --border-strong: #5B4B42;
+      --action-primary: #C85F4B;
+      --action-primary-text: #171311;
+      --action-hover: #D16E5B;
+      --accent-pack: #C09A5A;
+      --accent-pack-soft: #352B20;
+      --status-good: #88AE8E;
+      --status-good-soft: #203128;
+      --status-warn: #D2A962;
+      --status-warn-soft: #372E1F;
+      --status-danger: #D06B58;
+      --status-danger-soft: #3B211D;
+      --status-archived: #968A80;
+      --shadow-soft: 0 14px 34px rgba(0,0,0,.28);
+      --focus-ring: #E08570;
+      --header-glass: rgba(21,17,15,.90);
+    }
+
+    html[data-theme="eye"] {
+      --surface-app: #E2E7D8;
+      --surface-nav: #D8DECE;
+      --surface-panel: #EDF1E5;
+      --surface-raised: #F4F6EF;
+      --surface-reading: #EDF1E5;
+      --surface-selected: #D5DEC9;
+      --text-primary: #243028;
+      --text-secondary: #465148;
+      --text-muted: #59655D;
+      --text-inverse: #FFFFFF;
+      --border-subtle: #C4CDBB;
+      --border-strong: #9EAA98;
+      --action-primary: #804238;
+      --action-primary-text: #FFFFFF;
+      --action-hover: #69362F;
+      --accent-pack: #81765B;
+      --accent-pack-soft: #DDD9C9;
+      --status-good: #3F6650;
+      --status-good-soft: #D6E3D6;
+      --status-warn: #7E682F;
+      --status-warn-soft: #E7E1C8;
+      --status-danger: #804238;
+      --status-danger-soft: #E2CDC6;
+      --status-archived: #6F776F;
+      --shadow-soft: 0 10px 28px rgba(47,64,47,.08);
+      --focus-ring: #6B352E;
+      --header-glass: rgba(226,231,216,.90);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--surface-app); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text-primary);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent-pack-soft) 42%, transparent), transparent 240px),
+        var(--surface-app);
+      transition: background-color var(--speed), color var(--speed);
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(16px);
+      background: var(--header-glass);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .topbar-inner {
+      max-width: var(--content);
+      margin: 0 auto;
+      min-height: 58px;
+      padding: 8px 20px;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+    .brand-seal {
+      width: 31px;
+      height: 31px;
+      border-radius: 9px 9px 9px 3px;
+      display: grid;
+      place-items: center;
+      background: var(--action-primary);
+      color: var(--action-primary-text);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-inverse) 24%, transparent);
+      font-family: ui-serif, "Songti SC", "STSong", serif;
+      font-size: 15px;
+    }
+    .brand small { display: block; color: var(--text-muted); font-weight: 500; font-size: 10px; letter-spacing: .04em; }
+    .search {
+      width: min(680px, 100%);
+      justify-self: center;
+      position: relative;
+    }
+    .search input {
+      width: 100%;
+      padding: 10px 40px 10px 36px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      color: var(--text-primary);
+      background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
+    }
+    .search::before { content: "⌕"; position: absolute; left: 13px; top: 7px; color: var(--text-muted); font-size: 20px; }
+    .search-kbd { position: absolute; right: 10px; top: 8px; color: var(--text-muted); font-size: 11px; border: 1px solid var(--border-subtle); border-radius: 5px; padding: 2px 5px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .theme-switch {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      background: var(--surface-panel);
+    }
+    .theme-switch button {
+      border: 0;
+      background: transparent;
+      padding: 6px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .theme-switch button[aria-pressed="true"] { background: var(--surface-selected); color: var(--text-primary); font-weight: 700; }
+    .session-pill {
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-panel);
+      border-radius: 999px;
+      padding: 7px 10px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .session-dot { width: 7px; height: 7px; border-radius: 99px; background: var(--status-good); }
+
+    .global-nav {
+      max-width: var(--content);
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 42px;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 76%, transparent);
+    }
+    .global-nav button {
+      border: 0;
+      padding: 11px 0 9px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+    }
+    .global-nav button.active { color: var(--text-primary); font-weight: 750; border-bottom-color: var(--action-primary); }
+
+    .layout {
+      max-width: var(--content);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr) 280px;
+      gap: 22px;
+      padding: 22px 20px 60px;
+      align-items: start;
+    }
+    .sidebar, .rail { position: sticky; top: 122px; }
+    .panel {
+      border: 1px solid var(--border-subtle);
+      background: color-mix(in srgb, var(--surface-panel) 94%, transparent);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+    }
+    .side-section { padding: 13px; border-bottom: 1px solid var(--border-subtle); }
+    .side-section:last-child { border-bottom: 0; }
+    .side-title { margin: 0 0 8px; color: var(--text-muted); font-size: 11px; letter-spacing: .08em; font-weight: 750; }
+    .node-list { display: grid; gap: 2px; }
+    .node-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 8px 9px;
+      border-radius: 7px;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .node-button:hover, .node-button.active { background: var(--surface-selected); color: var(--text-primary); }
+    .node-button.active { font-weight: 750; box-shadow: inset 3px 0 0 var(--action-primary); }
+    .node-count { color: var(--text-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .tag-cloud { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--accent-pack-soft);
+      color: var(--text-secondary);
+      font-size: 11px;
+      border: 1px solid color-mix(in srgb, var(--accent-pack) 26%, transparent);
+      cursor: default;
+    }
+
+    .stream-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 11px;
+    }
+    .crumb { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    .stream-title { margin: 0; font-size: 22px; font-family: ui-serif, "Songti SC", "STSong", serif; }
+    .stream-caption { margin: 4px 0 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
+    .stream-actions { display: flex; gap: 7px; }
+    .quiet-button, .primary-button {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: var(--surface-panel);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .primary-button { background: var(--action-primary); color: var(--action-primary-text); border-color: var(--action-primary); font-weight: 750; }
+    .primary-button:hover { background: var(--action-hover); }
+
+    .notice-strip {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--action-primary);
+      border-radius: var(--radius-sm);
+      background: color-mix(in srgb, var(--surface-panel) 96%, var(--action-primary) 4%);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .notice-strip strong { white-space: nowrap; }
+    .notice-strip span { color: var(--text-secondary); }
+
+    .topic-table {
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface-reading);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+    }
+    .topic-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 70px 82px;
+      gap: 12px;
+      align-items: center;
+      min-height: 72px;
+      padding: 10px 13px;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: background-color var(--speed), transform var(--speed);
+    }
+    .topic-row:last-child { border-bottom: 0; }
+    .topic-row:hover { background: var(--surface-selected); }
+    .topic-row.is-module { box-shadow: inset 3px 0 0 var(--accent-pack); }
+    .topic-row.is-maintainer { box-shadow: inset 3px 0 0 var(--action-primary); }
+    .topic-main { min-width: 0; }
+    .topic-title-line { display: flex; gap: 7px; align-items: baseline; min-width: 0; }
+    .topic-type {
+      flex: 0 0 auto;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+    .topic-type.module { color: var(--accent-pack); border-color: color-mix(in srgb, var(--accent-pack) 48%, var(--border-subtle)); }
+    .topic-type.good { color: var(--status-good); background: var(--status-good-soft); }
+    .topic-type.warn { color: var(--status-warn); background: var(--status-warn-soft); }
+    .topic-type.danger { color: var(--status-danger); background: var(--status-danger-soft); }
+    .topic-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .topic-title.pinned::before { content: "◆ "; color: var(--action-primary); font-size: 9px; vertical-align: 2px; }
+    .topic-meta { margin-top: 6px; display: flex; gap: 7px; flex-wrap: wrap; align-items: center; color: var(--text-muted); font-size: 10px; }
+    .mini-tag { padding: 1px 4px; border-radius: 4px; background: var(--accent-pack-soft); color: var(--text-secondary); }
+    .metric { text-align: right; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+    .metric strong { display: block; color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .last-activity { text-align: right; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+    .last-activity strong { display: block; color: var(--text-secondary); font-weight: 600; }
+
+    .rail { display: grid; gap: 12px; }
+    .rail-card { padding: 14px; }
+    .rail-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .rail-title h3 { margin: 0; font-size: 13px; }
+    .tiny-link { border: 0; background: transparent; color: var(--action-primary); cursor: pointer; font-size: 10px; padding: 0; }
+    .profile {
+      display: grid;
+      grid-template-columns: 38px minmax(0,1fr);
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 11px;
+    }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 11px 11px 11px 4px;
+      display: grid; place-items: center;
+      background: var(--accent-pack-soft);
+      color: var(--action-primary);
+      border: 1px solid var(--border-subtle);
+      font-family: ui-serif, "Songti SC", serif;
+      font-size: 18px;
+    }
+    .profile strong { font-size: 13px; }
+    .profile small { display: block; margin-top: 2px; color: var(--text-muted); font-size: 10px; }
+    .facts { display: grid; gap: 6px; }
+    .fact { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; }
+    .fact span:first-child { color: var(--text-muted); }
+    .fact span:last-child { text-align: right; color: var(--text-secondary); }
+    .permission-note { margin-top: 10px; padding: 8px; border-radius: 7px; background: var(--status-warn-soft); color: var(--text-secondary); font-size: 10px; line-height: 1.5; }
+    .workshop-card { border-top: 3px solid var(--accent-pack); }
+    .workshop-card p { color: var(--text-muted); font-size: 11px; line-height: 1.6; }
+    .workshop-button { width: 100%; margin-top: 8px; }
+    .maintainer-mini { display: grid; gap: 9px; }
+    .maintainer-item { border-left: 2px solid var(--action-primary); padding-left: 8px; }
+    .maintainer-item strong { display: block; font-size: 11px; line-height: 1.4; }
+    .maintainer-item small { color: var(--text-muted); font-size: 9px; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0,0,0,.34);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--speed);
+    }
+    .drawer {
+      position: fixed;
+      z-index: 55;
+      top: 0;
+      right: 0;
+      width: min(680px, 94vw);
+      height: 100dvh;
+      overflow: auto;
+      background: var(--surface-reading);
+      border-left: 1px solid var(--border-strong);
+      box-shadow: -20px 0 50px rgba(0,0,0,.18);
+      transform: translateX(104%);
+      transition: transform 200ms ease;
+    }
+    body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
+    body.drawer-open .drawer { transform: translateX(0); }
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--header-glass);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+    }
+    .drawer-head strong { font-size: 13px; }
+    .close-button { border: 1px solid var(--border-subtle); background: var(--surface-panel); border-radius: 999px; width: 32px; height: 32px; cursor: pointer; }
+    .drawer-body { padding: 20px 22px 40px; }
+    .post-kicker { color: var(--accent-pack); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+    .post-title { margin: 8px 0 9px; font-family: ui-serif, "Songti SC", "STSong", serif; font-size: clamp(22px, 4vw, 31px); line-height: 1.35; }
+    .post-meta { display: flex; gap: 6px; flex-wrap: wrap; color: var(--text-muted); font-size: 10px; }
+    .post-body { margin-top: 22px; font-family: ui-serif, "Songti SC", "STSong", serif; font-size: 15px; line-height: 1.95; }
+    .post-body blockquote {
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-left: 3px solid var(--action-primary);
+      background: var(--surface-selected);
+      color: var(--text-secondary);
+    }
+    .module-attachment {
+      margin: 22px 0;
+      border: 1px solid color-mix(in srgb, var(--accent-pack) 55%, var(--border-subtle));
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface-panel);
+    }
+    .attachment-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 13px;
+      background: var(--accent-pack-soft);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .attachment-head strong { font-size: 12px; }
+    .attachment-version { color: var(--text-muted); font-size: 10px; }
+    .attachment-body { padding: 13px; }
+    .attachment-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+    .attachment-cell { padding: 9px; border: 1px solid var(--border-subtle); border-radius: 8px; }
+    .attachment-cell small { display: block; color: var(--text-muted); font-size: 9px; margin-bottom: 3px; }
+    .attachment-cell strong { font-size: 11px; line-height: 1.5; }
+    .compatibility {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--status-warn-soft);
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .attachment-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .reply { margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 13px; font-size: 12px; line-height: 1.65; }
+    .reply strong { color: var(--action-primary); }
+
+    .mobile-session { display: none; }
+    .empty { padding: 30px; color: var(--text-muted); text-align: center; font-size: 12px; }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 190px minmax(0,1fr); }
+      .rail { display: none; }
+      .mobile-session { display: flex; margin-bottom: 10px; }
+    }
+    @media (max-width: 760px) {
+      .topbar-inner { grid-template-columns: 1fr auto; gap: 8px; padding: 7px 10px; }
+      .search { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+      .brand small { display: none; }
+      .session-pill { display: none; }
+      .theme-switch button { padding: 6px 8px; }
+      .global-nav { padding: 0 10px; gap: 16px; }
+      .layout { display: block; padding: 14px 10px 46px; }
+      .sidebar { position: static; margin-bottom: 10px; }
+      .sidebar .panel { display: flex; gap: 4px; overflow-x: auto; padding: 6px; scrollbar-width: none; }
+      .side-section { display: contents; }
+      .side-title, .tag-cloud, .sidebar .side-section:nth-child(2) { display: none; }
+      .node-list { display: flex; gap: 4px; }
+      .node-button { width: auto; white-space: nowrap; padding: 7px 9px; }
+      .node-count { display: none; }
+      .stream-head { align-items: start; }
+      .stream-actions .quiet-button { display: none; }
+      .topic-row { grid-template-columns: minmax(0,1fr) 50px; gap: 8px; min-height: 76px; padding: 10px; }
+      .last-activity { display: none; }
+      .topic-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+      .topic-meta { gap: 5px; }
+      .drawer { width: 100vw; border-left: 0; }
+      .drawer-body { padding: 16px 14px 36px; }
+      .attachment-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-seal">天道</span>
+        <span>天道降维互助论坛<small>TRAVELER DESCENT MUTUAL-AID FORUM · 概念原型 V0</small></span>
+      </div>
+      <label class="search" aria-label="搜索论坛">
+        <input id="searchInput" type="search" placeholder="搜帖子、模块、老乡经验……" />
+        <span class="search-kbd">⌘K</span>
+      </label>
+      <div class="top-actions">
+        <div class="theme-switch" aria-label="配色主题">
+          <button data-theme-button="day" aria-pressed="true">日间</button>
+          <button data-theme-button="night" aria-pressed="false">夜间</button>
+          <button data-theme-button="eye" aria-pressed="false">护眼</button>
+        </div>
+        <div class="session-pill"><span class="session-dot"></span>本局：奴婢 · 小日子</div>
+      </div>
+    </div>
+    <nav class="global-nav" aria-label="论坛主导航">
+      <button class="active" data-tab="latest">首页</button>
+      <button data-tab="latest">最新</button>
+      <button data-tab="featured">精华</button>
+      <button data-tab="modules">模块仓</button>
+      <button data-tab="legacy">老乡遗言库</button>
+      <button data-tab="maintainer">维护组</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" aria-label="论坛分区">
+      <div class="panel">
+        <section class="side-section">
+          <h2 class="side-title">主要分区</h2>
+          <div class="node-list" id="nodeList">
+            <button class="node-button active" data-node="all">全部主题 <span class="node-count">1289</span></button>
+            <button class="node-button" data-node="notice">天道公告 <span class="node-count">42</span></button>
+            <button class="node-button" data-node="emperor">皇帝专区 <span class="node-count">176</span></button>
+            <button class="node-button" data-node="official">官场与地方 <span class="node-count">231</span></button>
+            <button class="node-button" data-node="military">军旅与边关 <span class="node-count">148</span></button>
+            <button class="node-button" data-node="merchant">商贾与行旅 <span class="node-count">119</span></button>
+            <button class="node-button" data-node="arts">士林与文艺 <span class="node-count">154</span></button>
+            <button class="node-button" data-node="ordinary">普通人生 <span class="node-count">207</span></button>
+            <button class="node-button" data-node="survival">低权限求生 <span class="node-count">265</span></button>
+            <button class="node-button" data-node="household">宫廷与家宅 <span class="node-count">132</span></button>
+          </div>
+        </section>
+        <section class="side-section">
+          <h2 class="side-title">最近常看</h2>
+          <div class="tag-cloud">
+            <span class="tag">#奴婢</span><span class="tag">#享乐</span><span class="tag">#低权限</span><span class="tag">#诗画</span><span class="tag">#防背刺</span><span class="tag">#已核验</span>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="stream" aria-label="主题列表">
+      <div class="mobile-session notice-strip"><strong>本局：奴婢</strong><span>偷得浮生 / 小日子路线 · 论坛可自由浏览，身份只影响推荐与模块适配。</span></div>
+      <div class="stream-head">
+        <div>
+          <div class="crumb" id="crumb">天道降维互助论坛 / 首页</div>
+          <h1 class="stream-title" id="streamTitle">老乡们今天又留下了什么</h1>
+          <p class="stream-caption" id="streamCaption">一屏多看几条，先扫标题、分区、标签、可靠度，再决定要不要钻进血泪现场。</p>
+        </div>
+        <div class="stream-actions">
+          <button class="quiet-button">筛选</button>
+          <button class="primary-button">＋ 发主题</button>
+        </div>
+      </div>
+
+      <div class="notice-strip">
+        <strong>📌 维护组提示</strong>
+        <span>论坛专区不是角色世界权限墙。奴婢可以逛皇帝专区；“能看老乡帖子”不等于“本局有权进户部”。</span>
+      </div>
+
+      <div class="topic-table" id="topicTable"></div>
+    </section>
+
+    <aside class="rail" aria-label="本局与工具">
+      <section class="panel rail-card">
+        <div class="rail-title"><h3>本局小档案</h3><button class="tiny-link">调整</button></div>
+        <div class="profile">
+          <div class="avatar">婢</div>
+          <div><strong>奴婢 / 仆役</strong><small>当前路线：偷得浮生 / 小日子</small></div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span>正式权限</span><span>极低</span></div>
+          <div class="fact"><span>已装辅助</span><span>5 个</span></div>
+          <div class="fact"><span>专家主镜头</span><span>苏轼</span></div>
+          <div class="fact"><span>专家辅镜头</span><span>李清照</span></div>
+        </div>
+        <div class="permission-note">身份只约束本局行动建议与自动适配；不会阻止你浏览别的专区。</div>
+      </section>
+
+      <section class="panel rail-card workshop-card">
+        <div class="rail-title"><h3>RP Module Forge</h3><span class="topic-type module">论坛工具</span></div>
+        <p>老乡维护组做的模块装配台。看到合适的模块发布帖后，可以在这里重新适配当前身份、发展路线与专家镜头。</p>
+        <button class="primary-button workshop-button" data-open-module>打开模块工坊预览</button>
+      </section>
+
+      <section class="panel rail-card">
+        <div class="rail-title"><h3>维护组刚刚又修了啥</h3><button class="tiny-link" data-tab="maintainer">全部</button></div>
+        <div class="maintainer-mini">
+          <div class="maintainer-item"><strong>第119次：数据库可以讲机器话，门口牌匾别中英夹生。</strong><small>今天 12:12</small></div>
+          <div class="maintainer-item"><strong>第118次：奴婢想睡个好觉，不用先交继承方案。</strong><small>今天 10:31</small></div>
+          <div class="maintainer-item"><strong>第117次：户籍是起点，不是人生判决书。</strong><small>今天 10:05</small></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="drawer-backdrop" data-close-drawer></div>
+  <aside class="drawer" id="topicDrawer" aria-label="主题详情" aria-hidden="true">
+    <div class="drawer-head"><strong>主题详情 · 模块发布</strong><button class="close-button" data-close-drawer aria-label="关闭">×</button></div>
+    <div class="drawer-body">
+      <div class="post-kicker">皇帝专区 · 模块发布 · 第108次优化重置版</div>
+      <h2 class="post-title">【张居正和王阳明取长补短二合一皇帝身份开局专用辅助模块（第108次优化重置版）】</h2>
+      <div class="post-meta">
+        <span class="tag">#硬核政务处理</span><span class="tag">#知行合一</span><span class="tag">#假账穿透</span><span class="tag">#党争</span><span class="tag">#防背刺</span><span class="tag">已交叉佐证</span>
+      </div>
+
+      <div class="post-body">
+        <p><strong>模块备注：</strong>硬核政务处理、心学知行合一微操演算、江南士绅做账假账穿透识别、权臣党争反制沙盘、防背刺雷达。</p>
+        <blockquote>作者留言：致后来者：别问为什么把太岳相公的严苛考成法和阳明先生的心学心法揉在一起，问就是当年穿成亡国之君时被那帮老狐狸坑吐血了！拿去用吧，愿天下的皇帝都不用喝白水兑粟米。——修仙界匿名化神期老乡留。</blockquote>
+      </div>
+
+      <section class="module-attachment">
+        <div class="attachment-head"><strong>📎 模块附件 · 可装配</strong><span class="attachment-version">v108 · maintainers reviewed</span></div>
+        <div class="attachment-body">
+          <div class="attachment-grid">
+            <div class="attachment-cell"><small>原始适配</small><strong>皇帝 · 明君 / 治世路线</strong></div>
+            <div class="attachment-cell"><small>专家镜头</small><strong>张居正（主） · 王阳明（辅）</strong></div>
+            <div class="attachment-cell"><small>能力组合</small><strong>考成台 · 知行镜 · 鱼鳞算盘 · 朋党谱 · 御前反对席</strong></div>
+            <div class="attachment-cell"><small>论坛经验</small><strong>仅已审核条目 · 最低已交叉佐证</strong></div>
+          </div>
+          <div class="compatibility"><strong>⚠ 当前本局不匹配：</strong>你现在是“奴婢 / 仆役 · 偷得浮生路线”。可以逛这个帖子，但原样安装会得到大量不适用的高权限治理建议。建议先按当前身份重新适配；适配不会给奴婢预支皇帝权限。</div>
+          <div class="attachment-actions">
+            <button class="quiet-button">看看它会干什么</button>
+            <button class="primary-button" id="adaptButton">按当前身份重新适配</button>
+            <button class="quiet-button">只取部分能力</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="reply"><strong>匿名老乡 047：</strong>第107版的账册核验对地方官也挺好用，但请别再让奴婢“直接命账房交出所有私账”，我上次看见这句差点笑死。</div>
+      <div class="reply"><strong>维护组：</strong>已记录。能力可迁移，权限不迁移；身份适配统一走当前 permission profile。</div>
+    </div>
+  </aside>
+
+  <script>
+    const topics = [
+      {node:'notice', tab:'maintainer', type:'维护', tone:'danger', title:'【第119次维护记录】数据库可以讲机器话，门口牌匾别中英夹生。', author:'穿越者老乡维护组', tags:['#维护记录','#简体中文'], replies:18, views:436, time:'刚刚', pinned:true, maintainer:true},
+      {node:'emperor', tab:'modules', type:'模块发布', tone:'module', title:'【张居正和王阳明取长补短二合一皇帝身份开局专用辅助模块（第108次优化重置版）】', author:'匿名化神期老乡', tags:['#皇帝','#政务','#防背刺'], replies:347, views:12840, time:'12 分钟前', module:true, featured:true},
+      {node:'survival', tab:'latest', type:'血泪帖', tone:'danger', title:'主家两个主子今天给了完全冲突的差事，我到底要留下什么证据才能不背锅？', author:'匿名老乡 512', tags:['#奴婢','#差事','#低权限'], replies:29, views:822, time:'18 分钟前'},
+      {node:'emperor', tab:'featured', type:'求助', tone:'warn', title:'朕真的只想每天吃喝玩乐，有没有“不会三年亡国”的摆烂方案？', author:'匿名老乡 090', tags:['#皇帝','#享乐','#继承'], replies:91, views:2304, time:'31 分钟前', featured:true},
+      {node:'official', tab:'featured', type:'已核验', tone:'good', title:'县库第三天空了，先别抓人：五个问题没问完之前把“贪墨”两个字咽回去', author:'匿名老乡 047', tags:['#地方官','#账册','#已核验'], replies:42, views:3188, time:'45 分钟前', featured:true},
+      {node:'military', tab:'latest', type:'血泪帖', tone:'danger', title:'以后再让我看见“号称二十万大军”我就杀人：先把能到、能打、会听命拆开算', author:'匿名老乡 088', tags:['#将军','#军粮','#烽燧图'], replies:64, views:5820, time:'1 小时前'},
+      {node:'arts', tab:'latest', type:'求助', tone:'warn', title:'我现在是婢女，但是真的想学画画。第一笔钱应该先攒纸笔，还是先攒离开主家的钱？', author:'匿名老乡 721', tags:['#奴婢','#诗画','#赎身'], replies:37, views:1407, time:'1 小时前'},
+      {node:'merchant', tab:'featured', type:'案例', tone:'good', title:'粮道不是一条路，是一串会翻脸的人：商队版本复盘', author:'匿名老乡 311', tags:['#商贾','#路线','#关系网'], replies:26, views:1760, time:'2 小时前', featured:true},
+      {node:'ordinary', tab:'latest', type:'求助', tone:'warn', title:'家里只够撑六个月：是先修屋顶、存粮，还是送孩子去学手艺？', author:'匿名老乡 633', tags:['#普通人','#家计','#避险'], replies:53, views:2416, time:'2 小时前'},
+      {node:'household', tab:'latest', type:'争论', tone:'warn', title:'宫斗里“知道得多”到底是优势还是死亡倒计时？维护组吵了三页还没吵完', author:'匿名老乡 166', tags:['#宫斗','#信息','#暴露风险'], replies:112, views:6690, time:'3 小时前'},
+      {node:'survival', tab:'legacy', type:'遗言库', tone:'good', title:'【老乡遗言库】低权限角色先守住“可否认性”，不要把每一次观察都变成公开立场', author:'维护组整理', tags:['#奴婢','#低权限','#已审核'], replies:0, views:3980, time:'昨日', featured:true},
+      {node:'notice', tab:'maintainer', type:'维护', tone:'danger', title:'【第118次维护记录】奴婢想睡个好觉，不用先交继承方案。', author:'穿越者老乡维护组', tags:['#维护记录','#人生路线'], replies:12, views:504, time:'今日 10:31', maintainer:true},
+      {node:'notice', tab:'maintainer', type:'维护', tone:'danger', title:'【第117次维护记录】户籍是起点，不是人生判决书。', author:'穿越者老乡维护组', tags:['#维护记录','#专家镜头'], replies:15, views:611, time:'今日 10:05', maintainer:true},
+      {node:'official', tab:'modules', type:'模块发布', tone:'module', title:'【地方官到任前三十天别把自己作死包 v23】账、人、粮、民声、上峰五线并看', author:'匿名老乡 203', tags:['#地方官','#到任','#模块'], replies:73, views:4918, time:'昨日', module:true, featured:true},
+      {node:'survival', tab:'modules', type:'模块发布', tone:'module', title:'【低权限活命包 v17】差事簿 + 察言观行镜 + 主家人情谱 + 危局反推', author:'匿名老乡 441', tags:['#奴婢','#求生','#模块'], replies:128, views:9031, time:'昨日', module:true, featured:true}
+    ];
+
+    const state = { node:'all', tab:'latest', search:'' };
+    const table = document.querySelector('#topicTable');
+    const crumb = document.querySelector('#crumb');
+    const streamTitle = document.querySelector('#streamTitle');
+    const streamCaption = document.querySelector('#streamCaption');
+
+    const nodeLabels = {
+      all:'首页', notice:'天道公告', emperor:'皇帝专区', official:'官场与地方', military:'军旅与边关', merchant:'商贾与行旅', arts:'士林与文艺', ordinary:'普通人生', survival:'低权限求生', household:'宫廷与家宅'
+    };
+    const tabLabels = {latest:'最新主题', featured:'精华', modules:'模块仓', legacy:'老乡遗言库', maintainer:'维护组'};
+
+    function rowHtml(topic) {
+      const toneClass = topic.tone === 'module' ? 'module' : topic.tone;
+      return `<article class="topic-row ${topic.module ? 'is-module' : ''} ${topic.maintainer ? 'is-maintainer' : ''}" tabindex="0" data-topic-module="${topic.module ? 'true' : 'false'}">
+        <div class="topic-main">
+          <div class="topic-title-line">
+            <span class="topic-type ${toneClass}">${topic.type}</span>
+            <div class="topic-title ${topic.pinned ? 'pinned' : ''}">${topic.title}</div>
+          </div>
+          <div class="topic-meta"><span>${topic.author}</span>${topic.tags.map(t=>`<span class="mini-tag">${t}</span>`).join('')}</div>
+        </div>
+        <div class="metric"><strong>${topic.replies}</strong>回复<br><span>${topic.views} 浏览</span></div>
+        <div class="last-activity"><strong>${topic.time}</strong>最近活跃</div>
+      </article>`;
+    }
+
+    function renderTopics() {
+      let filtered = topics.slice();
+      if (state.node !== 'all') filtered = filtered.filter(t => t.node === state.node);
+      if (state.tab === 'featured') filtered = filtered.filter(t => t.featured);
+      if (state.tab === 'modules') filtered = filtered.filter(t => t.module);
+      if (state.tab === 'legacy') filtered = filtered.filter(t => t.tab === 'legacy');
+      if (state.tab === 'maintainer') filtered = filtered.filter(t => t.maintainer);
+      if (state.search) {
+        const q = state.search.toLowerCase();
+        filtered = filtered.filter(t => [t.title,t.author,...t.tags].join(' ').toLowerCase().includes(q));
+      }
+      table.innerHTML = filtered.length ? filtered.map(rowHtml).join('') : `<div class="empty">这块暂时没翻到匹配的帖子。换个分区或关键词看看。</div>`;
+      bindRows();
+      const nodeName = nodeLabels[state.node] ?? '首页';
+      const tabName = state.tab === 'latest' ? '首页' : tabLabels[state.tab];
+      crumb.textContent = `天道降维互助论坛 / ${nodeName}${state.tab !== 'latest' ? ` / ${tabName}` : ''}`;
+      streamTitle.textContent = state.search ? `搜索：${state.search}` : state.node === 'all' ? (state.tab === 'latest' ? '老乡们今天又留下了什么' : tabName) : nodeName;
+      streamCaption.textContent = state.tab === 'modules' ? '模块仍然是论坛帖子，只是多了一份可装配附件。' : state.tab === 'maintainer' ? '维护记录在这里就是社区公告；工程事实仍留在仓库完整日志。' : '一屏多看几条，先扫标题、分区、标签、可靠度，再决定要不要钻进血泪现场。';
+    }
+
+    function openDrawer() {
+      document.body.classList.add('drawer-open');
+      document.querySelector('#topicDrawer').setAttribute('aria-hidden','false');
+    }
+    function closeDrawer() {
+      document.body.classList.remove('drawer-open');
+      document.querySelector('#topicDrawer').setAttribute('aria-hidden','true');
+    }
+    function bindRows() {
+      document.querySelectorAll('.topic-row').forEach(row => {
+        row.addEventListener('click', () => { if (row.dataset.topicModule === 'true') openDrawer(); });
+        row.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && row.dataset.topicModule === 'true') openDrawer(); });
+      });
+    }
+
+    document.querySelectorAll('[data-close-drawer]').forEach(el => el.addEventListener('click', closeDrawer));
+    document.querySelectorAll('[data-open-module]').forEach(el => el.addEventListener('click', openDrawer));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+    document.querySelectorAll('.node-button').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.node-button').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      state.node = btn.dataset.node;
+      renderTopics();
+    }));
+
+    document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (!tab) return;
+      state.tab = tab;
+      document.querySelectorAll('.global-nav [data-tab]').forEach(x => x.classList.remove('active'));
+      const topMatch = [...document.querySelectorAll('.global-nav [data-tab]')].find(x => x.dataset.tab === tab);
+      if (topMatch) topMatch.classList.add('active');
+      renderTopics();
+    }));
+
+    const searchInput = document.querySelector('#searchInput');
+    searchInput.addEventListener('input', e => { state.search = e.target.value.trim(); renderTopics(); });
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); searchInput.focus(); }
+    });
+
+    const themeButtons = [...document.querySelectorAll('[data-theme-button]')];
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem('rp-forum-theme', theme);
+      themeButtons.forEach(btn => btn.setAttribute('aria-pressed', String(btn.dataset.themeButton === theme)));
+    }
+    themeButtons.forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.themeButton)));
+    const savedTheme = localStorage.getItem('rp-forum-theme');
+    if (['day','night','eye'].includes(savedTheme)) applyTheme(savedTheme);
+
+    document.querySelector('#adaptButton').addEventListener('click', e => {
+      e.currentTarget.textContent = '✓ 已按奴婢 · 小日子路线生成适配草案';
+      e.currentTarget.disabled = true;
+    });
+
+    renderTopics();
+  </script>
+</body>
+</html>

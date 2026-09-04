@@ -35,6 +35,11 @@ jobs:
       - name: Build Web App for project Pages
         run: pnpm --filter @rpmf/web exec vite build --base=/rp-module-forge/
 
+      - name: Publish standalone HTML prototypes
+        run: |
+          mkdir -p apps/web/dist/prototypes
+          cp prototypes/*.html apps/web/dist/prototypes/
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
