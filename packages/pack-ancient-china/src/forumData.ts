@@ -132,7 +132,7 @@ const threads: TravelerForumThread[] = [
     reliability: "corroborated",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000007-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   },
@@ -200,7 +200,7 @@ const threads: TravelerForumThread[] = [
     reliability: "corroborated",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000011-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   },
@@ -234,7 +234,7 @@ const threads: TravelerForumThread[] = [
     reliability: "plausible",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000013-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   },
@@ -251,7 +251,7 @@ const threads: TravelerForumThread[] = [
     reliability: "corroborated",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000014-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   },
@@ -285,7 +285,7 @@ const threads: TravelerForumThread[] = [
     reliability: "corroborated",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000016-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   },
@@ -319,7 +319,7 @@ const threads: TravelerForumThread[] = [
     reliability: "corroborated",
     reviewStatus: "approved-for-display",
     provenance: seedProvenance,
-    replies: [],
+    replies: ["tf-reply-000018-01"],
     createdAt: "2026-09-04",
     updatedAt: "2026-09-04"
   }
@@ -339,7 +339,13 @@ const replies: TravelerForumReply[] = [
   { id: "tf-reply-000010-01", threadId: "tf-ancient-china-000010", parentReplyId: null, replyType: "correction", author: anonymous("anonymous-344"), body: "而且同一个人可以在教育上支持你、在继承问题上防你。别给人贴永久忠诚分。", reliability: "plausible", reviewStatus: "approved-for-display" },
   { id: "tf-reply-000012-01", threadId: "tf-ancient-china-000012", parentReplyId: null, replyType: "case-report", author: anonymous("anonymous-407"), body: "我那局最便宜的路线，最后贵在等了二十一天。时间也得进账。", reliability: "anecdotal", reviewStatus: "approved-for-display" },
   { id: "tf-reply-000015-01", threadId: "tf-ancient-china-000015", parentReplyId: null, replyType: "correction", author: anonymous("anonymous-021b"), body: "适用边界提醒：如果已经断市封城，现金价值会快速变化，不能机械照搬。", reliability: "plausible", reviewStatus: "approved-for-display" },
-  { id: "tf-reply-000017-01", threadId: "tf-ancient-china-000017", parentReplyId: null, replyType: "maintainer-argument", author: anonymous("maintainer-110"), body: "封存理由：越权、不可泛化、死亡率不可接受，而且最重要的是你根本没有户部地图。", reliability: "corroborated", reviewStatus: "approved-for-display" }
+  { id: "tf-reply-000017-01", threadId: "tf-ancient-china-000017", parentReplyId: null, replyType: "maintainer-argument", author: anonymous("maintainer-110"), body: "封存理由：越权、不可泛化、死亡率不可接受，而且最重要的是你根本没有户部地图。", reliability: "corroborated", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000007-01", threadId: "tf-ancient-china-000007", parentReplyId: null, replyType: "correction", author: anonymous("anonymous-019"), body: "补：先看换的是哪几把。只换库房不换后院，和全换一遍，是两种信号。", reliability: "plausible", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000011-01", threadId: "tf-ancient-china-000011", parentReplyId: null, replyType: "case-report", author: anonymous("anonymous-344"), body: "我那局‘已派人’派的是个告了病假的人。验收条件写成‘某日某人到某处画押’以后，才发现派的是个空。", reliability: "anecdotal", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000013-01", threadId: "tf-ancient-china-000013", parentReplyId: null, replyType: "question", author: anonymous("anonymous-418"), body: "那靠我货路活的人，算盟友还是算风险？他随时可以换一条货路。", reliability: "unknown", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000014-01", threadId: "tf-ancient-china-000014", parentReplyId: null, replyType: "case-report", author: anonymous("anonymous-203"), body: "反过来也成立：京城不骂，不等于州县不骂。奏报和邸报走的是同一批人的嘴。", reliability: "plausible", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000016-01", threadId: "tf-ancient-china-000016", parentReplyId: null, replyType: "maintainer-argument", author: anonymous("maintainer-109"), body: "补充：展示层可以引用原帖原句，但引用不等于注入。Runtime 只拿经过审校的 curated note。", reliability: "corroborated", reviewStatus: "approved-for-display" },
+  { id: "tf-reply-000018-01", threadId: "tf-ancient-china-000018", parentReplyId: null, replyType: "correction", author: anonymous("anonymous-126"), body: "第三栏‘保护者’常常是空的。空着也要列出来，别为了好看填一个不可靠的名字。", reliability: "corroborated", reviewStatus: "approved-for-display" }
 ];
 
 const curatedNotes: TravelerForumCuratedNote[] = [

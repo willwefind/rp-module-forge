@@ -42,11 +42,17 @@ test('all seven links use the actual Chinese form slugs and only public title co
 });
 test('content identities, provenance, independent floors and full-text reply search',()=>{
   assert.equal(new Set(topics.map(t=>t.id)).size,topics.length);
-  for(const t of topics){assert.ok(nodeNames[t.node]);assert.equal(t.provenance,'maintainer-seed');assert.ok(t.status&&t.review);assert.ok(t.body.length>=3);assert.equal(new Set(t.replies.map(r=>r.text)).size,t.replies.length);assert.ok(!('count' in t));assert.ok(!('real' in t));}
+  for(const t of topics){assert.ok(nodeNames[t.node]);assert.equal(t.provenance,'maintainer-seed');assert.ok(t.status&&t.review);assert.ok(t.body.length>=1&&t.body.every(p=>p.trim()));for(const r of t.replies)assert.ok(r.author&&r.text&&r.time&&r.status);for(const id of t.related??[])assert.ok(topics.some(x=>x.id===id),`related ${id}`);assert.equal(new Set(t.replies.map(r=>r.text)).size,t.replies.length);assert.ok(!('count' in t));assert.ok(!('real' in t));}
   assert.ok(topics[0].body.join('').length>1800);
+  const lengths=topics.map(t=>t.body.join('').length);
+  assert.ok(lengths.some(n=>n<200)&&lengths.some(n=>n>=600)&&lengths.some(n=>n>1800),'topic lengths must visibly vary');
+  assert.ok(topics.filter(t=>t.body.length>=3).length*2>=topics.length);
+  assert.ok(topics.filter(t=>t.gap).length>=3);
+  assert.ok(topics.some(t=>t.replies.some(r=>r.time.includes('归档后'))),'need later-era replies');
   assert.equal(new Set(topics.map(t=>t.replies)).size,topics.length);
   const state={realm:'all',node:'all',tab:'all',q:'那盏灯后来还了'};
   assert.deepEqual(filterTopics(topics,state).map(t=>t.id),['yongning-first-year']);
+  assert.deepEqual(filterTopics(topics,{...state,q:'我明日——'}).map(t=>t.id),['revived-literate-servant']);
   assert.ok(filterTopics(topics,{...state,q:'',tab:'modules'}).length);
   assert.ok(filterTopics(topics,{...state,q:'',tab:'knowledge'}).length);
   assert.ok(topics[0].gap.includes('未发现续篇'));
@@ -61,5 +67,5 @@ test('Pages includes module assets and prototype provides accessible native dial
   assert.ok(workflow.includes('cp -R prototypes/.'));
   const html=readFileSync(new URL('../forum-first-concept-v3.html',import.meta.url),'utf8');
   assert.ok(html.includes('type="module" src="./forum-v3/app.mjs"'));assert.ok(html.includes('aria-labelledby="profileTitle"'));
-  assert.ok(!html.includes('\u8001\u4e61\u9057\u8a00\u5e93'));
+  assert.ok(!html.includes('老乡遗言库'));
 });
