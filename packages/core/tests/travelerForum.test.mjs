@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { retrieveCuratedForumNotes } from "../.test-dist/travelerForum.js";
+import { retrieveCuratedForumNotes, FORUM_WORLDLINE_STATUSES } from "../.test-dist/travelerForum.js";
 import { validateTravelerForumData } from "../.test-dist/travelerForumValidation.js";
 
 function note(overrides = {}) {
@@ -20,6 +20,41 @@ function note(overrides = {}) {
     sourceThreads: ["tf-test-001"],
     reviewStatus: "approved-for-runtime",
     version: 1,
+    ...overrides
+  };
+}
+
+function thread(overrides = {}) {
+  return {
+    id: "tf-1",
+    schemaVersion: 1,
+    worldPack: "ancient-china",
+    node: "test",
+    title: "test",
+    postType: "question",
+    author: { displayMode: "anonymous", travelerId: "anonymous-1" },
+    body: "test",
+    appliesTo: { identities: [], capabilities: [], situations: [] },
+    reliability: "unknown",
+    reviewStatus: "approved-for-display",
+    provenance: { kind: "maintainer-seed", reference: "seed:test", consentToLoreCredit: false },
+    replies: [],
+    createdAt: "2026-09-04",
+    updatedAt: "2026-09-04",
+    ...overrides
+  };
+}
+
+function reply(overrides = {}) {
+  return {
+    id: "reply-1",
+    threadId: "tf-1",
+    parentReplyId: null,
+    replyType: "correction",
+    author: { displayMode: "anonymous", travelerId: "anonymous-2" },
+    body: "test",
+    reliability: "plausible",
+    reviewStatus: "approved-for-display",
     ...overrides
   };
 }
@@ -92,46 +127,81 @@ test("retrieval is deterministic and respects maxNotes", () => {
 
 test("forum data validation catches broken references and duplicate ids", () => {
   const issues = validateTravelerForumData({
-    threads: [
-      {
-        id: "tf-1",
-        schemaVersion: 1,
-        worldPack: "ancient-china",
-        board: "test",
-        title: "test",
-        postType: "question",
-        author: { displayMode: "anonymous", travelerId: "anonymous-1" },
-        body: "test",
-        appliesTo: { identities: [], capabilities: [], situations: [] },
-        reliability: "unknown",
-        reviewStatus: "approved-for-display",
-        provenance: { kind: "maintainer-seed", reference: "seed:test", consentToLoreCredit: false },
-        replies: ["reply-missing"],
-        createdAt: "2026-09-04",
-        updatedAt: "2026-09-04"
-      }
-    ],
-    replies: [
-      {
-        id: "reply-orphan",
-        threadId: "tf-missing",
-        parentReplyId: null,
-        replyType: "correction",
-        author: { displayMode: "anonymous", travelerId: "anonymous-2" },
-        body: "test",
-        reliability: "plausible",
-        reviewStatus: "approved-for-display"
-      }
-    ],
+    threads: [thread({ replies: ["reply-missing"] })],
+    replies: [reply({ id: "reply-orphan", threadId: "tf-missing" })],
     curatedNotes: [
-      note({ id: "ck-broken", sourceThreads: ["tf-missing"], conflictsWith: ["ck-missing"] })
+      note({ id: "ck-broken", sourceThreads: ["tf-missing"], sourceReplies: ["reply-missing"], conflictsWith: ["ck-missing"] })
     ]
   });
 
   assert.deepEqual(issues.map((issue) => issue.code).sort(), [
     "missing-conflict-note",
     "missing-reply",
+    "missing-source-reply",
     "missing-source-thread",
     "missing-thread"
   ]);
+});
+
+test("a stored reply that its thread does not list is reported so visible counts stay honest", () => {
+  const issues = validateTravelerForumData({
+    threads: [thread({ replies: [] })],
+    replies: [reply()],
+    curatedNotes: []
+  });
+  assert.deepEqual(issues.map((issue) => issue.code), ["reply-not-listed"]);
+});
+
+test("archive-layer fields are validated: node registry, related threads, gap reasons, attachment world", () => {
+  const issues = validateTravelerForumData({
+    nodes: [{ id: "known", label: "已知分区", realm: "world" }],
+    threads: [
+      thread({ id: "tf-a", node: "unknown-node", relatedThreads: ["tf-a", "tf-missing"], archiveGap: { kind: "interrupted", note: "   " } }),
+      thread({
+        id: "tf-b",
+        node: "known",
+        moduleAttachment: {
+          label: "x",
+          version: "1",
+          worldPack: "other-pack",
+          suggestedIdentity: "emperor",
+          capabilities: [],
+          experts: [],
+          note: "x"
+        }
+      })
+    ],
+    replies: [],
+    curatedNotes: []
+  });
+
+  assert.deepEqual(issues.map((issue) => `${issue.entityId}:${issue.code}`), [
+    "tf-a:empty-gap-note",
+    "tf-a:missing-node",
+    "tf-a:missing-related-thread",
+    "tf-a:self-related",
+    "tf-b:attachment-world-mismatch"
+  ]);
+});
+
+test("provenance references must carry the prefix of their kind so seed lore and community imports cannot be confused", () => {
+  const issues = validateTravelerForumData({
+    threads: [
+      thread({ id: "tf-seed", provenance: { kind: "maintainer-seed", reference: "github-discussion:12", consentToLoreCredit: false } }),
+      thread({ id: "tf-community", provenance: { kind: "community-contribution", reference: "seed:fake", consentToLoreCredit: true } }),
+      thread({ id: "tf-ok-seed", provenance: { kind: "maintainer-seed", reference: "seed:test", consentToLoreCredit: false } }),
+      thread({ id: "tf-ok-community", provenance: { kind: "community-contribution", reference: "github-discussion:12", consentToLoreCredit: true } })
+    ],
+    replies: [],
+    curatedNotes: []
+  });
+
+  assert.deepEqual(issues.map((issue) => issue.entityId), ["tf-community", "tf-seed"]);
+  assert.ok(issues.every((issue) => issue.code === "provenance-reference-mismatch"));
+});
+
+test("worldline vocabulary has an identity-ended state but no death state", () => {
+  assert.ok(FORUM_WORLDLINE_STATUSES.includes("identity-ended"));
+  assert.ok(FORUM_WORLDLINE_STATUSES.includes("unknown"));
+  assert.ok(!FORUM_WORLDLINE_STATUSES.some((status) => /dead|deceased|died/.test(status)));
 });
