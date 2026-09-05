@@ -2,7 +2,7 @@ import { archiveTopic, floor, member } from "../helpers.js";
 
 export default archiveTopic("household-orders", {
   node: "household",
-  title: "两位主子同时吞咐差事，我该听谁的？",
+  title: "两位主子同时吩咐差事，我该听谁的？",
   postType: "question",
   author: member("1960", "在途"),
   body: `不是要问谁在家里地位高。事情具体是：夫人让我把一件衣服今天送出门，少爷让我先送到他院里。衣服只有一件，我只有一双手。直接问“我到底听谁的”是不是会被当成挑事？
