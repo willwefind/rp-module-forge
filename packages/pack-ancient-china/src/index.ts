@@ -1,4 +1,4 @@
-export { ancientChinaForumData } from "./forumData.js";
+export { ancientChinaForumArchive, ancientChinaForumData, ancientChinaForumNodes } from "./forumArchive.js";
 
 import type {
   CanonicalWorldPack,

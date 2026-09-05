@@ -1,6 +1,8 @@
 import type {
   CanonicalConfigIssue,
+  ForumAuthor,
   ForumInjectionPolicy,
+  ForumPostType,
   ForumReliability,
   TokenMode
 } from "@rpmf/core";
@@ -29,7 +31,7 @@ export const reliabilityLabels: Record<ForumReliability, string> = {
   deprecated: "已废弃"
 };
 
-export const postTypeLabels: Record<string, string> = {
+export const postTypeLabels: Record<ForumPostType, string> = {
   "verified-practice": "经验核验",
   "blood-and-tears": "血泪帖",
   "grudge-note": "记仇帖",
@@ -37,17 +39,18 @@ export const postTypeLabels: Record<string, string> = {
   question: "求助",
   correction: "勘误",
   "maintainer-argument": "维护组争论",
-  "case-report": "案例回报"
-};
-
-export const boardLabels: Record<string, string> = {
-  "local-governance": "地方治理",
-  "military-logistics": "军务与补给",
-  "court-politics": "宫廷与权力",
-  "household-survival": "家宅与活路",
-  "commerce-livelihood": "商路与生计",
-  "scholar-life": "士林与读书",
-  "traveler-maintenance": "老乡维护"
+  "case-report": "实战回报",
+  retrospective: "长篇复盘",
+  serial: "连载",
+  "good-news": "开心帖",
+  chat: "闲谈",
+  "module-release": "模块发布",
+  "knowledge-card": "经验库",
+  "community-gateway": "通信口",
+  "maintenance-record": "维护记录",
+  "revived-thread": "翻旧帖",
+  "archive-note": "归档注",
+  "author-update": "作者更新"
 };
 
 export const provenanceLabels: Record<string, string> = {
@@ -61,8 +64,9 @@ export function localizeTravelerId(id: string): string {
   return anonymousMatch ? `匿名老乡 ${anonymousMatch[1]}` : id;
 }
 
-export function localizeBoard(board: string): string {
-  return boardLabels[board] ?? "老乡杂谈";
+/** Forum signature: the archive display name, falling back to the stable member id. */
+export function authorName(author: ForumAuthor): string {
+  return author.displayName ?? localizeTravelerId(author.travelerId);
 }
 
 export function formatNormalizationIssue(issue: CanonicalConfigIssue): string {

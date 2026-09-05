@@ -17,16 +17,14 @@ import {
   type ForumReliability,
   type TokenMode
 } from "@rpmf/core";
-import { ancientChinaForumData } from "@rpmf/pack-ancient-china";
+import { ancientChinaForumArchive, ancientChinaForumNodes } from "@rpmf/pack-ancient-china";
 import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
 import { maintainerLoreEntries, type MaintainerLoreEntry } from "./maintainerLog";
 import {
   UI_LOCALE,
-  boardLabels,
+  authorName,
   formatNormalizationIssue,
   forumPolicyLabels,
-  localizeBoard,
-  localizeTravelerId,
   postTypeLabels,
   provenanceLabels,
   reliabilityLabels,
@@ -34,7 +32,12 @@ import {
 } from "./locales/zh-CN";
 
 const pack = ancientChinaPackV01;
-const forumData = ancientChinaForumData;
+const forumData = ancientChinaForumArchive;
+const nodeLabel = (id: string) => ancientChinaForumNodes.find((node) => node.id === id)?.label ?? "老乡杂谈";
+const firstParagraph = (body: string) => {
+  const [first, ...rest] = body.split(/\n\s*\n/);
+  return rest.length ? `${first}（……全文共 ${rest.length + 1} 段，见论坛档案）` : first;
+};
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 document.documentElement.lang = UI_LOCALE;
@@ -468,12 +471,12 @@ function renderForum() {
             <div class="forum-meta">
               <span class="badge">${postTypeLabels[thread.postType] ?? "老乡帖"}</span>
               <span class="badge">${reliabilityLabels[thread.reliability]}</span>
-              <span>${escapeHtml(localizeTravelerId(thread.author.travelerId))}</span>
-              <span>${escapeHtml(localizeBoard(thread.board))}</span>
+              <span>${escapeHtml(authorName(thread.author))}</span>
+              <span>${escapeHtml(nodeLabel(thread.node))}</span>
             </div>
             <h3>${escapeHtml(thread.title)}</h3>
-            <p>${escapeHtml(thread.body)}</p>
-            ${replies.length ? `<div class="reply-stack">${replies.map((reply) => `<div class="forum-reply"><strong>${escapeHtml(localizeTravelerId(reply.author.travelerId))}</strong>：${escapeHtml(reply.body)}</div>`).join("")}</div>` : ""}
+            <p>${escapeHtml(firstParagraph(thread.body))}</p>
+            ${replies.length ? `<div class="reply-stack">${replies.map((reply) => `<div class="forum-reply"><strong>${escapeHtml(authorName(reply.author))}</strong>：${escapeHtml(reply.body)}</div>`).join("")}</div>` : ""}
             <div class="forum-origin">${archived ? "已封存 · " : ""}${provenanceLabels[thread.provenance.kind] ?? "来源已记录"}</div>
           </article>
         `;
