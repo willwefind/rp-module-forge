@@ -1,4 +1,4 @@
-import type { TravelerForumData } from "./travelerForum";
+import { FORUM_PROVENANCE_REFERENCE_PREFIX, type TravelerForumData } from "./travelerForum.js";
 
 export type TravelerForumDataIssue = {
   code:
@@ -6,9 +6,17 @@ export type TravelerForumDataIssue = {
     | "missing-thread"
     | "missing-reply"
     | "reply-thread-mismatch"
+    | "reply-not-listed"
     | "missing-source-thread"
+    | "missing-source-reply"
     | "missing-conflict-note"
-    | "self-conflict";
+    | "self-conflict"
+    | "missing-node"
+    | "missing-related-thread"
+    | "self-related"
+    | "empty-gap-note"
+    | "provenance-reference-mismatch"
+    | "attachment-world-mismatch";
   entityId: string;
   message: string;
 };
@@ -28,6 +36,7 @@ export function validateTravelerForumData(data: TravelerForumData): TravelerForu
   const threadById = new Map(data.threads.map((thread) => [thread.id, thread]));
   const replyById = new Map(data.replies.map((reply) => [reply.id, reply]));
   const noteById = new Map(data.curatedNotes.map((note) => [note.id, note]));
+  const nodeIds = data.nodes ? new Set(data.nodes.map((node) => node.id)) : null;
 
   for (const id of duplicateIds(data.threads.map((thread) => thread.id))) {
     issues.push({ code: "duplicate-id", entityId: id, message: `Duplicate thread id: ${id}` });
@@ -38,9 +47,49 @@ export function validateTravelerForumData(data: TravelerForumData): TravelerForu
   for (const id of duplicateIds(data.curatedNotes.map((note) => note.id))) {
     issues.push({ code: "duplicate-id", entityId: id, message: `Duplicate curated-note id: ${id}` });
   }
+  if (data.nodes) {
+    for (const id of duplicateIds(data.nodes.map((node) => node.id))) {
+      issues.push({ code: "duplicate-id", entityId: id, message: `Duplicate node id: ${id}` });
+    }
+  }
 
+  const listedReplies = new Set<string>();
   for (const thread of data.threads) {
+    if (nodeIds && !nodeIds.has(thread.node)) {
+      issues.push({ code: "missing-node", entityId: thread.id, message: `Thread ${thread.id} uses unknown node ${thread.node}` });
+    }
+
+    const expectedPrefix = FORUM_PROVENANCE_REFERENCE_PREFIX[thread.provenance.kind];
+    if (!expectedPrefix || !thread.provenance.reference.startsWith(expectedPrefix)) {
+      issues.push({
+        code: "provenance-reference-mismatch",
+        entityId: thread.id,
+        message: `Thread ${thread.id} provenance ${thread.provenance.kind} must reference ${expectedPrefix ?? "a known prefix"}`
+      });
+    }
+
+    if (thread.archiveGap && !thread.archiveGap.note.trim()) {
+      issues.push({ code: "empty-gap-note", entityId: thread.id, message: `Thread ${thread.id} declares an archive gap without a reason` });
+    }
+
+    for (const relatedId of thread.relatedThreads ?? []) {
+      if (relatedId === thread.id) {
+        issues.push({ code: "self-related", entityId: thread.id, message: `Thread ${thread.id} cannot relate to itself` });
+      } else if (!threadById.has(relatedId)) {
+        issues.push({ code: "missing-related-thread", entityId: thread.id, message: `Thread ${thread.id} relates to missing thread ${relatedId}` });
+      }
+    }
+
+    if (thread.moduleAttachment && thread.moduleAttachment.worldPack !== thread.worldPack) {
+      issues.push({
+        code: "attachment-world-mismatch",
+        entityId: thread.id,
+        message: `Thread ${thread.id} attachment targets ${thread.moduleAttachment.worldPack} but the thread belongs to ${thread.worldPack}`
+      });
+    }
+
     for (const replyId of thread.replies) {
+      listedReplies.add(replyId);
       const reply = replyById.get(replyId);
       if (!reply) {
         issues.push({
@@ -65,6 +114,12 @@ export function validateTravelerForumData(data: TravelerForumData): TravelerForu
         entityId: reply.id,
         message: `Reply ${reply.id} references missing thread ${reply.threadId}`
       });
+    } else if (!listedReplies.has(reply.id)) {
+      issues.push({
+        code: "reply-not-listed",
+        entityId: reply.id,
+        message: `Reply ${reply.id} is stored but thread ${reply.threadId} does not list it, so the visible count would lie`
+      });
     }
   }
 
@@ -75,6 +130,16 @@ export function validateTravelerForumData(data: TravelerForumData): TravelerForu
           code: "missing-source-thread",
           entityId: note.id,
           message: `Curated note ${note.id} references missing source thread ${sourceThread}`
+        });
+      }
+    }
+
+    for (const sourceReply of note.sourceReplies ?? []) {
+      if (!replyById.has(sourceReply)) {
+        issues.push({
+          code: "missing-source-reply",
+          entityId: note.id,
+          message: `Curated note ${note.id} references missing source reply ${sourceReply}`
         });
       }
     }

@@ -1,5 +1,10 @@
 import type { CoreCapabilityId, ForumReliability } from "./types";
 
+/**
+ * Post / reply kinds. The first eight are the founding seed vocabulary; the
+ * rest were added when the V3 archive became the production forum source so
+ * that one enum can describe every stored topic and floor.
+ */
 export const FORUM_POST_TYPES = [
   "verified-practice",
   "blood-and-tears",
@@ -8,7 +13,18 @@ export const FORUM_POST_TYPES = [
   "question",
   "correction",
   "maintainer-argument",
-  "case-report"
+  "case-report",
+  "retrospective",
+  "serial",
+  "good-news",
+  "chat",
+  "module-release",
+  "knowledge-card",
+  "community-gateway",
+  "maintenance-record",
+  "revived-thread",
+  "archive-note",
+  "author-update"
 ] as const;
 
 export type ForumPostType = (typeof FORUM_POST_TYPES)[number];
@@ -26,16 +42,70 @@ export const FORUM_REVIEW_STATUSES = [
 
 export type ForumReviewStatus = (typeof FORUM_REVIEW_STATUSES)[number];
 
+/** Forum-facing member classes. Presentation only; never an RP permission. */
+export const FORUM_MEMBER_KINDS = [
+  "traveler",
+  "traveler-reserve",
+  "active-traveler",
+  "professional-traveler",
+  "temporal-bureau-field",
+  "temporal-bureau-archive",
+  "temporal-bureau-logistics",
+  "module-maintainer",
+  "community-member"
+] as const;
+
+export type ForumMemberKind = (typeof FORUM_MEMBER_KINDS)[number];
+
+/**
+ * Presence / worldline status of a forum member at the time of a post.
+ * `identity-ended` means one transmigration identity finished; it never
+ * asserts that the traveler themself ceased to exist. There is deliberately
+ * no `dead` state.
+ */
+export const FORUM_WORLDLINE_STATUSES = [
+  "active",
+  "in-transit",
+  "identity-ended",
+  "returned",
+  "missing",
+  "unknown",
+  "not-yet-crossed",
+  "archive-only"
+] as const;
+
+export type ForumWorldlineStatus = (typeof FORUM_WORLDLINE_STATUSES)[number];
+
 export type ForumAuthor = {
-  displayMode: "anonymous" | "consented-credit";
+  displayMode: "anonymous" | "lore-signature" | "consented-credit";
+  /** Stable member id inside the archive, e.g. `member-6201`. */
   travelerId: string;
+  /** Forum signature shown in the reading surface. */
   displayName?: string;
+  memberKind?: ForumMemberKind;
+  worldlineStatus?: ForumWorldlineStatus;
+  /** Human status wording as it appeared in the archive, e.g. 在途 · 已报平安. */
+  statusLabel?: string;
 };
 
+export type ForumProvenanceKind = "maintainer-seed" | "community-contribution" | "maintainer-import";
+
 export type ForumProvenance = {
-  kind: "maintainer-seed" | "community-contribution" | "maintainer-import";
+  kind: ForumProvenanceKind;
+  /**
+   * Machine reference whose prefix must match the kind:
+   * `seed:` for maintainer-seed, `github-discussion:` for community-contribution,
+   * `import:` for maintainer-import. The validator enforces this so seed lore
+   * and real community material can never be confused.
+   */
   reference: string;
   consentToLoreCredit: boolean;
+};
+
+export const FORUM_PROVENANCE_REFERENCE_PREFIX: Readonly<Record<ForumProvenanceKind, string>> = {
+  "maintainer-seed": "seed:",
+  "community-contribution": "github-discussion:",
+  "maintainer-import": "import:"
 };
 
 export type ForumApplicability = {
@@ -44,22 +114,68 @@ export type ForumApplicability = {
   situations: string[];
 };
 
+/** One forum section inside a world pack (or the meta board). */
+export type ForumNode = {
+  id: string;
+  label: string;
+  realm: "world" | "meta";
+};
+
+export type ForumArchiveGapKind =
+  | "interrupted"
+  | "missing-continuation"
+  | "damaged-source"
+  | "unverifiable-count-removed";
+
+export type ForumArchiveGap = {
+  kind: ForumArchiveGapKind;
+  /** Why the archive is incomplete, in reader-facing words. Required. */
+  note: string;
+};
+
+/**
+ * Structured attachment on a module-release topic. It points at pack entities
+ * by stable id; it never installs anything and never carries permissions.
+ */
+export type ForumModuleAttachment = {
+  label: string;
+  version: string;
+  worldPack: string;
+  suggestedIdentity: string;
+  capabilities: CoreCapabilityId[];
+  experts: string[];
+  note: string;
+};
+
 export type TravelerForumThread = {
   id: string;
   schemaVersion: 1;
   worldPack: string;
-  board: string;
+  /** Primary forum node id. */
+  node: string;
   title: string;
   postType: ForumPostType;
   author: ForumAuthor;
+  /** Paragraphs separated by blank lines; single newlines are soft breaks. */
   body: string;
   appliesTo: ForumApplicability;
   reliability: ForumReliability;
   reviewStatus: ForumReviewStatus;
   provenance: ForumProvenance;
+  /** Stored reply ids in floor order. The visible count is always this length. */
   replies: string[];
   createdAt: string;
   updatedAt: string;
+  /** Display tags for scanning; never a permission or applicability source. */
+  tags?: string[];
+  /** Narrative time label, e.g. 王朝档案 / 约三百年前 · 叙事时间. */
+  archiveTime?: string;
+  featured?: boolean;
+  /** Maintainer review wording shown in lists, e.g. 复盘样本 · 不自动进入经验库. */
+  reviewNote?: string;
+  archiveGap?: ForumArchiveGap;
+  relatedThreads?: string[];
+  moduleAttachment?: ForumModuleAttachment;
 };
 
 export type TravelerForumReply = {
@@ -71,6 +187,8 @@ export type TravelerForumReply = {
   body: string;
   reliability: ForumReliability;
   reviewStatus: ForumReviewStatus;
+  /** Narrative time label relative to the thread, e.g. 归档后第九年. */
+  archiveTime?: string;
 };
 
 export type TravelerForumCuratedNote = {
@@ -87,6 +205,8 @@ export type TravelerForumCuratedNote = {
   reliability: ForumReliability;
   failureModes: string[];
   sourceThreads: string[];
+  /** Optional specific floors the lesson was distilled from. */
+  sourceReplies?: string[];
   reviewStatus: ForumReviewStatus;
   version: number;
   conflictsWith?: string[];
@@ -97,6 +217,8 @@ export type TravelerForumData = {
   threads: TravelerForumThread[];
   replies: TravelerForumReply[];
   curatedNotes: TravelerForumCuratedNote[];
+  /** Node registry. When present, every thread node must resolve here. */
+  nodes?: ForumNode[];
 };
 
 export type TravelerForumQuery = {
