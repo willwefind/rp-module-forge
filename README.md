@@ -2,7 +2,7 @@
 
 **面向 AIRP 与文本 RP 的穿越者互助论坛 + 可移植辅助模块体系。**
 
-[English（待简中术语冻结后同步）](README.en.md) · [🏮 Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) · [🌐 模块工坊](https://willwefind.github.io/rp-module-forge/) · [📡 天道外部通信口](https://github.com/willwefind/rp-module-forge/discussions) · [📜 维护组日志](docs/MAINTAINER_LOG.md)
+[English（待简中术语冻结后同步）](README.en.md) · [🏮 天道降维互助论坛（正式首页）](https://willwefind.github.io/rp-module-forge/) · [🧰 RP Module Forge 模块工坊](https://willwefind.github.io/rp-module-forge/forge/) · [📡 天道外部通信口](https://github.com/willwefind/rp-module-forge/discussions) · [📜 维护组日志](docs/MAINTAINER_LOG.md) · [V3 试玩版历史快照](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html)
 
 > 【天道降维互助论坛 · 维护组公告】  
 > 有位老乡又留下了一条血泪帖。  

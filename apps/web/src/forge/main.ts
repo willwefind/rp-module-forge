@@ -1,4 +1,5 @@
-import "./style.css";
+import "../theme.css";
+import "./forge.css";
 import {
   generateCanonicalCompactPrompt,
   generateCanonicalManifest,
@@ -19,7 +20,9 @@ import {
 } from "@rpmf/core";
 import { ancientChinaForumArchive, ancientChinaForumNodes } from "@rpmf/pack-ancient-china";
 import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
-import { maintainerLoreEntries, type MaintainerLoreEntry } from "./maintainerLog";
+import { maintainerLoreEntries, type MaintainerLoreEntry } from "../maintainerLog";
+import { mountThemeSwitch } from "../theme";
+import { topicHref } from "../forum/model";
 import {
   UI_LOCALE,
   authorName,
@@ -29,7 +32,7 @@ import {
   provenanceLabels,
   reliabilityLabels,
   tokenModeLabels
-} from "./locales/zh-CN";
+} from "../locales/zh-CN";
 
 const pack = ancientChinaPackV01;
 const forumData = ancientChinaForumArchive;
@@ -39,9 +42,10 @@ const firstParagraph = (body: string) => {
   return rest.length ? `${first}（……全文共 ${rest.length + 1} 段，见论坛档案）` : first;
 };
 const app = document.querySelector<HTMLDivElement>("#app")!;
+const BASE = import.meta.env.BASE_URL;
 
 document.documentElement.lang = UI_LOCALE;
-document.title = "RP Module Forge｜简体中文预览";
+document.title = "RP Module Forge 模块工坊｜天道降维互助论坛";
 
 function escapeHtml(value: string): string {
   return value
@@ -53,11 +57,12 @@ function escapeHtml(value: string): string {
 }
 
 app.innerHTML = `
+  <header class="forge-top"><div class="inner"><a class="back" href="${BASE}"><span class="seal">天道</span>返回天道降维互助论坛</a><div class="theme" id="themeSwitch" aria-label="阅读配色"></div></div></header>
   <div class="shell">
     <section class="hero">
-      <div class="muted">公开预览 V0.1 · ${pack.label} · 当前界面语言：简体中文</div>
-      <h1>RP Module Forge</h1>
-      <p><a href="${import.meta.env.BASE_URL}prototypes/forum-first-concept-v3.html">🏮 返回天道降维互助论坛 · V3 试玩版</a></p>
+      <div class="muted">论坛维护组第一方工具 · 模块工坊 / 装配器 · ${pack.label}</div>
+      <h1>RP Module Forge 模块工坊</h1>
+      <div id="forumContext" hidden></div>
       <p>给文字角色扮演装配可移植的角色辅助系统。身份回答“你现在是谁、能做什么”，发展路线回答“你想往哪里走”；同一个开局，也可以拥有完全不同的人生。</p>
     </section>
 
@@ -474,10 +479,10 @@ function renderForum() {
               <span>${escapeHtml(authorName(thread.author))}</span>
               <span>${escapeHtml(nodeLabel(thread.node))}</span>
             </div>
-            <h3>${escapeHtml(thread.title)}</h3>
+            <h3><a href="${topicHref(BASE, thread.id)}">${escapeHtml(thread.title)}</a></h3>
             <p>${escapeHtml(firstParagraph(thread.body))}</p>
             ${replies.length ? `<div class="reply-stack">${replies.map((reply) => `<div class="forum-reply"><strong>${escapeHtml(authorName(reply.author))}</strong>：${escapeHtml(reply.body)}</div>`).join("")}</div>` : ""}
-            <div class="forum-origin">${archived ? "已封存 · " : ""}${provenanceLabels[thread.provenance.kind] ?? "来源已记录"}</div>
+            <div class="forum-origin">${archived ? "已封存 · " : ""}${provenanceLabels[thread.provenance.kind] ?? "来源已记录"} · 编号 ${escapeHtml(thread.id)}</div>
           </article>
         `;
       }).join("")
@@ -510,7 +515,7 @@ function renderForum() {
             </div>
             <p>${escapeHtml(note.lesson)}</p>
             ${note.conflictWith.length ? `<div class="conflict-note">⚖ 当前还有 ${note.conflictWith.length} 条已审核意见与此条存在已知冲突；运行时必须保留分歧。</div>` : ""}
-            <div class="forum-origin">命中原因：当前身份匹配 · 已启用相关能力 · 可靠度达到设定门槛</div>
+            <div class="forum-origin">命中原因：当前身份匹配 · 已启用相关能力 · 可靠度达到设定门槛 · 原帖：${note.sourceThreads.map((id) => `<a href="${topicHref(BASE, id)}">${escapeHtml(forumData.threads.find((item) => item.id === id)?.title ?? id)}</a>`).join("、")}</div>
           </article>
         `;
       }).join("")
@@ -592,7 +597,55 @@ document.querySelector("#manifest")!.addEventListener("click", () => {
     : "当前装配未通过规范配置校验，已停止导出。";
 });
 
+mountThemeSwitch(document.querySelector<HTMLElement>("#themeSwitch")!);
+
+/**
+ * Arriving from a forum module-release topic (`?topic=<id>`): show the
+ * attachment as context and offer to apply its capability / expert lens
+ * combination. The identity stays whatever is selected; nothing is written
+ * to any profile from here.
+ */
+function renderForumContext() {
+  const topicId = new URLSearchParams(location.search).get("topic");
+  const topic = topicId ? forumData.threads.find((item) => item.id === topicId) : undefined;
+  const box = document.querySelector<HTMLDivElement>("#forumContext")!;
+  if (!topic) {
+    box.hidden = true;
+    return;
+  }
+  const attachment = topic.moduleAttachment;
+  const capabilityLabel = (id: string) => pack.capabilities.find((item) => item.id === id)?.label ?? id;
+  const expertLabel = (id: string) => pack.experts.find((item) => item.id === id)?.label ?? id;
+  const identityLabel = (id: string) => pack.identities.find((item) => item.id === id)?.label ?? id;
+  box.hidden = false;
+  box.className = "context-note";
+  box.innerHTML = attachment
+    ? `<h2>🧩 来自论坛主题《${escapeHtml(topic.title)}》的模块附件</h2>
+      <div class="chips"><span>建议身份：${escapeHtml(identityLabel(attachment.suggestedIdentity))}</span>${attachment.capabilities.map((id) => `<span>${escapeHtml(capabilityLabel(id))}</span>`).join("")}${attachment.experts.map((id) => `<span>镜头：${escapeHtml(expertLabel(id))}</span>`).join("")}</div>
+      <p class="muted">${escapeHtml(attachment.note)}</p>
+      <div class="actions"><button type="button" id="applyAttachment">按附件装配能力与镜头（不改变身份，不写入档案）</button><a class="text-link" href="${topicHref(BASE, topic.id)}">回到这篇帖子 ↗</a></div>`
+    : `<h2>来自论坛主题《${escapeHtml(topic.title)}》</h2><p class="muted">这篇帖子没有模块附件；工坊按当前身份与路线正常装配。</p><a class="text-link" href="${topicHref(BASE, topic.id)}">回到这篇帖子 ↗</a>`;
+  document.querySelector("#applyAttachment")?.addEventListener("click", () => {
+    if (!attachment) return;
+    for (const select of capabilitySelects()) select.value = "disabled";
+    for (const id of attachment.capabilities) {
+      const select = capabilitySelects().find((item) => item.dataset.capability === id);
+      if (select) select.value = "resident";
+    }
+    for (const select of expertSelects()) select.value = "off";
+    attachment.experts.forEach((id, index) => {
+      const select = expertSelects().find((item) => item.dataset.expert === id);
+      if (select) select.value = index === 0 ? "primary" : "secondary";
+    });
+    renderIdentityAndCapabilityPresentation();
+    renderAgenda();
+    refreshForumAndPrompt();
+    box.querySelector("h2")!.textContent = `🧩 已按《${topic.title}》的附件装配能力与镜头（身份未变）`;
+  });
+}
+
 applyRecommendations();
 renderForum();
 renderMaintainerLog();
 renderCompact();
+renderForumContext();
