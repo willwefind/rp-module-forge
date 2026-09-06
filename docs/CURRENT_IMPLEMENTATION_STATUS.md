@@ -1,17 +1,29 @@
 # Current Implementation Status
 
-Last updated: 2026-09-04
+Last updated: 2026-09-06
 
 This file exists to keep the public repository honest while V0.1 specifications move ahead of the initial code skeleton.
+
+## Product surfaces (since 2026-09-06)
+
+- `/` — **天道降维互助论坛**, the primary product (`apps/web/index.html` → `src/forum/`): realm / world-pack / node navigation, 首页 / 精华 / 模块仓 / 老乡经验库 / 维护组 tabs, body + reply search, topic dialog with provenance, archive gaps, related threads and module attachments, seven Chinese Discussion category links, 日间 / 夜间 / 护眼 themes, local profile cabinet;
+- `/forge/` — **RP Module Forge 模块工坊**, the first-party workshop (`apps/web/forge/index.html` → `src/forge/`): reads the shared active profile, `?topic=<id>` shows a module attachment and can apply its capability / expert lens combination without changing identity or writing any profile;
+- `/prototypes/forum-first-concept-v3.html` — the V3 prototype kept as a **historical snapshot**; its content is no longer maintained;
+- the display name of the first pack is **东方古代 → 架空王朝**; the machine id remains `ancient-china` (`worldPack.id`, permission-profile ids, package name) until a dedicated migration.
 
 ## Implemented now
 
 - pnpm monorepo skeleton;
+- Vite multi-page build (`index.html` + `forge/index.html`) with base-relative links, so refreshes under the Pages base path do not 404; topics are addressed by `#topic=<id>` and legacy V3 slugs still resolve;
+- pack-owned unified forum archive `ancientChinaForumArchive` (`packages/pack-ancient-china/src/forumArchive.ts` assembling `src/forum/{nodes,members,seed,curatedNotes}.ts` and `src/forum/topics/<slug>.ts`): 9 nodes, 28 members, 40 threads (18 founding seed threads + 22 V3 topics migrated verbatim, one file per topic), 102 replies, 10 curated runtime notes — one source for the forum UI, search, attachments, related threads, the workshop and curated-note retrieval; no third JSON, no build-time copy, no title keys, no Chinese as a canonical id;
+- Core forum vocabulary extended for the archive: post types (retrospective, serial, good-news, chat, module-release, knowledge-card, community-gateway, maintenance-record, revived-thread, archive-note, author-update), member kinds, worldline statuses (`identity-ended` is explicitly not death), provenance reference prefixes, `archiveTime`, `featured`, `reviewNote`, `archiveGap`, `relatedThreads`, `moduleAttachment`; validation covers node / related-thread / source-reply / attachment integrity;
+- canonical local profile `LocalRpProfile` v5 (`apps/web/src/profile/store.ts`, key `td-profile-store-v5`): `identityId` / `agenda.routeId` must exist in the loaded pack, permission is derived from the identity and never stored, private `notes` never leave the browser; deterministic v3 / v4 migration through `legacyLabels.ts`, unmappable values become `requiresReview` with the original wording kept, the old copy stays until the new store is saved; corrupt or blocked storage falls back to a read-only recovery mode without overwriting; JSON import checks the version, fails closed, and offers merge-skip / merge-overwrite / replace with confirmation;
+- forum and workshop read and write the same active profile; the workshop only writes on an explicit, confirmed 「写回档案」;
 - V0.1 canonical TypeScript config contract with eight stable generic capability IDs;
 - guarded birth-version migration for the four identities and provisional module IDs that existed in the first Ancient China code skeleton;
 - executable migration regression tests covering direct/split/absorbed/manual-review mappings and fail-closed identity/world-pack handling;
 - GitHub Actions CI for frozen install, typecheck, tests, and build;
-- GitHub Pages deployment workflow for the primary Web App;
+- GitHub Pages deployment workflow publishing the forum at `/`, the workshop at `/forge/` and the prototype snapshots under `/prototypes/`;
 - `packages/pack-ancient-china` canonical V0.1 presentation for all eight capabilities;
 - nine Ancient China identity definitions with explicit permission profiles and canonical capability/expert recommendations;
 - Identity Playbook Core contracts and deterministic resolution/fallback helpers;
@@ -41,8 +53,8 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - fail-closed exclusion of raw/pending/display-only/superseded/deprecated material from automatic curated-note retrieval;
 - conflict preservation for eligible curated notes instead of silent averaging;
 - Traveler Forum reference-integrity validation for thread/reply/source/conflict links;
-- Ancient China founding forum seed: 18 authored threads, 20 replies, and 10 curated runtime notes, all marked as maintainer seed rather than simulated community history; every seed thread now has at least one reply except the intentionally closed ones;
-- Web App Traveler Forum browser showing identity-relevant raw threads separately from currently retrievable curated-note candidates;
+- all archive content is maintainer-authored (`seed:ancient-china-forum-v0.1` / `seed:ancient-china-forum-v3-archive`), never simulated community history; counts shown in the UI are real stored counts, never decoration;
+- workshop Traveler Forum panel showing identity-relevant raw threads separately from currently retrievable curated-note candidates, with source-thread links back into the forum;
 - birth-version config, pack, and prompt exports retained temporarily for migration compatibility;
 - planned SillyTavern integration directory.
 
@@ -64,7 +76,10 @@ This file exists to keep the public repository honest while V0.1 specifications 
 - full-prompt exporter;
 - event/situation classification that supplies runtime Traveler Forum situation labels automatically;
 - token-budget, duplication, and contradiction policy beyond the current deterministic result limit and explicit conflict preservation;
-- contribution/review/moderation workflow for accepting real community forum submissions;
+- contribution/review/moderation workflow for accepting real community forum submissions; no authorized real Discussion has been imported into the archive yet;
+- one-click "install this module attachment into my profile": applying an attachment in the workshop changes capabilities / expert lenses only and never writes a profile;
+- real Discussion reply counts or interaction numbers inside the forum (deliberately not shown; the community-gateway topic links out instead);
+- renaming the machine id `ancient-china` to match the display name 架空王朝;
 - session-only AI-generated forum chatter as an explicitly synthetic presentation layer;
 - runtime activation/withdrawal behavior for on-demand capabilities;
 - Traditional Chinese (`zh-Hant`) and English (`en`) presentation plus a language selector; these are intentionally deferred until Simplified Chinese terminology and product flows stabilize;
@@ -95,6 +110,8 @@ The Core permission gate is deliberately evidence-based rather than semantic gue
 
 The Traveler Forum has a real repository-backed data layer. Raw threads are display/lore material and are not automatically injected. Runtime retrieval consumes only curated notes that pass review and applicability filters. Route-aware forum applicability is not yet implemented and is labelled as such in the Web App.
 
+Since 2026-09-06 the forum is the product surface and the workshop is a tool inside it. Both read the same pack-owned archive and the same local profile store. A profile records what the reader chose (world pack, identity id, route id, optional custom goal, private notes) and nothing about what they may do: permission is always re-derived from the canonical identity in the loaded pack. Browsing any node, applying a module attachment in the workshop, or importing a backup never grants authority; the only write path from the workshop is the explicit, confirmed write-back.
+
 ## Presentation / localization boundary
 
 V0.1 currently treats Simplified Chinese as the source product locale. The ordinary Web surface should read as a coherent Simplified Chinese product; internal enum values and stable IDs are not ordinary UI copy.
@@ -121,7 +138,17 @@ New canonical identities and Agenda routes are not backported into the birth-ver
 
 ## Validation in repository
 
-The current Simplified Chinese Web / lore-feed feature tree was validated before history cleanup by GitHub Actions run `33835505335` on commit `902222bac4d4b3491036cce733167a62df20ac46`:
+The Forum-first production migration (2026-09-06) landed as three squash commits, each validated by GitHub Actions `validate` (`pnpm install --frozen-lockfile && pnpm typecheck && pnpm test && pnpm build`, Node 20):
+
+- `4a9e38a466cf0cf4be01f58f3bcc4f968e73f3b2` `refactor(forum): unify archive and runtime forum source (#1)` — run `33935437571`;
+- `6ac2d6842ae7855de4447f3148cf19e34b2f89ec` `feat(web): promote forum-first shell to primary product (#2)` — run `34029427778`;
+- `387104c5d27ca4ab25265bff3a5207bd2b559c32` `feat(web): share canonical local profiles across forum and forge (#3)` — run `34030600221`.
+
+On `main` after the third merge, CI run `34030642244` and GitHub Pages deploy run `34030642241` both passed; the live root, `/forge/` and the prototype snapshot were checked in a browser afterwards.
+
+The TypeScript test suites (`packages/*/tests/**/*.test.ts`, `apps/web/tests/**/*.test.ts`) run on `node --test` through `scripts/run-ts-tests.mjs` without new dependencies: 16 archive tests (integrity, vocabulary, no fabricated counts, gaps, identity-ended ≠ death, 22 / 82 parity with the V3 snapshot, curated-note retrieval, conflicts, provenance), 7 forum-shell tests (filters, reply search, legacy slug resolution, base-relative links) and 9 profile tests (persistence, unknown ids rejected, v4 → v5 and v3 migration, `requiresReview`, corrupt storage recovery, import fail-closed and modes, notes never in Discussion URLs), plus the 39 Core tests and the 7 prototype tests.
+
+The earlier Simplified Chinese Web / lore-feed feature tree was validated before history cleanup by GitHub Actions run `33835505335` on commit `902222bac4d4b3491036cce733167a62df20ac46`:
 
 - `pnpm install --frozen-lockfile` — passed;
 - `pnpm typecheck` — passed;

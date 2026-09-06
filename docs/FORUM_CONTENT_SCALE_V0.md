@@ -5,6 +5,8 @@ Last updated: 2026-09-04
 
 V3 review implementation: 22 independently authored topics and 82 stored replies (after the 2026-09-04 second wave), full body/reply search, explicit interrupted content, per-topic provenance and exact loaded/stored counts. The previous 428-floor decoration has no verifiable backing and is removed. See [review record](FORUM_V3_REVIEW.md); the larger production corpus remains a future phase.
 
+**2026-09-06:** the V3 corpus is no longer a prototype-only copy. All 22 topics and 82 replies were migrated verbatim into `packages/pack-ancient-china/src/forum/topics/<slug>.ts` (one file per topic) and assembled with the 18 founding seed threads into the single `ancientChinaForumArchive` that the production forum, the workshop and curated-note retrieval all read. New content is authored there; `prototypes/forum-v3/content.mjs` is a frozen historical snapshot. A parity test keeps the migrated topics identical to that snapshot.
+
 ## 1. Problem
 
 The founding repository seed proved that forum data can exist without runtime fabrication, but it is still deliberately small: many bodies are short and reply chains are sparse.
