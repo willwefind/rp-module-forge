@@ -1,12 +1,54 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="day">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RP Module Forge｜简体中文预览</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="天道降维互助论坛：读老乡档案、管理本局身份、通过中文分类参与真人社区，并从模块帖进入模块工坊。" />
+    <title>天道降维互助论坛</title>
   </head>
   <body>
-    <main id="app"></main>
-    <script type="module" src="/src/main.ts"></script>
+    <header class="top">
+      <div class="topin">
+        <a class="brand" href="./"><span class="seal">天道</span><span>天道降维互助论坛<small>一间开了很久的档案馆，一群还在路上的老乡</small></span></a>
+        <label class="search"><span class="sr-only">搜索论坛</span><input id="q" type="search" placeholder="搜正文、楼层、作者、标签……" /></label>
+        <div class="actions"><div class="theme" id="themeSwitch" aria-label="阅读配色"></div></div>
+      </div>
+      <div class="profilebar">
+        <label for="profileSelect">本局档案</label><select id="profileSelect"></select><span id="profileBrief"></span>
+        <button class="iconbtn" id="editProfile" type="button">管理档案</button><button class="iconbtn" id="newProfile" type="button">＋ 新建</button>
+        <span class="local-note">仅存本浏览器</span>
+      </div>
+      <div class="realmbar" id="realmbar" aria-label="浏览世界域"></div>
+      <div class="packbar" id="packbar" aria-label="浏览世界包"></div>
+      <nav class="nav" aria-label="主题类型">
+        <button type="button" data-tab="all">首页</button><button type="button" data-tab="featured">精华</button><button type="button" data-tab="modules">模块仓</button><button type="button" data-tab="knowledge">老乡经验库</button><button type="button" data-tab="maintainer">维护组</button>
+        <button type="button" data-compose>天道外部通信口 ↗</button><a href="./forge/">模块工坊 ↗</a>
+      </nav>
+    </header>
+    <div id="storageWarning" class="storage-warning" role="alert" hidden></div>
+    <main class="layout">
+      <aside class="sidebar sticky"><div class="panel side" id="nodes" aria-label="论坛分区"></div><p class="sidebar-note">看看别人的人生，<br />不必换掉自己的路引。</p></aside>
+      <section>
+        <div class="head"><div><div class="crumb" id="crumb"></div><h1>老乡，来坐一会儿。</h1><p class="caption">有人在求救，有人在对账，也有人今天终于吃上了一碗面。</p></div><button class="primary" type="button" data-compose>＋ 发主题</button></div>
+        <div class="notice"><b>档案馆来信</b> · 本站收录维护组创作档案；真人交流在 GitHub Discussions。<button class="textbtn" id="aboutCommunity" type="button">看看两边怎样相连 →</button></div>
+        <div class="list-summary"><span id="resultCount" aria-live="polite"></span><button class="textbtn" id="resetFilters" type="button">重置筛选</button></div>
+        <div class="panel topics" id="topics"></div>
+        <div class="panel curated-section" id="curatedNotes" hidden></div>
+        <p class="caption endnote">这里的沉默不等于结局。断更与缺页会留下标记。</p>
+      </section>
+      <aside class="rail sticky">
+        <section class="panel card"><h3>我的本局</h3><div class="profile"><div class="avatar" id="profileAvatar"></div><div><b id="profileIdentity"></b><div id="profileWorld" class="caption"></div></div></div><div class="facts"><div class="fact"><span>档案名</span><span id="profileName"></span></div><div class="fact"><span>路线</span><span id="profileAgenda"></span></div><div class="fact"><span>权限</span><span id="profilePermission"></span></div></div><div class="hint">档案是你的角色备忘。浏览分区不改变身份；模块需在工坊核对配置。</div><button class="btn" id="railEdit" type="button">打开档案柜</button><a class="btn" href="./forge/">前往模块工坊 ↗</a></section>
+        <section class="panel card bridge"><h3>📡 天道外部通信口</h3><span class="live"><span class="dot"></span>真人社区 · GitHub Discussions</span><p>把经历、疑问和不同意见带回来。先选一块门牌，再去真人讨论区填写中文表单。</p><button class="btn primarybtn" type="button" data-compose>选分类，发主题 ↗</button><a class="btn" href="https://github.com/willwefind/rp-module-forge/discussions" target="_blank" rel="noopener noreferrer">看看真人讨论 ↗</a><div class="hint">投稿 → 核对来源、署名与授权 → 维护组审核 → 可选收录。经验库另行审查。</div></section>
+        <section class="panel card"><h3>从哪一页读起</h3><div id="readingLinks"></div></section>
+      </aside>
+    </main>
+    <dialog id="topicDialog" class="thread-dialog" aria-labelledby="drawerTitle"><div class="drawerhead"><strong id="drawerKicker"></strong><button class="close" type="button" data-close aria-label="关闭主题">×</button></div><div class="drawerbody"><h2 id="drawerTitle"></h2><div class="postmeta" id="drawerMeta"></div><div id="provenance" class="provenance"></div><div class="post" id="drawerPost"></div><div id="moduleAttachment"></div><div id="relatedTopics"></div><div class="archive-note" id="archiveNote"></div><div class="reactionbar"><button class="react" type="button" data-review="复现成功">🧪 我复现过</button><button class="react" type="button" data-review="适用性存疑">⚠️ 适用性存疑</button><button class="react" type="button" data-review="补充经历">✍️ 我有补充</button></div><p class="caption">评议将在 GitHub 表单中填写；这里不记录虚拟点赞。</p><div class="draweractions"><button class="btn primarybtn" type="button" id="reviewTopic">参与真人评议 / 勘误 ↗</button><button class="btn" type="button" id="copyTopic">复制档案链接</button></div><div class="replyhead"><strong id="replySummary"></strong><button class="load" type="button" id="loadMore">继续阅读楼层</button></div><div id="replies"></div></div></dialog>
+    <dialog id="composeDialog" class="modal" aria-labelledby="composeTitle"><div class="drawerhead"><strong id="composeTitle">📡 选一块门牌，和真人老乡说话</strong><button class="close" type="button" data-close aria-label="关闭分类选择">×</button></div><div class="modalbody"><p class="caption">将在新标签页打开 GitHub 中文分类表单，发布需要登录。当前档案与私密笔记不会自动上传。</p><div id="composeContext" class="hint" hidden></div><div id="categories" class="category-grid"></div><details class="consent-note"><summary>希望投稿被收录到产品论坛？</summary><p>在 GitHub 表单里选择是否愿意被导入、预设 / 自定义 / GitHub 署名，以及是否授权保留原文。表单只记录意向，维护组核对后才收录；经验库需再审核。此处不代填授权。</p></details></div></dialog>
+    <dialog id="profileDialog" class="modal" aria-labelledby="profileTitle"><div class="drawerhead"><strong id="profileTitle">本局档案柜</strong><button class="close" type="button" data-close aria-label="关闭档案柜">×</button></div><div class="modalbody" id="profileDialogBody"></div></dialog>
+    <dialog id="deleteDialog" class="modal small" aria-labelledby="deleteTitle"><div class="drawerhead"><strong id="deleteTitle">确认删除档案</strong><button class="close" type="button" data-close aria-label="取消删除">×</button></div><div class="modalbody"><p id="deleteText"></p><p>删除后无法撤回，建议先导出备份。</p><div class="form-actions"><button class="danger" type="button" id="confirmDelete">删除档案</button><button class="iconbtn" type="button" data-close>保留档案</button></div></div></dialog>
+    <dialog id="plannedDialog" class="modal small" aria-labelledby="plannedTitle"><div class="drawerhead"><strong id="plannedTitle">世界尚未开放</strong><button class="close" type="button" data-close aria-label="关闭世界说明">×</button></div><div class="modalbody"><p id="plannedText"></p><p>当前可选世界包为「东方古代 · 架空王朝」。</p><a class="btn primarybtn" id="proposeWorld" target="_blank" rel="noopener noreferrer">去提案一个世界 ↗</a></div></dialog>
+    <div id="toast" role="status" hidden></div>
+    <noscript><p class="notice">请启用 JavaScript 使用本地档案与论坛阅读。<a href="https://github.com/willwefind/rp-module-forge/discussions">也可以直接进入真人讨论区。</a></p></noscript>
+    <script type="module" src="/src/forum/main.ts"></script>
   </body>
 </html>
