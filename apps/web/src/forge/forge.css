@@ -1,0 +1,70 @@
+/* RP Module Forge 模块工坊. Uses the shared theme tokens so 日间 / 夜间 / 护眼 carry over from the forum. */
+.forge-top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--app) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.forge-top .inner{width:min(1100px,calc(100% - 32px));margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0}
+.forge-top .back{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:13px}
+.forge-top .seal{width:28px;height:28px;display:grid;place-items:center;border-radius:8px 8px 8px 3px;background:var(--accent);color:var(--accentText);font-family:serif;font-size:12px}
+.shell{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:24px 0 64px}
+.hero{margin-bottom:24px}
+.hero h1{margin:0 0 8px;font-size:clamp(28px,5vw,52px);font-family:ui-serif,"Songti SC",serif}
+.hero p{max-width:820px;line-height:1.7;color:var(--sub)}
+.context-note{border:1px solid var(--gold);background:var(--goldSoft);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.7;margin:12px 0}
+.context-note h2{margin:0 0 6px;font-size:15px}
+.context-note .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.context-note .chips span{border:1px solid var(--gold);border-radius:999px;padding:2px 8px;font-size:11px;background:var(--panel)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.span-2{grid-column:span 2}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 12px;font-size:18px}
+label{display:block;margin-bottom:10px}
+select,textarea{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--raised);color:var(--text);padding:12px}
+textarea{min-height:110px;resize:vertical}
+.settings-list{display:grid;gap:10px}
+.setting-row{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:14px;align-items:start;border-top:1px solid var(--border);padding-top:10px}
+.setting-row:first-child{border-top:0;padding-top:0}
+.setting-copy strong{display:inline-block;margin-right:8px}
+.mode-select{min-width:0}
+.inline-toggle{display:flex;align-items:center;gap:8px}
+.inline-toggle input{margin:0}
+.invariant-note{border:1px dashed var(--border);border-radius:12px;padding:10px 12px;color:var(--sub);font-size:13px;line-height:1.5}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+button{border:1px solid var(--border);border-radius:999px;padding:10px 14px;background:var(--raised);color:var(--text);cursor:pointer}
+button.primary{background:var(--accent);color:var(--accentText);border-color:var(--accent);font-weight:700}
+.output{white-space:pre-wrap;line-height:1.65;min-height:180px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px}
+.muted{color:var(--muted);font-size:14px;line-height:1.6}
+.text-link{display:inline-flex;margin-top:14px;color:var(--accent);font-size:13px;text-underline-offset:3px}
+.forum-shell{overflow:hidden}
+.forum-heading{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.forum-heading h2{margin-top:4px}
+.forum-stats{flex:0 0 auto;border:1px solid var(--border);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted);background:var(--raised)}
+.forum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.forum-subhead{font-weight:700;margin-bottom:8px}
+.forum-help{margin:-2px 0 10px}
+.forum-list{display:grid;gap:10px;align-content:start}
+.forum-post,.curated-note{border:1px solid var(--border);border-radius:14px;background:var(--raised);padding:13px 14px}
+.forum-post.is-archived{border-style:dashed;opacity:.72}
+.forum-post h3{margin:8px 0 7px;font-size:15px;line-height:1.45}
+.forum-post h3 a{text-decoration:none}
+.forum-post h3 a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:4px}
+.forum-post p,.curated-note p{margin:7px 0;line-height:1.65;font-size:14px}
+.forum-meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;color:var(--muted);font-size:11px}
+.badge{display:inline-flex;align-items:center;min-height:22px;padding:2px 7px;border:1px solid var(--border);border-radius:999px;background:var(--sel);color:var(--sub)}
+.reply-stack{display:grid;gap:6px;margin-top:9px;border-top:1px solid var(--border);padding-top:8px}
+.forum-reply{border-left:2px solid var(--border);padding-left:9px;color:var(--sub);font-size:12px;line-height:1.55}
+.forum-origin{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5;word-break:break-word}
+.forum-origin a{color:var(--accent)}
+.conflict-note{margin-top:9px;border:1px dashed var(--border);border-radius:10px;padding:8px 9px;color:var(--sub);font-size:12px;line-height:1.5}
+.forum-empty{border:1px dashed var(--border);border-radius:12px;padding:12px;color:var(--muted);font-size:13px;line-height:1.55}
+.maintainer-shell{overflow:hidden}
+.maintainer-log{margin-top:18px}
+.maintainer-list{display:grid;gap:10px}
+.maintainer-entry{position:relative;border:1px solid var(--border);border-radius:14px;background:var(--raised);padding:14px}
+.maintainer-entry h3{margin:5px 0 3px;font-size:16px;line-height:1.45}
+.maintainer-index{color:var(--sub);font-size:12px;font-weight:700}
+.maintainer-date{color:var(--muted);font-size:11px}
+.maintainer-lines{margin-top:10px}
+.maintainer-lines p{margin:5px 0;color:var(--sub);font-size:13px;line-height:1.65}
+.maintainer-lines p:last-child{margin-bottom:0}
+.maintainer-older{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+.maintainer-older summary{cursor:pointer;color:var(--sub);font-size:13px;font-weight:700}
+.maintainer-older[open] summary{margin-bottom:10px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.span-2{grid-column:span 1}.setting-row{grid-template-columns:1fr}.forum-grid{grid-template-columns:1fr}.forum-heading{display:block}.forum-stats{display:inline-flex;margin:4px 0 8px}.shell{width:min(100% - 20px,1100px);padding-top:16px}.forge-top .inner{width:min(100% - 20px,1100px)}}
