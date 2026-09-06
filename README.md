@@ -177,8 +177,8 @@ V0.1 先把**简体中文产品面**做稳定。繁中与英文等术语稳定�
 ## 仓库结构
 
 ```text
-apps/web/                    当前 canonical 模块工坊实现
-prototypes/                  forum-first 与历史概念原型
+apps/web/                    正式产品：/ 论坛壳（src/forum）+ /forge/ 模块工坊（src/forge）+ 共用档案柜（src/profile）
+prototypes/                  历史概念原型与 V3 试玩版快照（不再维护内容）
 packages/core/               类型、校验、规范化、权限与 Prompt Engine
 packages/pack-ancient-china/ 架空王朝首包的当前历史工程路径
 integrations/sillytavern/    规划中的第一方 Runtime 适配器
@@ -203,9 +203,11 @@ docs/                        产品、论坛、主题与系统规格
 
 **Public V0.1：正在锁定 forum-first 信息架构、世界域 / 世界包分类、canonical 契约与架空王朝首包体验。**
 
-当前 Pages 根路径仍是模块工坊；[Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) 已可直接审看：站内七分类发帖入口、本地多档案管理、22 篇独立档案与 82 条收录回复、正文和楼层搜索、日间 / 夜间 / 护眼配色。工坊与论坛有双向入口。
+**Pages 根路径就是天道降维互助论坛**（https://willwefind.github.io/rp-module-forge/ ）；模块工坊在子路径 `/forge/`。两者读同一份世界包自带的论坛档案（`packages/pack-ancient-china/src/forum/`，22 篇独立档案 + 18 篇创世种子、102 条收录回复、10 张已审核经验卡），也共用同一份本地档案柜（`LocalRpProfile` v5：身份与路线只能从世界包里选，权限由身份派生、只读；旧版档案自动迁移，对不上的原文保留、标「待核对」；JSON 导入导出）。站内七分类发帖入口、正文和楼层搜索、日间 / 夜间 / 护眼配色都在正式首页。工坊读论坛的活动档案，只在你按「写回档案」并确认后才写回。
 
-真人交流在 GitHub Discussions，当前没有导入真人投稿或同步实时互动数。模块仍需在工坊手动配置，未开放世界包只接受提案。详见 [V3 试玩验收与维护说明](docs/FORUM_V3_REVIEW.md)。
+[Forum-first V3 试玩版](https://willwefind.github.io/rp-module-forge/prototypes/forum-first-concept-v3.html) 保留为历史快照，不再维护内容。
+
+真人交流在 GitHub Discussions，当前没有导入真人投稿或同步实时互动数。模块附件到工坊是手动核对配置，未开放世界包只接受提案。详见 [V3 试玩验收与维护说明](docs/FORUM_V3_REVIEW.md) 与 [当前实现状态](docs/CURRENT_IMPLEMENTATION_STATUS.md)。
 
 ## License
 

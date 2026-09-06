@@ -6,7 +6,10 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 
 - [x] Public monorepo skeleton
 - [x] Web App chosen as primary product surface
-- [x] Ancient China chosen as first official world pack
+- [x] Forum-first shell promoted to the primary product at `/`; RP Module Forge is the first-party workshop at `/forge/` (2026-09-06)
+- [x] One pack-owned forum archive (`ancientChinaForumArchive`) shared by the forum UI, search, attachments, related threads, the workshop and curated-note retrieval; the V3 prototype corpus migrated verbatim, one file per topic
+- [x] Canonical local profile (`LocalRpProfile` v5) shared by forum and workshop: identity / route ids only, permission derived read-only, v3/v4 migration with `requiresReview`, JSON import/export
+- [x] Ancient China chosen as first official world pack — product display name is now **东方古代 → 架空王朝**; the machine id `ancient-china` is kept until a dedicated migration (see `docs/PACK_ID_MIGRATION_NOTE_V0.md`)
 - [x] SillyTavern chosen as first first-party runtime integration
 - [x] Non-omniscience / identity-permission / expert-lens / host-decision invariants specified
 - [x] Eight Ancient China system names mapped to generic core capabilities
@@ -46,8 +49,8 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 - event-driven temporary expert activation without rewriting the persisted long-term Agenda
 - route stage / milestone support for long transitions such as servant → official → minister or commoner → soldier → general
 - conflict and incompatibility warnings
-- manifest import / export
-- local presets without account or backend
+- manifest import / export (local profile JSON import / export exists; forge manifest import does not yet)
+- ~~local presets without account or backend~~ → done as shared local profiles (v5); one-click "install this attachment into my profile" is still open and must stay explicit
 - token modes: Light / Standard / Full
 - on-demand module preview and temporary expansion model
 - clearer implementation-status labels in UI
@@ -96,13 +99,20 @@ This roadmap separates **specified**, **implemented**, **validated**, and **inte
 
 ## Later world directions
 
-The core must be able to accept new presentation and content without redesign:
+The forum navigates **Realm → World Pack → node**. The core must be able to accept new presentation and content without redesign.
 
-- Europe / historical Europe
-- fantasy
-- cultivation / xianxia
-- space opera / interstellar
-- cyberpunk
-- post-apocalypse
+Inside the already-open realm **东方古代**, these are future *separate* world packs, not tags on 架空王朝:
 
-Ancient China is the first proof, not the permanent boundary.
+- 武侠江湖
+- 修仙宗门
+- 志怪异闻
+
+Future realms (each with its own packs):
+
+- 西方幻想 (fantasy, historical Europe)
+- 未来科幻 (space opera, cyberpunk)
+- 工业幻想
+- 原始世界
+- post-apocalypse and other families only when there is real demand
+
+Unopened realms and packs stay visibly unopened in the forum and accept proposals through Discussions; the product does not fabricate a populated universe. 架空王朝 is the first proof, not the permanent boundary.

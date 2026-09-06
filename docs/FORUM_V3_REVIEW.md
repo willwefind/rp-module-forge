@@ -1,6 +1,8 @@
 # Forum-first V3 试玩验收与维护说明
 
-日期：2026-09-04。当前目标为可交互审看版本，Pages 根路径继续提供现有模块工坊。
+> **2026-09-06 更新：V3 试玩版已完成使命，现为历史快照。** 22 篇档案与 82 条回复已逐字迁入世界包 `packages/pack-ancient-china/src/forum/topics/`（每帖一个文件），与 18 篇创世种子合成同一份 `ancientChinaForumArchive`，供正式首页 `/`、模块工坊 `/forge/` 与 Runtime 经验卡检索共用；档案柜升级为 `LocalRpProfile` v5（`td-profile-store-v5`，见 [当前实现状态](CURRENT_IMPLEMENTATION_STATUS.md)）。`prototypes/forum-v3/` 里的内容不再更新，下文记录的是 2026-09-04 试玩版验收时的状态。
+
+日期：2026-09-04。当时目标为可交互审看版本，Pages 根路径仍提供旧模块工坊。
 
 功能提交：`751e87ba1c6de8400167e0e97c7fd3b83475a143`（`feat(forum): make V3 interactive with profiles and authored archives`）。
 
