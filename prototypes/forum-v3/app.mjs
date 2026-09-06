@@ -85,7 +85,7 @@ $('#resetFilters').onclick=()=>{state={realm:'all',node:'all',tab:'all',q:''};$(
 $$('[data-planned]').forEach(b=>b.onclick=()=>{$('#plannedText').textContent=`「${b.dataset.planned}」仍是规划中的世界，没有可安装的完整世界包。`;$('#proposeWorld').href=discussionURL('世界包提案');openDialog('plannedDialog');});
 function renderAttachment() {
   if(!currentTopic)return;
-  $('#moduleAttachment').innerHTML=currentTopic.module?`<section class="attachment"><h3>🧩 模块附件 · 第108版说明</h3><p>当前本局：${esc(activeProfile().identity)} · ${esc(activeProfile().agenda)}</p><p>原设计面向皇帝治理情境。请按本局身份与可用信息手动适配；此处不会安装模块或修改档案。</p><a class="btn primarybtn" href="../">到模块工坊核对配置 ↗</a></section>`:'';
+  $('#moduleAttachment').innerHTML=currentTopic.module?`<section class="attachment"><h3>🧩 模块附件 · 第108版说明</h3><p>当前本局：${esc(activeProfile().identity)} · ${esc(activeProfile().agenda)}</p><p>原设计面向皇帝治理情境。请按本局身份与可用信息手动适配；此处不会安装模块或修改档案。</p><a class="btn primarybtn" href="../forge/">到模块工坊核对配置 ↗</a></section>`:'';
 }
 function openTopic(id) {
   const t=topics.find(t=>t.id===id);if(!t){notify('没有找到这篇档案');return;}
