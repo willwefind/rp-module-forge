@@ -314,6 +314,31 @@ Date: 2026-09-04
 - **References:** this commit; [V3 review record](FORUM_V3_REVIEW.md).
 - **Follow-up:** the 600–1800 character band is still thin; the V3 archive and canonical seed remain two hand-maintained corpora and should eventually derive from one source.
 
+## 【第122次维护记录】档案馆搬到了正门，工坊退回后院。
+
+Date: 2026-09-06
+
+> 老乡们发现进站先看见的是一排扳手和螺丝，档案馆要绕到侧门才找得到。维护组商量了一下：论坛才是这座城，工坊是城里的一间铺子。
+> 于是正门挂上了「天道降维互助论坛」的匾，模块工坊搬到后院 `/forge/`；试玩版的旧门牌留着，注明是历史快照。
+> 档案员趁搬家把两套卷宗合成一套：试玩版那 22 篇逐字抄进世界包，和 18 篇创世种子放同一个架子，论坛、工坊、经验卡检索从此翻同一本册子，谁也不用再对两份账。
+> 户籍也换了新式：本局档案只记「你是谁、想往哪走」，权限一栏不给填，由身份照律例派生。旧户籍能对上的自动换，对不上的原文留着盖「待核对」章，不替人猜。工坊看得见你的户籍，但只有你亲手按「写回」并确认，它才动笔。
+>
+> 【档案员批注：搬家不是清仓。旧副本留到你第一次保存之后，也不删。】
+
+### Engineering record
+
+- **Category:** refactor / feature / docs — Forum-first production migration (M1–M3 of `FORUM_PRODUCTION_MIGRATION_KICKOFF`)
+- **Scope:** `packages/core/src/travelerForum*.ts`, `packages/pack-ancient-china/src/forumArchive.ts` + `src/forum/**` (new, 22 topic files), `apps/web` (Vite MPA: `index.html` → `src/forum/`, `forge/index.html` → `src/forge/`, shared `src/theme.*`, `src/profile/`), `apps/web/tests/`, `packages/pack-ancient-china/tests/`, `scripts/run-ts-tests.mjs` + `ts-test-*.mjs`, README, `docs/ROADMAP.md`, `docs/CURRENT_IMPLEMENTATION_STATUS.md`, `docs/FORUM_V3_REVIEW.md`, `docs/FORUM_CONTENT_SCALE_V0.md`, prototype links.
+- **Problem:** the Pages root was the workshop while the product truth is forum-first; the V3 prototype and the canonical seed were two hand-maintained corpora (22/82 vs 18/20); local profiles stored free-text identity / route / permission that nothing validated.
+- **Decision:** (M1) one pack-owned archive `ancientChinaForumArchive` — seed + V3 topics migrated verbatim, one file per topic, ids `tf-ancient-china-<slug>` / `tf-reply-<slug>-NN`, no third JSON, no build copy, no title keys, no Chinese as canonical id; (M2) `/` = forum, `/forge/` = workshop, base-relative links, prototype kept as snapshot; (M3) `LocalRpProfile` v5 with identity / route ids only, permission derived read-only, deterministic v3/v4 migration with `requiresReview`, JSON import that fails closed, explicit confirmed write-back from the workshop.
+- **Behavior change:** the live root is the forum (40 threads / 102 replies / 10 notes, real counts); the workshop reads the shared active profile and shows module attachments from `?topic=`; the archive cabinet selects identity and route from the pack and shows derived permission; old stores migrate on first load with a visible notice.
+- **Compatibility:** additive for Core (new post types, member kinds, worldline statuses, thread fields; `board` → `node`). `ancientChinaForumData` kept as a deprecated alias of the archive. Prototype URLs unchanged. Old profile keys `td-profile-store-v4` / `td-profiles-v3` are read, migrated and left in place.
+- **Schema impact:** local profile store v4 → v5 (`td-profile-store-v5`); `permission` field dropped from storage; unknown legacy labels are never guessed.
+- **Privacy/security impact:** private notes stay in the browser and are never placed in Discussion URLs (tested); no real Discussion content imported; no test Discussion published.
+- **Validation:** CI `validate` green on each squash (`33935437571`, `34029427778`, `34030600221`) and on main `34030642244`; Pages deploy `34030642241` green for `387104c5`. Tests: 39 Core + 7 prototype + 32 TypeScript (16 archive incl. 22/82 parity with the V3 snapshot, 7 forum shell, 9 profile). Manual: root / `/forge/` / prototype live, refresh under base path, category links, 390 px no horizontal overflow, console clean; profile migration, 待核对 write-back, import three modes verified in a browser against the built site.
+- **References:** PR #1 `4a9e38a4`, PR #2 `6ac2d684`, PR #3 `387104c5`, this docs commit.
+- **Follow-up:** machine id `ancient-china` → 架空王朝 rename needs its own migration; route-aware forum applicability, authorized real-Discussion import and one-click attachment install remain open; the stale remote branch `forum-production-migration` should be deleted by a maintainer; CI still runs Node 20 (workflow files cannot be edited through the API token used for this migration).
+
 ## Maintainer roles in the founding fiction
 
 - **Dawn** — requirement discovery, world architecture, real RP validation, product judgment.
