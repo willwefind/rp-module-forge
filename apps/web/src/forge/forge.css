@@ -68,3 +68,6 @@ button.primary{background:var(--accent);color:var(--accentText);border-color:var
 .maintainer-older summary{cursor:pointer;color:var(--sub);font-size:13px;font-weight:700}
 .maintainer-older[open] summary{margin-bottom:10px}
 @media (max-width:760px){.grid{grid-template-columns:1fr}.span-2{grid-column:span 1}.setting-row{grid-template-columns:1fr}.forum-grid{grid-template-columns:1fr}.forum-heading{display:block}.forum-stats{display:inline-flex;margin:4px 0 8px}.shell{width:min(100% - 20px,1100px);padding-top:16px}.forge-top .inner{width:min(100% - 20px,1100px)}}
+.context-note .profile-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0}
+.context-note .profile-row select{max-width:240px}
+.context-note .actions{margin:10px 0 0}

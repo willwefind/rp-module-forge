@@ -5,7 +5,19 @@ import { ancientChinaForumArchive, ancientChinaForumNodes } from "@rpmf/pack-anc
 import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
 import { authorName, postTypeLabels, provenanceLabels, reliabilityLabels } from "../locales/zh-CN";
 import { mountThemeSwitch } from "../theme";
-import { deleteProfile, readStore, saveStore, upsertProfile, type Profile, type ProfileStore } from "../profile/store";
+import {
+  applyImport,
+  catalogFromPack,
+  deleteProfile,
+  parseImport,
+  readStore,
+  saveStore,
+  upsertProfile,
+  type ImportMode,
+  type ImportPlan,
+  type LocalRpProfile,
+  type ProfileStore
+} from "../profile/store";
 import {
   bodyParagraphs,
   categories,
@@ -37,7 +49,8 @@ const expertLabel = (id: string) => pack.experts.find((item) => item.id === id)?
 const thread = (id: string) => archive.threads.find((item) => item.id === id);
 
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
-const loaded = readStore(storage);
+const catalog = catalogFromPack(pack, OPEN_REALM_ID);
+const loaded = readStore(storage, catalog);
 let profileStore: ProfileStore = loaded.store;
 const writable = loaded.writable;
 let state: ForumState = { ...initialForumState };
@@ -65,7 +78,7 @@ function persist(next: ProfileStore): boolean {
   profileStore = next;
   try {
     if (!writable) throw new Error("只读恢复模式");
-    saveStore(storage, next);
+    saveStore(storage, next, catalog);
     storageWarning("");
     return true;
   } catch {
@@ -74,7 +87,7 @@ function persist(next: ProfileStore): boolean {
   }
 }
 
-function activeProfile(): Profile {
+function activeProfile(): LocalRpProfile {
   return profileStore.profiles.find((profile) => profile.id === profileStore.activeId) ?? profileStore.profiles[0];
 }
 
@@ -97,42 +110,71 @@ $<HTMLDialogElement>("#topicDialog").addEventListener("close", () => {
 
 mountThemeSwitch($("#themeSwitch"), () => notify("已切换配色；浏览器未允许保存偏好。"));
 
-// ---------- profiles (V3 schema; canonical profiles arrive in the next milestone) ----------
+// ---------- profiles (canonical v5: identity / route ids; permission derived read-only) ----------
+const identityOf = (profile: LocalRpProfile) => (profile.identityId ? pack.identities.find((item) => item.id === profile.identityId) ?? null : null);
+const routeLabel = (profile: LocalRpProfile) => {
+  const route = profile.agenda ? pack.agendas?.find((item) => item.id === profile.agenda!.routeId) : undefined;
+  const label = route?.label ?? "未定路线";
+  return profile.agenda?.customGoal ? `${label}：${profile.agenda.customGoal}` : label;
+};
+/** Read-only summary derived from the canonical identity; never stored, never editable. */
+function permissionSummary(profile: LocalRpProfile): string {
+  const identity = identityOf(profile);
+  if (!identity) return "身份待核对，权限无法派生";
+  const access = identity.permissionProfile.access[0] ?? "无普通接触权限";
+  const command = identity.permissionProfile.command[0] ?? "无普通命令权";
+  return `可接触：${access}｜可命令：${command}`;
+}
+function permissionDetail(identityId: string | null): string {
+  const identity = identityId ? pack.identities.find((item) => item.id === identityId) : undefined;
+  if (!identity) return "选择身份后，这里会显示该身份在世界包里的权限边界。权限不能手填，只能由身份派生。";
+  const list = (items: string[], empty: string) => (items.length ? items.join("；") : empty);
+  return `权限由「${identity.label}」派生，只读：可接触 ${list(identity.permissionProfile.access, "无普通接触权限")}｜可命令 ${list(identity.permissionProfile.command, "无普通命令权")}｜主要风险 ${identity.permissionProfile.risks.join("、")}。浏览任何分区都不会改变它。`;
+}
+
 function renderProfile() {
   const profile = activeProfile();
+  const identity = identityOf(profile);
   $<HTMLSelectElement>("#profileSelect").innerHTML = profileStore.profiles
-    .map((item) => `<option value="${esc(item.id)}">${esc(item.name)}</option>`)
+    .map((item) => `<option value="${esc(item.id)}">${esc(item.name)}${item.requiresReview ? "（待核对）" : ""}</option>`)
     .join("");
   $<HTMLSelectElement>("#profileSelect").value = profile.id;
-  $("#profileIdentity").textContent = profile.identity;
-  $("#profileWorld").textContent = profile.world;
+  $("#profileIdentity").textContent = identity?.label ?? "身份待核对";
+  $("#profileWorld").textContent = WORLD_LABEL;
   $("#profileName").textContent = profile.name;
-  $("#profileAgenda").textContent = profile.agenda;
-  $("#profilePermission").textContent = profile.permission;
-  $("#profileAvatar").textContent = [...profile.identity][0] ?? "档";
-  $("#profileBrief").textContent = `${profile.identity} · ${profile.agenda}`;
+  $("#profileAgenda").textContent = routeLabel(profile);
+  $("#profilePermission").textContent = permissionSummary(profile);
+  $("#profileAvatar").textContent = [...(identity?.label ?? "档")][0] ?? "档";
+  $("#profileBrief").textContent = `${identity?.label ?? "身份待核对"} · ${routeLabel(profile)}`;
   renderAttachment();
 }
 
 function openProfile(isNew = false) {
-  const profile: Profile = isNew
-    ? { id: crypto.randomUUID(), name: "", world: WORLD_LABEL, identity: "待设置", agenda: "开放路线", permission: "待核对", notes: "" }
+  const profile: LocalRpProfile = isNew
+    ? { version: 5, id: crypto.randomUUID(), name: "", realmId: catalog.realmId, worldPackId: catalog.worldPackId, identityId: null, agenda: { routeId: "open-road" }, notes: "" }
     : activeProfile();
   editingId = profile.id;
   $("#profileTitle").textContent = isNew ? "新建本局档案" : "本局档案柜 · 编辑 / 改名";
-  const worldOptions = [WORLD_LABEL, ...(profile.world !== WORLD_LABEL ? [profile.world] : [])];
+  const review = profile.requiresReview;
+  const legacyLines = review
+    ? Object.entries({ 身份: review.legacy.identity, 路线: review.legacy.agenda, 世界: review.legacy.world, 权限备注: review.legacy.permission })
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}「${esc(value)}」`)
+        .join("、")
+    : "";
   $("#profileDialogBody").innerHTML = `
-    <p class="caption">保存后才修改档案。这里的权限备注不授予任何世界内能力。</p>
+    <p class="caption">保存后才修改档案。身份与路线只能从当前世界包里选；权限由身份派生，不能手填。</p>
+    ${review ? `<div class="notice"><b>待核对</b> · ${esc(review.reason)}${legacyLines ? `<br>旧档案原文：${legacyLines}` : ""}<br>核对并保存后，这条提醒会消失。</div>` : ""}
     <form id="profileForm">
       <label>档案名<input name="name" required maxlength="40" value="${esc(profile.name)}"></label>
-      <label>世界包<select name="world">${worldOptions.map((option) => `<option${option === profile.world ? " selected" : ""}>${esc(option)}</option>`).join("")}</select></label>
+      <label>世界包<select name="world" disabled><option>${esc(WORLD_LABEL)}</option></select></label>
       <div class="field-pair">
-        <label>当前身份<input name="identity" required maxlength="60" list="identities" value="${esc(profile.identity)}"></label>
-        <label>路线 / 想过怎样的人生<input name="agenda" required maxlength="80" value="${esc(profile.agenda)}"></label>
+        <label>当前身份<select name="identityId" required>${profile.identityId ? "" : '<option value="" selected>请选择身份</option>'}${pack.identities.map((item) => `<option value="${esc(item.id)}"${item.id === profile.identityId ? " selected" : ""}>${esc(item.label)}</option>`).join("")}</select></label>
+        <label>路线 / 想过怎样的人生<select name="routeId">${(pack.agendas ?? []).map((item) => `<option value="${esc(item.id)}"${item.id === profile.agenda?.routeId ? " selected" : ""}>${esc(item.label)}</option>`).join("")}</select></label>
       </div>
-      <label>权限备注<input name="permission" required maxlength="80" value="${esc(profile.permission)}"></label>
-      <label>私密备忘<textarea name="notes" rows="4" maxlength="1200" placeholder="只有本浏览器保存；不会跟着帖子链接外发。">${esc(profile.notes)}</textarea></label>
-      <datalist id="identities">${pack.identities.map((item) => `<option value="${esc(item.label)}">`).join("")}</datalist>
+      <label>路线补充目标（可选）<input name="customGoal" maxlength="200" value="${esc(profile.agenda?.customGoal ?? "")}" placeholder="例如：攒够钱带妹妹离开主家"></label>
+      <div class="derived" id="derivedPermission">${esc(permissionDetail(profile.identityId))}</div>
+      <label>私密备忘<textarea name="notes" rows="4" maxlength="1200" placeholder="只有本浏览器保存；不会跟着帖子链接外发。">${esc(profile.notes ?? "")}</textarea></label>
       <p id="profileError" class="form-error" role="alert"></p>
       <div class="form-actions">
         <button class="primary" type="submit">保存档案</button>
@@ -140,12 +182,35 @@ function openProfile(isNew = false) {
         <button class="danger" type="button" id="deleteProfile"${isNew ? " hidden" : ""}${profileStore.profiles.length <= 1 ? ' disabled title="至少保留一份档案"' : ""}>删除这份档案</button>
       </div>
     </form>
-    <div class="backup"><button class="textbtn" type="button" id="exportProfiles">导出全部已保存档案</button><p class="caption">JSON 备份包含私密备忘，请自行妥善保管。清除浏览器数据会失去未备份档案。</p></div>`;
+    <div class="backup">
+      <button class="textbtn" type="button" id="exportProfiles">导出全部已保存档案</button>
+      <p class="caption">JSON 备份包含私密备忘，请自行妥善保管。清除浏览器数据会失去未备份档案。</p>
+      <label class="caption">导入备份（v4 / v5 JSON）<input type="file" id="importFile" accept="application/json,.json"></label>
+      <div id="importPlan" hidden></div>
+    </div>`;
   $("#profileDialogBody [data-close]").addEventListener("click", () => $<HTMLDialogElement>("#profileDialog").close());
+  $<HTMLSelectElement>("#profileForm [name=identityId]").addEventListener("change", (event) => {
+    $("#derivedPermission").textContent = permissionDetail((event.target as HTMLSelectElement).value || null);
+  });
   $<HTMLFormElement>("#profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
+    const data = new FormData(event.currentTarget as HTMLFormElement);
+    const customGoal = String(data.get("customGoal") ?? "").trim();
     try {
-      const next = upsertProfile(profileStore, { ...Object.fromEntries(new FormData(event.currentTarget as HTMLFormElement)), id: editingId });
+      const next = upsertProfile(
+        profileStore,
+        {
+          version: 5,
+          id: editingId,
+          name: data.get("name"),
+          realmId: catalog.realmId,
+          worldPackId: catalog.worldPackId,
+          identityId: String(data.get("identityId") ?? ""),
+          agenda: { routeId: data.get("routeId"), ...(customGoal ? { customGoal } : {}) },
+          notes: data.get("notes")
+        },
+        catalog
+      );
       const saved = persist(next);
       renderProfile();
       $<HTMLDialogElement>("#profileDialog").close();
@@ -168,6 +233,37 @@ function openProfile(isNew = false) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     notify("已导出当前已保存到档案柜的数据；未提交的表单修改不包含在内。");
   });
+  $<HTMLInputElement>("#importFile").addEventListener("change", async (event) => {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const box = $("#importPlan");
+    if (!file) return;
+    let plan: ImportPlan;
+    try {
+      plan = parseImport(await file.text(), catalog, profileStore);
+    } catch (error) {
+      box.hidden = false;
+      box.innerHTML = `<p class="form-error">导入失败：${esc((error as Error).message)}。当前档案柜没有任何改动。</p>`;
+      return;
+    }
+    box.hidden = false;
+    box.innerHTML = `<div class="notice">读到 ${plan.incoming.profiles.length} 份档案（v${plan.sourceVersion} 备份）${plan.duplicateIds.length ? `，其中 ${plan.duplicateIds.length} 份编号与现有档案重复` : ""}${plan.needsReview.length ? `；${plan.needsReview.length} 份需要核对身份或路线` : ""}。尚未写入，请选择怎样合并。</div>
+      <div class="form-actions">
+        <button type="button" class="primary" data-import="merge-skip">合并（跳过重复编号）</button>
+        <button type="button" class="iconbtn" data-import="merge-overwrite"${plan.duplicateIds.length ? "" : " disabled"}>合并并覆盖重复编号</button>
+        <button type="button" class="danger" data-import="replace">替换整个档案柜</button>
+      </div>`;
+    box.querySelectorAll<HTMLButtonElement>("[data-import]").forEach((button) =>
+      button.addEventListener("click", () => {
+        const mode = button.dataset.import as ImportMode;
+        if (mode === "replace" && !window.confirm(`确定用备份里的 ${plan.incoming.profiles.length} 份档案替换当前全部 ${profileStore.profiles.length} 份？此操作无法撤回。`)) return;
+        if (mode === "merge-overwrite" && !window.confirm(`确定覆盖 ${plan.duplicateIds.length} 份编号重复的档案？`)) return;
+        const saved = persist(applyImport(profileStore, plan, mode, catalog));
+        renderProfile();
+        $<HTMLDialogElement>("#profileDialog").close();
+        notify(saved ? "档案已导入并保存在本浏览器" : "档案已导入到本页，但浏览器存储未更新");
+      })
+    );
+  });
   openDialog("profileDialog");
   $<HTMLInputElement>("#profileForm [name=name]").focus();
 }
@@ -182,7 +278,7 @@ $<HTMLSelectElement>("#profileSelect").addEventListener("change", (event) => {
 });
 $("#confirmDelete").addEventListener("click", () => {
   try {
-    const saved = persist(deleteProfile(profileStore, editingId));
+    const saved = persist(deleteProfile(profileStore, editingId, catalog));
     $<HTMLDialogElement>("#deleteDialog").close();
     $<HTMLDialogElement>("#profileDialog").close();
     renderProfile();
@@ -332,7 +428,7 @@ function renderAttachment() {
   $("#moduleAttachment").innerHTML = attachment
     ? `<section class="attachment"><h3>🧩 模块附件 · ${esc(attachment.label)}（第 ${esc(attachment.version)} 版）</h3>
       <div class="chips"><span>建议身份：${esc(identityLabel(attachment.suggestedIdentity))}</span>${attachment.capabilities.map((id) => `<span>${esc(capabilityLabel(id))}</span>`).join("")}${attachment.experts.map((id) => `<span>镜头：${esc(expertLabel(id))}</span>`).join("")}</div>
-      <p>当前本局：${esc(activeProfile().identity)} · ${esc(activeProfile().agenda)}</p>
+      <p>当前本局：${esc(identityOf(activeProfile())?.label ?? "身份待核对")} · ${esc(routeLabel(activeProfile()))}</p>
       <p>${esc(attachment.note)}</p>
       <a class="btn primarybtn" href="${esc(forgeHref(BASE, currentTopic.id))}">带着这篇帖子去模块工坊核对配置 ↗</a></section>`
     : "";

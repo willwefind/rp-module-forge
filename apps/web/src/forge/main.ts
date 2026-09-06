@@ -23,6 +23,8 @@ import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
 import { maintainerLoreEntries, type MaintainerLoreEntry } from "../maintainerLog";
 import { mountThemeSwitch } from "../theme";
 import { topicHref } from "../forum/model";
+import { OPEN_REALM_ID } from "../forum/worlds";
+import { catalogFromPack, readStore, saveStore, upsertProfile, type LocalRpProfile, type ProfileStore } from "../profile/store";
 import {
   UI_LOCALE,
   authorName,
@@ -62,6 +64,7 @@ app.innerHTML = `
     <section class="hero">
       <div class="muted">论坛维护组第一方工具 · 模块工坊 / 装配器 · ${pack.label}</div>
       <h1>RP Module Forge 模块工坊</h1>
+      <div id="profileContext" class="context-note"></div>
       <div id="forumContext" hidden></div>
       <p>给文字角色扮演装配可移植的角色辅助系统。身份回答“你现在是谁、能做什么”，发展路线回答“你想往哪里走”；同一个开局，也可以拥有完全不同的人生。</p>
     </section>
@@ -600,6 +603,129 @@ document.querySelector("#manifest")!.addEventListener("click", () => {
 mountThemeSwitch(document.querySelector<HTMLElement>("#themeSwitch")!);
 
 /**
+ * Shared local profile (canonical v5, same store the forum uses).
+ * Loaded into the controls on start and on an explicit switch; written back
+ * only when the user presses "写回档案" and confirms. Nothing here writes on its own.
+ */
+const catalog = catalogFromPack(pack, OPEN_REALM_ID);
+const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
+const loadedProfiles = readStore(storage, catalog);
+let profileStore: ProfileStore = loadedProfiles.store;
+let profileWritable = loadedProfiles.writable;
+let profileNotice = loadedProfiles.warning;
+const profileBox = document.querySelector<HTMLDivElement>("#profileContext")!;
+
+function activeProfile(): LocalRpProfile {
+  return profileStore.profiles.find((profile) => profile.id === profileStore.activeId) ?? profileStore.profiles[0];
+}
+
+function forgeSelection() {
+  const customGoal = agendaGoal.value.trim();
+  return { identityId: identitySelect.value, routeId: agendaSelect.value, customGoal };
+}
+
+function profileMatchesForge(profile: LocalRpProfile): boolean {
+  const selection = forgeSelection();
+  return (
+    profile.identityId === selection.identityId &&
+    (profile.agenda?.routeId ?? "open-road") === selection.routeId &&
+    (profile.agenda?.customGoal ?? "") === selection.customGoal
+  );
+}
+
+/** Copy the profile into the forge controls. Read only; profiles flagged for review are never applied. */
+function applyProfileToForge(profile: LocalRpProfile): boolean {
+  if (!profile.identityId || profile.requiresReview) return false;
+  identitySelect.value = profile.identityId;
+  const route = profile.agenda?.routeId;
+  agendaSelect.value = route && [...agendaSelect.options].some((option) => option.value === route) ? route : "open-road";
+  agendaGoal.value = profile.agenda?.customGoal ?? "";
+  applyRecommendations();
+  refreshForumAndPrompt();
+  return true;
+}
+
+function persistProfiles(next: ProfileStore): boolean {
+  profileStore = next;
+  try {
+    if (!profileWritable) throw new Error("只读恢复模式");
+    saveStore(storage, next, catalog);
+    profileNotice = "";
+    return true;
+  } catch {
+    profileNotice = "本次修改仅在当前页面有效，尚未保存到浏览器。请到论坛档案柜导出备份。";
+    return false;
+  }
+}
+
+function renderProfileContext() {
+  const profile = activeProfile();
+  const identity = profile.identityId ? pack.identities.find((item) => item.id === profile.identityId) : undefined;
+  const route = pack.agendas?.find((item) => item.id === profile.agenda?.routeId);
+  const review = profile.requiresReview;
+  const synced = !review && profileMatchesForge(profile);
+  const legacy = review
+    ? Object.entries({ 身份: review.legacy.identity, 路线: review.legacy.agenda, 世界: review.legacy.world, 权限备注: review.legacy.permission })
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}「${escapeHtml(value!)}」`)
+        .join("、")
+    : "";
+  const summary = identity
+    ? `${escapeHtml(identity.label)} · ${escapeHtml(route?.label ?? "未定路线")}${profile.agenda?.customGoal ? `：${escapeHtml(profile.agenda.customGoal)}` : ""}`
+    : "身份待核对";
+  const status = review
+    ? `⚠ 待核对：${escapeHtml(review.reason)}${legacy ? ` 旧档案原文：${legacy}。` : ""} 工坊不会自动套用待核对的档案；在下方选好身份与路线后可以写回，写回即视为核对完成。`
+    : synced
+      ? "工坊当前的身份与路线与这份档案一致。"
+      : "工坊当前的身份 / 路线 / 补充目标与档案不同。不会自动保存；需要时点「写回档案」。";
+  profileBox.innerHTML = `<h2>📁 当前本局档案（与论坛共用）</h2>
+    <div class="profile-row"><label><span class="muted">档案</span> <select id="forgeProfileSelect">${profileStore.profiles
+      .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === profile.id ? " selected" : ""}>${escapeHtml(item.name)}${item.requiresReview ? "（待核对）" : ""}</option>`)
+      .join("")}</select></label><span>${summary}</span></div>
+    ${profileNotice ? `<p class="muted">⚠ ${escapeHtml(profileNotice)}</p>` : ""}
+    <p class="muted">${status}</p>
+    <div class="actions"><button type="button" id="loadProfile"${review ? " disabled" : ""}>按档案重置身份与路线</button><button type="button" id="writeBackProfile"${synced || !profileWritable ? " disabled" : ""}>写回档案（需确认）</button><a class="text-link" href="${BASE}">到论坛档案柜管理档案 ↗</a></div>`;
+
+  profileBox.querySelector<HTMLSelectElement>("#forgeProfileSelect")!.addEventListener("change", (event) => {
+    const id = (event.target as HTMLSelectElement).value;
+    persistProfiles({ ...profileStore, activeId: id });
+    applyProfileToForge(activeProfile());
+    renderProfileContext();
+  });
+  profileBox.querySelector("#loadProfile")!.addEventListener("click", () => {
+    applyProfileToForge(activeProfile());
+    renderProfileContext();
+  });
+  profileBox.querySelector("#writeBackProfile")!.addEventListener("click", () => {
+    const current = activeProfile();
+    const selection = forgeSelection();
+    const identityLabel = pack.identities.find((item) => item.id === selection.identityId)?.label ?? selection.identityId;
+    const routeLabel = pack.agendas?.find((item) => item.id === selection.routeId)?.label ?? selection.routeId;
+    const lines = [`把当前装配写回档案「${current.name}」？`, `身份：${identityLabel}`, `路线：${routeLabel}`];
+    if (selection.customGoal) lines.push(`补充目标：${selection.customGoal}`);
+    if (current.requiresReview) lines.push("这份档案原本待核对；写回后按核对完成处理。");
+    lines.push("档案里的私密备注不会改动。");
+    if (!window.confirm(lines.join("\n"))) return;
+    try {
+      const { requiresReview: _dropped, ...rest } = current;
+      const next = upsertProfile(
+        profileStore,
+        { ...rest, identityId: selection.identityId, agenda: selection.customGoal ? { routeId: selection.routeId, customGoal: selection.customGoal } : { routeId: selection.routeId } },
+        catalog
+      );
+      persistProfiles(next);
+    } catch (error) {
+      profileNotice = error instanceof Error ? error.message : String(error);
+    }
+    renderProfileContext();
+  });
+}
+
+identitySelect.addEventListener("change", renderProfileContext);
+agendaSelect.addEventListener("change", renderProfileContext);
+agendaGoal.addEventListener("input", renderProfileContext);
+
+/**
  * Arriving from a forum module-release topic (`?topic=<id>`): show the
  * attachment as context and offer to apply its capability / expert lens
  * combination. The identity stays whatever is selected; nothing is written
@@ -648,4 +774,6 @@ applyRecommendations();
 renderForum();
 renderMaintainerLog();
 renderCompact();
+applyProfileToForge(activeProfile());
+renderProfileContext();
 renderForumContext();
