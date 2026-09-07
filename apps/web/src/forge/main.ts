@@ -24,7 +24,17 @@ import { maintainerLoreEntries, type MaintainerLoreEntry } from "../maintainerLo
 import { mountThemeSwitch } from "../theme";
 import { topicHref } from "../forum/model";
 import { OPEN_REALM_ID } from "../forum/worlds";
-import { catalogFromPack, readStore, saveStore, upsertProfile, type LocalRpProfile, type ProfileStore } from "../profile/store";
+import {
+  browserLocks,
+  catalogFromPack,
+  commit,
+  isProfileStoreKey,
+  readStore,
+  type CommitResult,
+  type LocalRpProfile,
+  type ProfileStore,
+  type StoreOperation
+} from "../profile/store";
 import {
   UI_LOCALE,
   authorName,
@@ -610,8 +620,9 @@ mountThemeSwitch(document.querySelector<HTMLElement>("#themeSwitch")!);
 const catalog = catalogFromPack(pack, OPEN_REALM_ID);
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
 const loadedProfiles = readStore(storage, catalog);
+const locks = browserLocks();
 let profileStore: ProfileStore = loadedProfiles.store;
-let profileWritable = loadedProfiles.writable;
+const profileWritable = loadedProfiles.writable;
 let profileNotice = loadedProfiles.warning;
 const profileBox = document.querySelector<HTMLDivElement>("#profileContext")!;
 
@@ -633,30 +644,49 @@ function profileMatchesForge(profile: LocalRpProfile): boolean {
   );
 }
 
-/** Copy the profile into the forge controls. Read only; profiles flagged for review are never applied. */
+/**
+ * Copy the profile into the forge controls. Read only. A profile flagged for
+ * review never sets the identity; its route / goal are still loaded so a later
+ * write-back cannot inherit another profile's goal text.
+ */
 function applyProfileToForge(profile: LocalRpProfile): boolean {
-  if (!profile.identityId || profile.requiresReview) return false;
-  identitySelect.value = profile.identityId;
   const route = profile.agenda?.routeId;
-  agendaSelect.value = route && [...agendaSelect.options].some((option) => option.value === route) ? route : "open-road";
+  const routeKnown = !!route && [...agendaSelect.options].some((option) => option.value === route);
+  agendaSelect.value = routeKnown ? route! : "open-road";
   agendaGoal.value = profile.agenda?.customGoal ?? "";
+  const applied = !!profile.identityId && !profile.requiresReview;
+  if (applied) identitySelect.value = profile.identityId!;
   applyRecommendations();
   refreshForumAndPrompt();
-  return true;
+  return applied;
 }
 
-function persistProfiles(next: ProfileStore): boolean {
-  profileStore = next;
-  try {
-    if (!profileWritable) throw new Error("只读恢复模式");
-    saveStore(storage, next, catalog);
-    profileNotice = "";
-    return true;
-  } catch {
+/** The only write path from the workshop: commit against the latest stored copy. */
+async function runProfileOp(op: StoreOperation): Promise<CommitResult> {
+  if (!profileWritable) {
     profileNotice = "本次修改仅在当前页面有效，尚未保存到浏览器。请到论坛档案柜导出备份。";
-    return false;
+    return { status: "unwritable", store: profileStore, message: profileNotice };
   }
+  const result = await commit(storage, catalog, op, { locks });
+  profileStore = result.store;
+  if (result.status === "saved") profileNotice = result.atomic ? "" : "本浏览器不支持写入锁：多个标签页请不要同时保存档案。";
+  else if (result.status === "unwritable") profileNotice = "本次修改仅在当前页面有效，尚未保存到浏览器。请到论坛档案柜导出备份。";
+  return result;
 }
+
+/** Another tab changed the store: refresh the banner, never the reader's in-progress selections. */
+window.addEventListener("storage", (event) => {
+  if (!isProfileStoreKey(event.key) || !profileWritable) return;
+  const latest = readStore(storage, catalog);
+  if (!latest.writable) return;
+  const before = activeProfile();
+  profileStore = latest.store;
+  const after = activeProfile();
+  if (before.id !== after.id || (before.revision ?? 0) !== (after.revision ?? 0)) {
+    profileNotice = "档案柜已在另一个标签页更新。工坊当前的选择没有动；需要时点「按档案重置身份与路线」同步。";
+  }
+  renderProfileContext();
+});
 
 function renderProfileContext() {
   const profile = activeProfile();
@@ -686,17 +716,18 @@ function renderProfileContext() {
     <p class="muted">${status}</p>
     <div class="actions"><button type="button" id="loadProfile"${review ? " disabled" : ""}>按档案重置身份与路线</button><button type="button" id="writeBackProfile"${synced || !profileWritable ? " disabled" : ""}>写回档案（需确认）</button><a class="text-link" href="${BASE}">到论坛档案柜管理档案 ↗</a></div>`;
 
-  profileBox.querySelector<HTMLSelectElement>("#forgeProfileSelect")!.addEventListener("change", (event) => {
+  profileBox.querySelector<HTMLSelectElement>("#forgeProfileSelect")!.addEventListener("change", async (event) => {
     const id = (event.target as HTMLSelectElement).value;
-    persistProfiles({ ...profileStore, activeId: id });
-    applyProfileToForge(activeProfile());
+    const result = await runProfileOp({ type: "activate", id });
+    if (result.status === "conflict") profileNotice = result.message;
+    else applyProfileToForge(activeProfile());
     renderProfileContext();
   });
   profileBox.querySelector("#loadProfile")!.addEventListener("click", () => {
     applyProfileToForge(activeProfile());
     renderProfileContext();
   });
-  profileBox.querySelector("#writeBackProfile")!.addEventListener("click", () => {
+  profileBox.querySelector("#writeBackProfile")!.addEventListener("click", async () => {
     const current = activeProfile();
     const selection = forgeSelection();
     const identityLabel = pack.identities.find((item) => item.id === selection.identityId)?.label ?? selection.identityId;
@@ -708,12 +739,12 @@ function renderProfileContext() {
     if (!window.confirm(lines.join("\n"))) return;
     try {
       const { requiresReview: _dropped, ...rest } = current;
-      const next = upsertProfile(
-        profileStore,
-        { ...rest, identityId: selection.identityId, agenda: selection.customGoal ? { routeId: selection.routeId, customGoal: selection.customGoal } : { routeId: selection.routeId } },
-        catalog
-      );
-      persistProfiles(next);
+      const result = await runProfileOp({
+        type: "upsert",
+        profile: { ...rest, identityId: selection.identityId, agenda: selection.customGoal ? { routeId: selection.routeId, customGoal: selection.customGoal } : { routeId: selection.routeId } },
+        baseRevision: current.revision ?? 0
+      });
+      if (result.status === "conflict") profileNotice = `${result.message} 已读取最新档案；核对后可再次写回。`;
     } catch (error) {
       profileNotice = error instanceof Error ? error.message : String(error);
     }
