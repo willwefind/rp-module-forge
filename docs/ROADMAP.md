@@ -2,6 +2,8 @@
 
 This roadmap separates **specified**, **implemented**, **validated**, and **integrated** work. Dates are intentionally not promised while the architecture is still moving quickly.
 
+Next implementation brief (2026-09-06): [论坛下一阶段开工任务书](FORUM_NEXT_PHASE_KICKOFF.md). It sequences profile concurrency and release gates, forum reading improvements, and saved forge assemblies with explicit acceptance criteria. These tasks are planned, not completed.
+
 ## V0.1 — Product truth and contracts
 
 - [x] Public monorepo skeleton

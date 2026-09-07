@@ -6,17 +6,19 @@ import { ancientChinaPackV01 } from "@rpmf/pack-ancient-china/canonical";
 import { authorName, postTypeLabels, provenanceLabels, reliabilityLabels } from "../locales/zh-CN";
 import { mountThemeSwitch } from "../theme";
 import {
-  applyImport,
+  applyOperation,
+  browserLocks,
   catalogFromPack,
-  deleteProfile,
+  commit,
+  isProfileStoreKey,
   parseImport,
   readStore,
-  saveStore,
-  upsertProfile,
+  type CommitResult,
   type ImportMode,
   type ImportPlan,
   type LocalRpProfile,
-  type ProfileStore
+  type ProfileStore,
+  type StoreOperation
 } from "../profile/store";
 import {
   bodyParagraphs,
@@ -51,12 +53,16 @@ const thread = (id: string) => archive.threads.find((item) => item.id === id);
 const storage = { getItem: (key: string) => localStorage.getItem(key), setItem: (key: string, value: string) => localStorage.setItem(key, value) };
 const catalog = catalogFromPack(pack, OPEN_REALM_ID);
 const loaded = readStore(storage, catalog);
+const locks = browserLocks();
 let profileStore: ProfileStore = loaded.store;
 const writable = loaded.writable;
 let state: ForumState = { ...initialForumState };
 let currentTopic: TravelerForumThread | undefined;
 let replyShown = 4;
 let editingId = "";
+/** Revision of the profile being edited when the dialog opened; null while creating. */
+let editingBase: number | null = null;
+let lastImportJson = "";
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 function notify(message: string) {
@@ -74,18 +80,45 @@ function storageWarning(message: string) {
 }
 storageWarning(loaded.warning);
 
-function persist(next: ProfileStore): boolean {
-  profileStore = next;
-  try {
-    if (!writable) throw new Error("只读恢复模式");
-    saveStore(storage, next, catalog);
-    storageWarning("");
-    return true;
-  } catch {
-    storageWarning("本次修改仅在当前页面有效，尚未保存到浏览器。请在档案柜导出备份；刷新可能丢失本次修改。");
-    return false;
+const UNSAVED_WARNING = "本次修改仅在当前页面有效，尚未保存到浏览器。请在档案柜导出备份；刷新可能丢失本次修改。";
+
+/**
+ * The only write path for profiles. Every change is an operation committed
+ * against the latest stored copy (serialized by a Web Lock when available),
+ * so a stale tab cannot silently overwrite another tab's save.
+ */
+async function run(op: StoreOperation): Promise<CommitResult> {
+  if (!writable) {
+    // Read-only recovery mode: keep the change on this page only.
+    const applied = applyOperation(profileStore, op, catalog);
+    storageWarning(UNSAVED_WARNING);
+    if (applied.status === "conflict") return { ...applied, atomic: false };
+    profileStore = applied.store;
+    return { status: "unwritable", store: applied.store, message: "只读恢复模式" };
   }
+  const result = await commit(storage, catalog, op, { locks });
+  profileStore = result.store;
+  if (result.status === "saved") storageWarning(result.atomic ? "" : "本浏览器不支持写入锁：多个标签页请不要同时保存档案。");
+  else if (result.status === "unwritable") storageWarning(UNSAVED_WARNING);
+  return result;
 }
+
+/** Another tab changed the store: refresh this page's copy without touching an open draft. */
+window.addEventListener("storage", (event) => {
+  if (!isProfileStoreKey(event.key) || !writable) return;
+  const latest = readStore(storage, catalog);
+  if (!latest.writable) return;
+  profileStore = latest.store;
+  renderProfile();
+  const dialog = $<HTMLDialogElement>("#profileDialog");
+  if (dialog.open) {
+    const box = $("#profileSync");
+    box.hidden = false;
+    box.textContent = "档案柜已在另一个标签页更新。你的草稿没有动；保存时会按最新修订核对。";
+  } else {
+    notify("档案柜已在另一个标签页更新。");
+  }
+});
 
 function activeProfile(): LocalRpProfile {
   return profileStore.profiles.find((profile) => profile.id === profileStore.activeId) ?? profileStore.profiles[0];
@@ -149,11 +182,12 @@ function renderProfile() {
   renderAttachment();
 }
 
-function openProfile(isNew = false) {
+function openProfile(isNew = false, source?: LocalRpProfile) {
   const profile: LocalRpProfile = isNew
     ? { version: 5, id: crypto.randomUUID(), name: "", realmId: catalog.realmId, worldPackId: catalog.worldPackId, identityId: null, agenda: { routeId: "open-road" }, notes: "" }
-    : activeProfile();
+    : (source ?? activeProfile());
   editingId = profile.id;
+  editingBase = isNew ? null : (profile.revision ?? 0);
   $("#profileTitle").textContent = isNew ? "新建本局档案" : "本局档案柜 · 编辑 / 改名";
   const review = profile.requiresReview;
   const legacyLines = review
@@ -164,6 +198,7 @@ function openProfile(isNew = false) {
     : "";
   $("#profileDialogBody").innerHTML = `
     <p class="caption">保存后才修改档案。身份与路线只能从当前世界包里选；权限由身份派生，不能手填。</p>
+    <div id="profileSync" class="notice" role="status" hidden></div>
     ${review ? `<div class="notice"><b>待核对</b> · ${esc(review.reason)}${legacyLines ? `<br>旧档案原文：${legacyLines}` : ""}<br>核对并保存后，这条提醒会消失。</div>` : ""}
     <form id="profileForm">
       <label>档案名<input name="name" required maxlength="40" value="${esc(profile.name)}"></label>
@@ -192,32 +227,36 @@ function openProfile(isNew = false) {
   $<HTMLSelectElement>("#profileForm [name=identityId]").addEventListener("change", (event) => {
     $("#derivedPermission").textContent = permissionDetail((event.target as HTMLSelectElement).value || null);
   });
-  $<HTMLFormElement>("#profileForm").addEventListener("submit", (event) => {
+  $<HTMLFormElement>("#profileForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget as HTMLFormElement);
     const customGoal = String(data.get("customGoal") ?? "").trim();
+    const draft = {
+      version: 5,
+      id: editingId,
+      name: data.get("name"),
+      realmId: catalog.realmId,
+      worldPackId: catalog.worldPackId,
+      identityId: String(data.get("identityId") ?? ""),
+      agenda: { routeId: data.get("routeId"), ...(customGoal ? { customGoal } : {}) },
+      notes: data.get("notes")
+    };
+    const errorBox = $("#profileError");
+    errorBox.textContent = "";
+    let result: CommitResult;
     try {
-      const next = upsertProfile(
-        profileStore,
-        {
-          version: 5,
-          id: editingId,
-          name: data.get("name"),
-          realmId: catalog.realmId,
-          worldPackId: catalog.worldPackId,
-          identityId: String(data.get("identityId") ?? ""),
-          agenda: { routeId: data.get("routeId"), ...(customGoal ? { customGoal } : {}) },
-          notes: data.get("notes")
-        },
-        catalog
-      );
-      const saved = persist(next);
-      renderProfile();
-      $<HTMLDialogElement>("#profileDialog").close();
-      notify(saved ? "档案已保存在本浏览器" : "档案仅在本次页面暂存，请导出备份");
+      result = await run({ type: "upsert", profile: draft, baseRevision: editingBase });
     } catch (error) {
-      $("#profileError").textContent = (error as Error).message;
+      errorBox.textContent = (error as Error).message;
+      return;
     }
+    if (result.status === "conflict") {
+      renderConflict(result);
+      return;
+    }
+    renderProfile();
+    $<HTMLDialogElement>("#profileDialog").close();
+    notify(result.status === "saved" ? "档案已保存在本浏览器" : "档案仅在本次页面暂存，请导出备份");
   });
   $("#deleteProfile").addEventListener("click", () => {
     $("#deleteText").textContent = `确定删除「${activeProfile().name}」？`;
@@ -235,54 +274,87 @@ function openProfile(isNew = false) {
   });
   $<HTMLInputElement>("#importFile").addEventListener("change", async (event) => {
     const file = (event.target as HTMLInputElement).files?.[0];
-    const box = $("#importPlan");
     if (!file) return;
-    let plan: ImportPlan;
-    try {
-      plan = parseImport(await file.text(), catalog, profileStore);
-    } catch (error) {
-      box.hidden = false;
-      box.innerHTML = `<p class="form-error">导入失败：${esc((error as Error).message)}。当前档案柜没有任何改动。</p>`;
-      return;
-    }
-    box.hidden = false;
-    box.innerHTML = `<div class="notice">读到 ${plan.incoming.profiles.length} 份档案（v${plan.sourceVersion} 备份）${plan.duplicateIds.length ? `，其中 ${plan.duplicateIds.length} 份编号与现有档案重复` : ""}${plan.needsReview.length ? `；${plan.needsReview.length} 份需要核对身份或路线` : ""}。尚未写入，请选择怎样合并。</div>
-      <div class="form-actions">
-        <button type="button" class="primary" data-import="merge-skip">合并（跳过重复编号）</button>
-        <button type="button" class="iconbtn" data-import="merge-overwrite"${plan.duplicateIds.length ? "" : " disabled"}>合并并覆盖重复编号</button>
-        <button type="button" class="danger" data-import="replace">替换整个档案柜</button>
-      </div>`;
-    box.querySelectorAll<HTMLButtonElement>("[data-import]").forEach((button) =>
-      button.addEventListener("click", () => {
-        const mode = button.dataset.import as ImportMode;
-        if (mode === "replace" && !window.confirm(`确定用备份里的 ${plan.incoming.profiles.length} 份档案替换当前全部 ${profileStore.profiles.length} 份？此操作无法撤回。`)) return;
-        if (mode === "merge-overwrite" && !window.confirm(`确定覆盖 ${plan.duplicateIds.length} 份编号重复的档案？`)) return;
-        const saved = persist(applyImport(profileStore, plan, mode, catalog));
-        renderProfile();
-        $<HTMLDialogElement>("#profileDialog").close();
-        notify(saved ? "档案已导入并保存在本浏览器" : "档案已导入到本页，但浏览器存储未更新");
-      })
-    );
+    lastImportJson = await file.text();
+    renderImportPlan("");
   });
   openDialog("profileDialog");
   $<HTMLInputElement>("#profileForm [name=name]").focus();
 }
 
+/** Shows a stale-save conflict inside the editor; the draft stays in the form until the reader chooses. */
+function renderConflict(result: Extract<CommitResult, { status: "conflict" }>) {
+  const box = $("#profileError");
+  const latest = result.latestProfile;
+  box.innerHTML = `<span>${esc(result.message)}</span><div class="form-actions">${
+    latest
+      ? `<button type="button" class="iconbtn" data-conflict="view">放弃草稿，查看最新内容</button><button type="button" class="iconbtn" data-conflict="keep">保留我的草稿，核对后重新保存</button>`
+      : `<button type="button" class="iconbtn" data-conflict="recreate">把草稿作为新档案保存</button><button type="button" class="iconbtn" data-close>放弃草稿</button>`
+  }</div>`;
+  box.querySelector("[data-conflict=view]")?.addEventListener("click", () => {
+    if (latest && window.confirm("放弃当前草稿，改为显示另一个页面保存的最新内容？")) openProfile(false, latest);
+  });
+  box.querySelector("[data-conflict=keep]")?.addEventListener("click", () => {
+    editingBase = latest?.revision ?? 0;
+    box.innerHTML = `<span>已按修订 ${editingBase} 核对。再点「保存档案」会用你的草稿覆盖另一个页面的那次修改。</span>`;
+  });
+  box.querySelector("[data-conflict=recreate]")?.addEventListener("click", () => {
+    editingBase = null;
+    box.innerHTML = "<span>将作为新档案保存；再点「保存档案」即可。</span>";
+  });
+  box.querySelector("[data-close]")?.addEventListener("click", () => $<HTMLDialogElement>("#profileDialog").close());
+}
+
+/** Parses the last chosen backup against the *current* store and offers the merge modes. */
+function renderImportPlan(notice: string) {
+  const box = $("#importPlan");
+  let plan: ImportPlan;
+  try {
+    plan = parseImport(lastImportJson, catalog, profileStore);
+  } catch (error) {
+    box.hidden = false;
+    box.innerHTML = `<p class="form-error">导入失败：${esc((error as Error).message)}。当前档案柜没有任何改动。</p>`;
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = `${notice ? `<div class="notice">${esc(notice)}</div>` : ""}<div class="notice">读到 ${plan.incoming.profiles.length} 份档案（v${plan.sourceVersion} 备份）${plan.duplicateIds.length ? `，其中 ${plan.duplicateIds.length} 份编号与现有档案重复` : ""}${plan.needsReview.length ? `；${plan.needsReview.length} 份需要核对身份或路线` : ""}。尚未写入，请选择怎样合并。</div>
+    <div class="form-actions">
+      <button type="button" class="primary" data-import="merge-skip">合并（跳过重复编号）</button>
+      <button type="button" class="iconbtn" data-import="merge-overwrite"${plan.duplicateIds.length ? "" : " disabled"}>合并并覆盖重复编号</button>
+      <button type="button" class="danger" data-import="replace">替换整个档案柜</button>
+    </div>`;
+  box.querySelectorAll<HTMLButtonElement>("[data-import]").forEach((button) =>
+    button.addEventListener("click", async () => {
+      const mode = button.dataset.import as ImportMode;
+      if (mode === "replace" && !window.confirm(`确定用备份里的 ${plan.incoming.profiles.length} 份档案替换当前全部 ${profileStore.profiles.length} 份？此操作无法撤回。`)) return;
+      if (mode === "merge-overwrite" && !window.confirm(`确定覆盖 ${plan.duplicateIds.length} 份编号重复的档案？`)) return;
+      const result = await run({ type: "import", plan, mode });
+      if (result.status === "conflict") {
+        renderImportPlan(`${result.message} 下面是按最新档案柜重新核对的计划。`);
+        return;
+      }
+      renderProfile();
+      $<HTMLDialogElement>("#profileDialog").close();
+      notify(result.status === "saved" ? "档案已导入并保存在本浏览器" : "档案已导入到本页，但浏览器存储未更新");
+    })
+  );
+}
+
 $("#editProfile").addEventListener("click", () => openProfile());
 $("#railEdit").addEventListener("click", () => openProfile());
 $("#newProfile").addEventListener("click", () => openProfile(true));
-$<HTMLSelectElement>("#profileSelect").addEventListener("change", (event) => {
-  const saved = persist({ ...profileStore, activeId: (event.target as HTMLSelectElement).value });
+$<HTMLSelectElement>("#profileSelect").addEventListener("change", async (event) => {
+  const result = await run({ type: "activate", id: (event.target as HTMLSelectElement).value });
   renderProfile();
-  notify(saved ? "已切换并记住本局档案" : "已临时切换；请查看保存提示");
+  notify(result.status === "saved" ? "已切换并记住本局档案" : result.status === "conflict" ? result.message : "已临时切换；请查看保存提示");
 });
-$("#confirmDelete").addEventListener("click", () => {
+$("#confirmDelete").addEventListener("click", async () => {
   try {
-    const saved = persist(deleteProfile(profileStore, editingId, catalog));
+    const result = await run({ type: "delete", id: editingId });
     $<HTMLDialogElement>("#deleteDialog").close();
     $<HTMLDialogElement>("#profileDialog").close();
     renderProfile();
-    notify(saved ? "已删除该档案" : "仅在本页删除，浏览器存储尚未更新");
+    notify(result.status === "saved" ? "已删除该档案" : "仅在本页删除，浏览器存储尚未更新");
   } catch (error) {
     notify((error as Error).message);
   }
