@@ -24,15 +24,21 @@ import {
   bodyParagraphs,
   categories,
   discussionURL,
-  filterTopics,
   forgeHref,
+  highlightHtml,
   initialForumState,
+  parseHashState,
   repliesOf,
   resolveTopicId,
+  searchNotes,
+  searchTopics,
+  serializeHashState,
   sourceFileFor,
+  type ForumLocation,
   type ForumRealm,
   type ForumState,
-  type ForumTab
+  type ForumTab,
+  type SearchHit
 } from "./model";
 import { OPEN_PACK_ID, OPEN_REALM_ID, WORLD_LABEL, realms } from "./worlds";
 
@@ -59,6 +65,12 @@ const writable = loaded.writable;
 let state: ForumState = { ...initialForumState };
 let currentTopic: TravelerForumThread | undefined;
 let replyShown = 4;
+/** History entries pushed for open topics (list → A → B = 2); 0 when a topic was opened from a direct link. */
+let topicDepth = 0;
+/** Set when the dialog is being closed by history navigation rather than by the reader. */
+let suppressCloseNav = false;
+/** Element that opened the current topic; focus returns to it on close. */
+let lastTrigger: HTMLElement | null = null;
 let editingId = "";
 /** Revision of the profile being edited when the dialog opened; null while creating. */
 let editingBase: number | null = null;
@@ -137,9 +149,86 @@ $$<HTMLDialogElement>("dialog").forEach((dialog) =>
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
   })
 );
-$<HTMLDialogElement>("#topicDialog").addEventListener("close", () => {
-  if (location.hash.startsWith("#topic=")) history.replaceState(null, "", location.pathname + location.search);
+// ---------- URL + history (U1): public reading state only ----------
+function syncUrl(mode: "push" | "replace", topic: string | null, reply: number | null) {
+  const url = `${location.pathname}${location.search}${serializeHashState({ ...state, topic, reply })}`;
+  const entry = { forum: true, depth: topicDepth };
+  if (mode === "push") history.pushState(entry, "", url);
+  else history.replaceState(entry, "", url);
+}
+
+/** Applies a parsed location: filters first, then the topic (or closes the dialog when the location has none). */
+function applyLocation(loc: ForumLocation, mode: "none" | "replace") {
+  state = { realm: loc.realm, node: loc.node, tab: loc.tab, q: loc.q };
+  $<HTMLInputElement>("#q").value = state.q;
+  renderList();
+  const dialog = $<HTMLDialogElement>("#topicDialog");
+  if (loc.topic) {
+    openTopic(loc.topic, { floor: loc.reply, mode });
+    return;
+  }
+  if (dialog.open) {
+    lastClosedTopic = currentTopic?.id ?? null;
+    suppressCloseNav = true;
+    dialog.close();
+  }
+  if (lastClosedTopic !== null) {
+    focusListRow(lastClosedTopic);
+    lastClosedTopic = null;
+  }
+}
+
+window.addEventListener("popstate", (event) => {
+  const parsed = parseHashState(location.hash);
+  if (parsed.malformed) notify("链接里的参数无法完全解析，已按可用部分显示。");
+  topicDepth = (event.state as { depth?: number } | null)?.depth ?? 0;
+  applyLocation(parsed.location, "none");
 });
+
+/** Id of the topic that was just closed; the list row for it gets focus once the list is current again. */
+let lastClosedTopic: string | null = null;
+
+function focusListRow(topicId: string | null) {
+  const row = topicId ? $("#topics").querySelector<HTMLElement>(`[data-topic="${CSS.escape(topicId)}"]`) : null;
+  (row ?? $<HTMLInputElement>("#q")).focus({ preventScroll: true });
+}
+
+/**
+ * Runs whenever the topic dialog stops being open (×, Escape, backdrop, or
+ * history navigation). Detected through the `open` attribute rather than the
+ * `close` event so it also works where animation frames are paused.
+ */
+function onTopicDialogClosed() {
+  const closed = currentTopic?.id ?? null;
+  lastTrigger = null;
+  currentTopic = undefined;
+  if (suppressCloseNav) {
+    // Closed by popstate: applyLocation already rendered the list and restores focus.
+    suppressCloseNav = false;
+    return;
+  }
+  if (topicDepth > 0) {
+    // List → A → B: closing pops every topic entry so Back/Forward stay coherent;
+    // the popstate handler re-renders the list and focuses the closed topic's row.
+    lastClosedTopic = closed;
+    const back = topicDepth;
+    topicDepth = 0;
+    history.go(-back);
+    return;
+  }
+  // Opened from a direct link: return to the in-site list without leaving the page.
+  syncUrl("replace", null, null);
+  focusListRow(closed);
+}
+
+{
+  const dialog = $<HTMLDialogElement>("#topicDialog");
+  let wasOpen = dialog.open;
+  new MutationObserver(() => {
+    if (wasOpen && !dialog.open) onTopicDialogClosed();
+    wasOpen = dialog.open;
+  }).observe(dialog, { attributes: true, attributeFilter: ["open"] });
+}
 
 mountThemeSwitch($("#themeSwitch"), () => notify("已切换配色；浏览器未允许保存偏好。"));
 
@@ -386,11 +475,13 @@ function renderWorldBars() {
     button.addEventListener("click", () => {
       state = { ...state, realm: button.dataset.realm as ForumRealm, node: "all", tab: "all" };
       renderList();
+      syncUrl("replace", null, null);
     })
   );
   $("#openPack").addEventListener("click", () => {
     state = { ...state, realm: "eastern", node: "all", tab: "all" };
     renderList();
+    syncUrl("replace", null, null);
   });
   $$("[data-planned]").forEach((button) =>
     button.addEventListener("click", () => {
@@ -409,28 +500,50 @@ function typeClass(item: TravelerForumThread) {
   return "";
 }
 
-function renderCuratedNotes() {
-  const box = $("#curatedNotes");
-  if (state.tab !== "knowledge") {
-    box.hidden = true;
-    return;
-  }
-  const notes: TravelerForumCuratedNote[] = archive.curatedNotes;
-  box.hidden = false;
-  box.innerHTML =
-    `<h3>已审核 · Runtime 可检索的老乡经验卡（${notes.length} 张，同一档案源）</h3>` +
-    notes
-      .map(
-        (note) => `<article class="curated">
+function noteCard(note: TravelerForumCuratedNote, hits: SearchHit[] = []): string {
+  return `<article class="curated">
       <div class="badges"><span class="type good">${esc(reliabilityLabels[note.reliability])}</span><span class="type">${esc(capabilityLabel(note.capability))}</span>${note.conflictsWith?.length ? '<span class="type warn">保留冲突意见</span>' : ""}</div>
-      <div class="lesson">${esc(note.lesson)}</div>
-      <div class="caption">适用身份：${note.appliesTo.identities.map(identityLabel).map(esc).join("、") || "不限"}${note.failureModes.length ? ` · 失效方式：${esc(note.failureModes.join("；"))}` : ""}</div>
+      <div class="lesson">${highlightHtml(note.lesson, state.q)}</div>
+      <div class="caption">适用身份：${note.appliesTo.identities.map(identityLabel).map(esc).join("、") || "不限"}${note.failureModes.length ? ` · 失效方式：${highlightHtml(note.failureModes.join("；"), state.q)}` : ""}</div>
+      ${hits.length ? `<div class="hits"><b>经验卡命中</b>${hits.map((hit) => highlightHtml(hit.snippet, state.q)).join("｜")}</div>` : ""}
       <div class="sources">原帖：${note.sourceThreads
         .map((id) => `<button type="button" class="textbtn" data-topic="${esc(id)}">${esc(thread(id)?.title ?? id)}</button>`)
         .join("")}</div>
-    </article>`
-      )
-      .join("");
+    </article>`;
+}
+
+/** Knowledge tab lists every note; a query shows the matching notes on any tab, with an exact count. */
+function renderCuratedNotes(): number {
+  const box = $("#curatedNotes");
+  const q = state.q.trim();
+  if (q) {
+    const results = searchNotes(archive, q);
+    box.hidden = false;
+    box.innerHTML =
+      `<h3>经验卡命中<span class="hitcount">${results.length} 张</span></h3>` +
+      (results.length ? results.map(({ note, hits }) => noteCard(note, hits)).join("") : '<p class="caption">没有经验卡命中这个关键词。</p>');
+    return results.length;
+  }
+  if (state.tab !== "knowledge") {
+    box.hidden = true;
+    return 0;
+  }
+  const notes: TravelerForumCuratedNote[] = archive.curatedNotes;
+  box.hidden = false;
+  box.innerHTML = `<h3>已审核 · Runtime 可检索的老乡经验卡（${notes.length} 张，同一档案源）</h3>` + notes.map((note) => noteCard(note)).join("");
+  return notes.length;
+}
+
+const HIT_LABELS: Record<SearchHit["kind"], string> = { title: "标题命中", author: "作者命中", tag: "标签命中", body: "正文命中", reply: "楼层命中", note: "经验卡命中" };
+
+/** One line per row: the most useful hit (a floor or the body) as a button that lands on it, plus a count. */
+function hitLine(threadId: string, hits: SearchHit[]): string {
+  if (!hits.length) return "";
+  const first = hits.find((hit) => hit.kind === "reply" || hit.kind === "body") ?? hits[0];
+  const label = first.kind === "reply" ? `第 ${first.floor} 楼命中` : HIT_LABELS[first.kind];
+  const floorAttr = first.kind === "reply" ? ` data-floor="${first.floor}"` : "";
+  const rest = hits.length - 1;
+  return `<div class="hits"><button type="button" class="hitbtn" data-topic="${esc(threadId)}"${floorAttr}><b>${label}</b>${highlightHtml(first.snippet, state.q)}</button>${rest ? `<span class="more">+${rest} 处</span>` : ""}</div>`;
 }
 
 function renderList() {
@@ -451,18 +564,21 @@ function renderList() {
     })
   );
 
-  const list = filterTopics(archive, state);
-  $("#resultCount").textContent = `${list.length} 篇主题 · 收录回复按实际楼层计数`;
+  const results = searchTopics(archive, state);
+  const q = state.q.trim();
   $("#crumb").textContent = `天道降维互助论坛 / ${{ all: "诸界首页", meta: "天道总坛", eastern: WORLD_LABEL }[state.realm]} / ${state.node === "all" ? "全部分区" : nodeLabel(state.node)}`;
-  $("#topics").innerHTML = list.length
-    ? list
-        .map((item) => {
+  $("#topics").innerHTML = results.length
+    ? results
+        .map(({ thread: item, hits }) => {
           const replies = repliesOf(archive, item.id);
-          return `<article class="row"><div><div class="titleline"><span class="type ${typeClass(item)}">${esc(postTypeLabels[item.postType])}</span><a class="title" href="#topic=${esc(item.id)}" data-topic="${esc(item.id)}">${esc(item.title)}</a></div><div class="meta"><span>${esc(authorName(item.author))}</span>${(item.tags ?? []).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}<span>${esc(item.reviewNote ?? reliabilityLabels[item.reliability])}</span></div></div><div class="metric"><strong>${replies.length} 条</strong>收录回复</div><div class="time"><strong>${esc(item.archiveTime ?? "王朝档案")}</strong>${item.archiveGap ? "有缺页标记" : "维护组创作"}</div></article>`;
+          return `<article class="row"><div><div class="titleline"><span class="type ${typeClass(item)}">${esc(postTypeLabels[item.postType])}</span><a class="title" href="${esc(serializeHashState({ ...initialForumState, topic: item.id, reply: null }))}" data-topic="${esc(item.id)}">${highlightHtml(item.title, state.q)}</a></div><div class="meta"><span>${esc(authorName(item.author))}</span>${(item.tags ?? []).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}<span>${esc(item.reviewNote ?? reliabilityLabels[item.reliability])}</span></div>${hitLine(item.id, hits)}</div><div class="metric"><strong>${replies.length} 条</strong>收录回复</div><div class="time"><strong>${esc(item.archiveTime ?? "王朝档案")}</strong>${item.archiveGap ? "有缺页标记" : "维护组创作"}</div></article>`;
         })
         .join("")
-    : '<div class="empty">没有匹配主题。试试删掉关键词，或点「重置筛选」回到诸界首页。</div>';
-  renderCuratedNotes();
+    : q
+      ? `<div class="empty">没有主题命中「${esc(q)}」。试试更短的词，或点「重置筛选」回到诸界首页。</div>`
+      : '<div class="empty">这个分区还没有主题。点「重置筛选」回到诸界首页。</div>';
+  const noteCount = renderCuratedNotes();
+  $("#resultCount").textContent = q ? `主题命中 ${results.length} 篇 · 经验卡命中 ${noteCount} 张` : `${results.length} 篇主题 · 收录回复按实际楼层计数`;
   $$("[data-realm]").forEach((button) => {
     const on = button.dataset.realm === state.realm;
     button.classList.toggle("active", on);
@@ -481,16 +597,19 @@ $$("[data-tab]").forEach((button) =>
     const tab = button.dataset.tab as ForumTab;
     state = { ...state, tab, node: "all", realm: tab === "maintainer" ? "meta" : "all" };
     renderList();
+    syncUrl("replace", null, null);
   })
 );
 $<HTMLInputElement>("#q").addEventListener("input", (event) => {
   state = { ...state, q: (event.target as HTMLInputElement).value.trim() };
   renderList();
+  syncUrl("replace", null, null);
 });
 $("#resetFilters").addEventListener("click", () => {
   state = { ...initialForumState };
   $<HTMLInputElement>("#q").value = "";
   renderList();
+  syncUrl("replace", null, null);
 });
 
 // ---------- topic ----------
@@ -506,21 +625,37 @@ function renderAttachment() {
     : "";
 }
 
-function openTopic(rawId: string) {
+type OpenOptions = { floor?: number | null; mode?: "push" | "replace" | "none"; trigger?: HTMLElement | null };
+
+/** Scrolls a floor into view, marks it and moves keyboard focus there. */
+function focusFloor(floor: number) {
+  const target = $("#replies").querySelector<HTMLElement>(`[data-floor="${floor}"]`);
+  if (!target) return;
+  target.classList.add("hit");
+  target.tabIndex = -1;
+  target.scrollIntoView({ block: "center" });
+  target.focus({ preventScroll: true });
+}
+
+function openTopic(rawId: string, options: OpenOptions = {}) {
+  const mode = options.mode ?? "push";
   const id = resolveTopicId(archive, rawId);
   const item = id ? thread(id) : undefined;
   if (!item) {
-    notify("没有找到这篇档案");
+    notify("没有找到这篇档案；链接里的编号可能已失效。");
+    if (mode !== "none" && location.hash.includes("topic=")) syncUrl("replace", null, null);
     return;
   }
+  const floor = options.floor && options.floor > 0 ? Math.min(options.floor, item.replies.length) : null;
+  if (options.trigger) lastTrigger = options.trigger;
   currentTopic = item;
-  replyShown = 4;
+  replyShown = Math.max(4, floor ?? 0);
   $("#drawerKicker").textContent = `${nodeLabel(item.node)} · ${postTypeLabels[item.postType]}`;
   $("#drawerTitle").textContent = item.title;
   $("#drawerMeta").innerHTML = `<span>${esc(authorName(item.author))}</span><span>· ${esc(item.author.statusLabel ?? "")}</span><span>· ${esc(item.archiveTime ?? "王朝档案")}</span>`;
   $("#provenance").innerHTML = `<details><summary>来源：${esc(provenanceLabels[item.provenance.kind])} · ${esc(item.reviewNote ?? reliabilityLabels[item.reliability])} · 编号 ${esc(item.id)}</summary><p>本帖和下列楼层均来自仓库创作档案（${esc(item.provenance.reference)}），不是真人社区发言。作者状态为叙事设定，声望不代表可靠度；「身份已终止」不等于穿越者本人死亡。</p><a href="${esc(sourceFileFor(item))}" target="_blank" rel="noopener noreferrer">查看仓库来源 ↗</a>${item.postType === "community-gateway" ? "<p>当前没有已授权导入的真人帖子。真人发言、回复和互动数量请到原始 Discussions 查看。</p>" : ""}</details>`;
   $("#drawerPost").innerHTML = bodyParagraphs(item.body)
-    .map((paragraph) => `<p>${esc(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .map((paragraph) => `<p>${highlightHtml(paragraph, state.q).replace(/\n/g, "<br>")}</p>`)
     .join("");
   $("#archiveNote").textContent = item.archiveGap
     ? item.archiveGap.note
@@ -533,9 +668,14 @@ function openTopic(rawId: string) {
   const dialog = $<HTMLDialogElement>("#topicDialog");
   const alreadyOpen = dialog.open;
   openDialog("topicDialog");
-  dialog.scrollTop = 0;
-  if (alreadyOpen) $("#topicDialog [data-close]").focus();
-  history.replaceState(null, "", `#topic=${item.id}`);
+  if (mode === "push") topicDepth += 1;
+  if (mode !== "none") syncUrl(mode, item.id, floor);
+  if (floor) {
+    focusFloor(floor);
+  } else {
+    dialog.scrollTop = 0;
+    if (alreadyOpen) $("#topicDialog [data-close]").focus();
+  }
 }
 
 function renderReplies() {
@@ -549,7 +689,7 @@ function renderReplies() {
       .slice(0, shown)
       .map(
         (reply, index) =>
-          `<article class="reply"><div class="reply-author"><span class="avatar">${esc([...authorName(reply.author)][0])}</span><div><b>${esc(authorName(reply.author))}</b><div class="caption">${esc(reply.author.statusLabel ?? "")} · ${esc(reply.archiveTime ?? "")} · ${esc(postTypeLabels[reply.replyType])}</div></div><span class="floor">#${index + 1}</span></div><p>${esc(reply.body)}</p></article>`
+          `<article class="reply" id="floor-${index + 1}" data-floor="${index + 1}" aria-label="第 ${index + 1} 楼"><div class="reply-author"><span class="avatar">${esc([...authorName(reply.author)][0])}</span><div><b>${highlightHtml(authorName(reply.author), state.q)}</b><div class="caption">${esc(reply.author.statusLabel ?? "")} · ${esc(reply.archiveTime ?? "")} · ${esc(postTypeLabels[reply.replyType])}</div></div><span class="floor">#${index + 1}</span></div><p>${highlightHtml(reply.body, state.q)}</p></article>`
       )
       .join("") ||
     (currentTopic.postType === "community-gateway"
@@ -567,13 +707,10 @@ document.addEventListener("click", (event) => {
   const link = (event.target as HTMLElement).closest<HTMLElement>("[data-topic]");
   if (!link) return;
   event.preventDefault();
-  openTopic(link.dataset.topic!);
+  const floor = link.dataset.floor ? Number(link.dataset.floor) : null;
+  openTopic(link.dataset.topic!, { floor, mode: "push", trigger: link });
 });
-window.addEventListener("hashchange", () => {
-  if (location.hash.startsWith("#topic=")) openTopic(decodeURIComponent(location.hash.slice(7)));
-  else $<HTMLDialogElement>("#topicDialog").close();
-});
-$("#aboutCommunity").addEventListener("click", () => openTopic("tf-ancient-china-community-gateway"));
+$("#aboutCommunity").addEventListener("click", (event) => openTopic("tf-ancient-china-community-gateway", { mode: "push", trigger: event.currentTarget as HTMLElement }));
 
 // ---------- compose / community gateway ----------
 function compose(topic: TravelerForumThread | null = null, intent = "") {
@@ -597,7 +734,7 @@ $$("[data-review]").forEach((button) => button.addEventListener("click", () => c
 $("#copyTopic").addEventListener("click", async () => {
   if (!currentTopic) return;
   try {
-    await navigator.clipboard.writeText(new URL(`#topic=${currentTopic.id}`, location.href).href);
+    await navigator.clipboard.writeText(new URL(serializeHashState({ ...initialForumState, topic: currentTopic.id, reply: null }), location.href).href);
     notify("已复制公开档案链接");
   } catch {
     notify("浏览器未允许复制，请复制地址栏中的档案链接。");
@@ -615,5 +752,9 @@ $("#readingLinks").innerHTML = [
 
 renderWorldBars();
 renderProfile();
-renderList();
-if (location.hash.startsWith("#topic=")) openTopic(decodeURIComponent(location.hash.slice(7)));
+{
+  const initial = parseHashState(location.hash);
+  if (initial.malformed) notify("链接里的参数无法完全解析，已按可用部分显示。");
+  history.replaceState({ forum: true, depth: 0 }, "", location.href);
+  applyLocation(initial.location, "replace");
+}
